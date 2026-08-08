@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A quiet reading companion. Keep the words, the page, the lines and the pictures in your head.">
+<meta name="theme-color" content="#faf8f4">
+<title>Margin — a reading companion</title>
+<style>
+:root{
+  --paper:#faf8f4; --card:#fffefb; --ink:#1c1a17; --ink-2:#5f5951; --ink-3:#8f887e;
+  --rule:#e5ded3; --rule-2:#efe9df; --accent:#a9502b; --accent-soft:#f4e7de;
+  --good:#4a7c59; --shadow:0 1px 2px rgba(28,26,23,.04),0 8px 24px -12px rgba(28,26,23,.10);
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]){
+    --paper:#151412; --card:#1e1c19; --ink:#f0ebe3; --ink-2:#a49c91; --ink-3:#7a736a;
+    --rule:#2e2b26; --rule-2:#262320; --accent:#d98253; --accent-soft:#33251d;
+    --good:#7fb08c; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme=dark]{
+  --paper:#151412; --card:#1e1c19; --ink:#f0ebe3; --ink-2:#a49c91; --ink-3:#7a736a;
+  --rule:#2e2b26; --rule-2:#262320; --accent:#d98253; --accent-soft:#33251d;
+  --good:#7fb08c; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  padding:0 0 92px; min-height:100vh;
+}
+#app{max-width:560px;margin:0 auto;padding:0 20px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+input,textarea{
+  width:100%;background:var(--paper);border:1px solid var(--rule);border-radius:10px;
+  padding:11px 13px;color:var(--ink);outline:none;transition:border-color .15s;
+}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:88px;line-height:1.55}
+::placeholder{color:var(--ink-3)}
+
+/* --- type --- */
+.label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.serif{font-family:var(--serif)}
+h1{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+h2{font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3}
+.muted{color:var(--ink-2);font-size:14px}
+.dim{color:var(--ink-3);font-size:13px}
+
+/* --- chrome --- */
+header{padding:26px 0 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.brand{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
+.brand span{color:var(--accent)}
+.icon-btn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2);border:1px solid transparent}
+.icon-btn:hover{background:var(--rule-2);color:var(--ink)}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--ink-2);font-size:14px;padding:6px 0;margin-bottom:4px}
+.back:hover{color:var(--accent)}
+
+nav{
+  position:fixed;left:0;right:0;bottom:0;background:var(--paper);
+  background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--rule);
+  padding:8px 20px calc(8px + env(safe-area-inset-bottom)); z-index:40;
+}
+.nav-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.tab{padding:9px 4px;border-radius:10px;font-size:13px;font-weight:500;color:var(--ink-3);position:relative}
+.tab.on{color:var(--ink)}
+.tab.on::after{content:'';position:absolute;left:50%;bottom:3px;transform:translateX(-50%);width:14px;height:2px;border-radius:2px;background:var(--accent)}
+.pip{display:inline-block;min-width:17px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;line-height:17px;vertical-align:1px}
+
+/* --- surfaces --- */
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow)}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);text-align:left;width:100%;display:block;transition:transform .12s,border-color .12s}
+button.row:hover{border-color:var(--ink-3);transform:translateY(-1px)}
+.entry{padding:15px 0;border-bottom:1px solid var(--rule-2)}
+.entry:last-child{border-bottom:0}
+.between{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+
+.btn{background:var(--ink);color:var(--paper);border-radius:11px;padding:11px 18px;font-size:14px;font-weight:600;transition:opacity .15s}
+.btn:hover{opacity:.86}
+.btn.ghost{background:none;color:var(--ink-2);border:1px solid var(--rule)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--ink-3);opacity:1}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.link{color:var(--accent);font-size:13px;font-weight:500}
+.link:hover{text-decoration:underline}
+.del{color:var(--ink-3);font-size:12px;padding:2px 6px;border-radius:6px}
+.del:hover{color:var(--accent);background:var(--accent-soft)}
+
+.bar{height:2px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:11px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
+.chip{display:inline-block;padding:3px 9px;border-radius:20px;background:var(--rule-2);color:var(--ink-2);font-size:11px;font-weight:600;letter-spacing:.02em}
+
+/* --- pieces --- */
+.quote{font-family:var(--serif);font-size:17px;line-height:1.55;border-left:2px solid var(--accent);padding-left:14px;color:var(--ink)}
+.word{font-family:var(--serif);font-size:19px;font-weight:600}
+.seg{display:flex;gap:2px;background:var(--rule-2);padding:3px;border-radius:11px;margin:20px 0 18px}
+.seg button{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.empty{text-align:center;padding:46px 20px;color:var(--ink-3)}
+.empty p{font-family:var(--serif);font-size:16px;line-height:1.6;max-width:270px;margin:0 auto}
+.nudge{background:var(--accent-soft);border:1px solid transparent;border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;margin-bottom:14px}
+.nudge:hover{border-color:var(--accent)}
+
+/* --- sheet --- */
+.scrim{position:fixed;inset:0;background:rgba(20,18,15,.42);z-index:50;animation:fade .18s}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--card);
+  border-radius:20px 20px 0 0;border-top:1px solid var(--rule);
+  max-width:560px;margin:0 auto;padding:8px 20px calc(22px + env(safe-area-inset-bottom));
+  max-height:88vh;overflow-y:auto;animation:up .26s cubic-bezier(.2,.9,.3,1);
+}
+.grab{width:34px;height:4px;border-radius:4px;background:var(--rule);margin:6px auto 16px}
+.field{margin-bottom:13px}
+.field .label{display:block;margin-bottom:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(100%)}}
+
+/* --- review --- */
+.flash{
+  background:var(--card);border:1px solid var(--rule);border-radius:18px;box-shadow:var(--shadow);
+  padding:38px 26px;min-height:238px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;cursor:pointer;
+}
+.flash .w{font-family:var(--serif);font-size:31px;font-weight:600;letter-spacing:-.01em}
+.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
+.rate button{padding:13px 6px;border-radius:11px;border:1px solid var(--rule);font-size:13px;font-weight:600;background:var(--card)}
+.rate button:hover{border-color:var(--ink-3)}
+.rate b{display:block;font-size:10px;font-weight:500;color:var(--ink-3);margin-top:3px;letter-spacing:.02em}
+.toast{
+  position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+  padding:9px 17px;border-radius:20px;font-size:13px;font-weight:500;z-index:60;animation:fade .2s;white-space:nowrap;
+}
+.fade{animation:fade .3s}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav>
+  <div class="nav-in">
+    <button class="tab" data-go="shelf">Shelf</button>
+    <button class="tab" data-go="dict">Dictionary</button>
+    <button class="tab" data-go="review">Review</button>
+  </div>
+</nav>
+
+<script>
+'use strict';
+/* ---------------------------------------------------------------
+   Margin — a quiet reading companion.
+   Everything lives on this device. No account, no server, no eyes.
+----------------------------------------------------------------*/
+
+const KEY = 'margin.v1';
+const DAY = 864e5;
+
+let db = load();
+let view = 'shelf';       // shelf | book | dict | review
+let openBook = null;      // book id when view === 'book'
+let bookTab = 'words';    // words | quotes | journal
+let session = null;       // active review session
+
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if(d && d.books) return d;
+  }catch(e){}
+  return {books:[], words:[], quotes:[], notes:[], theme:null};
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nl  = s => esc(s).replace(/\n/g,'<br>');
+const book = id => db.books.find(b => b.id === id);
+const $ = s => document.querySelector(s);
+
+function when(ts){
+  const d = Math.floor((Date.now() - ts) / DAY);
+  if(d <= 0) return 'today';
+  if(d === 1) return 'yesterday';
+  if(d < 30) return d + ' days ago';
+  return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+}
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = 0; t.style.transition = 'opacity .3s'; }, 1500);
+  setTimeout(() => t.remove(), 1850);
+}
+
+/* ---------------- spaced repetition (SM-2) ----------------------
+   Each word carries its own forgetting curve. Answer well and it
+   steps further away; stumble and it comes straight back.
+-----------------------------------------------------------------*/
+function freshCard(){ return {ease:2.5, reps:0, interval:0, due:Date.now()}; }
+
+function grade(w, q){                       // q: 0 again · 4 good · 5 easy
+  const c = w.srs || (w.srs = freshCard());
+  if(q < 3){
+    c.reps = 0; c.interval = 0;
+    c.due = Date.now() + 6e5;               // back in ~10 minutes
+  }else{
+    c.reps++;
+    c.interval = c.reps === 1 ? 1 : c.reps === 2 ? 6 : Math.round(c.interval * c.ease);
+    c.ease = Math.max(1.3, c.ease + (0.1 - (5-q) * (0.08 + (5-q) * 0.02)));
+    c.due = Date.now() + c.interval * DAY;
+  }
+  save();
+}
+const dueWords = () => db.words.filter(w => (w.srs?.due ?? 0) <= Date.now());
+
+/* ---------------- dictionary lookup ----------------------------
+   Fetches a definition to save typing — but it lands in an open,
+   editable box, because a meaning in your own words is the one
+   that sticks.
+-----------------------------------------------------------------*/
+async function lookup(term){
+  const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(term.trim()));
+  if(!r.ok) throw 0;
+  const m = (await r.json())[0].meanings[0];
+  return (m.partOfSpeech ? m.partOfSpeech + ' — ' : '') + m.definitions[0].definition;
+}
+
+/* ---------------- render --------------------------------------- */
+function render(){
+  const app = $('#app');
+  app.innerHTML =
+      view === 'shelf'  ? shelfView()
+    : view === 'book'   ? bookView()
+    : view === 'dict'   ? dictView()
+    :                     reviewView();
+  app.classList.remove('fade'); void app.offsetWidth; app.classList.add('fade');
+
+  const active = view === 'book' ? 'shelf' : view;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.go === active);
+    if(t.dataset.go === 'review'){
+      const n = dueWords().length;
+      t.innerHTML = 'Review' + (n ? `<span class="pip">${n}</span>` : '');
+    }
+  });
+  window.scrollTo(0,0);
+}
+
+function topBar(){
+  const dark = document.documentElement.dataset.theme === 'dark';
+  return `<header>
+    <div><div class="brand">Mar<span>gin</span></div>
+    <div class="dim" style="margin-top:2px">${db.books.length ? db.books.length + (db.books.length===1?' book':' books') + ' · ' + db.words.length + (db.words.length===1?' word':' words') : 'A quiet reading companion'}</div></div>
+    <button class="icon-btn" onclick="toggleTheme()" title="Theme">${dark ? '☀' : '☾'}</button>
+  </header>`;
+}
+
+/* --- shelf --- */
+function shelfView(){
+  const due = dueWords().length;
+  return topBar() + `
+  ${due ? `<button class="nudge" data-go="review">
+      <span><div style="font-weight:600;font-size:14px">${due} ${due===1?'word is':'words are'} fading</div>
+      <div class="dim" style="color:var(--accent);opacity:.8">A minute now and ${due===1?'it stays':'they stay'} yours</div></span>
+      <span style="color:var(--accent);font-size:19px">→</span></button>` : ''}
+
+  <div class="between" style="margin-bottom:12px">
+    <div class="label">Reading</div>
+    <button class="link" onclick="sheetBook()">+ Add a book</button>
+  </div>
+
+  ${db.books.length ? `<div class="list">${db.books.map(b => {
+      const pct = b.pages ? Math.min(100, Math.round(b.page / b.pages * 100)) : 0;
+      const n = k => db[k].filter(x => x.bookId === b.id).length;
+      const bits = [[n('words'),'word'],[n('quotes'),'quote'],[n('notes'),'note']]
+        .filter(x => x[0]).map(x => `${x[0]} ${x[1]}${x[0]>1?'s':''}`).join(' · ');
+      return `<button class="row" data-book="${b.id}">
+        <div class="between"><h2>${esc(b.title)}</h2>
+        <span class="dim" style="white-space:nowrap">p.${b.page||0}</span></div>
+        <div class="dim" style="margin-top:2px">${esc(b.author) || '—'}</div>
+        ${bits ? `<div class="dim" style="margin-top:9px;color:var(--ink-2)">${bits}</div>` : ''}
+        ${b.pages ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}
+      </button>`;
+    }).join('')}</div>`
+  : `<div class="empty"><p>Your shelf is empty. Add the book that's open beside you right now.</p>
+     <button class="btn" style="margin-top:20px" onclick="sheetBook()">Add a book</button></div>`}`;
+}
+
+/* --- one book --- */
+function bookView(){
+  const b = book(openBook);
+  if(!b){ view = 'shelf'; return shelfView(); }
+  const pct = b.pages ? Math.min(100, Math.round(b.page / b.pages * 100)) : 0;
+  const of = (k) => db[k].filter(x => x.bookId === b.id).sort((x,y) => y.at - x.at);
+  const words = of('words'), quotes = of('quotes'), notes = of('notes');
+
+  const body =
+    bookTab === 'words'  ? (words.length ? words.map(w => `<div class="entry">
+        <div class="between"><span class="word">${esc(w.word)}</span>
+          <span style="white-space:nowrap"><span class="dim">${w.page?'p.'+w.page:''}</span>
+          <button class="del" onclick="drop('words','${w.id}')">Remove</button></span></div>
+        <div class="muted" style="margin-top:4px">${nl(w.meaning)}</div>
+        ${w.context ? `<div class="dim serif" style="margin-top:7px;font-style:italic">"${nl(w.context)}"</div>` : ''}
+      </div>`).join('') : blank('Every book hands you a few words you didn\'t have. Catch the next one.'))
+
+  : bookTab === 'quotes' ? (quotes.length ? quotes.map(q => `<div class="entry">
+        <div class="quote">${nl(q.text)}</div>
+        <div class="between" style="margin-top:9px"><span class="dim">${q.page?'p.'+q.page:''}</span>
+        <button class="del" onclick="drop('quotes','${q.id}')">Remove</button></div>
+      </div>`).join('') : blank('The line that made you stop and read it twice — keep it here.'))
+
+  : (notes.length ? notes.map(n => `<div class="entry">
+        <div class="between"><span class="label">${when(n.at)}</span>
+          <span style="white-space:nowrap"><span class="dim">${n.page?'p.'+n.page:''}</span>
+          <button class="del" onclick="drop('notes','${n.id}')">Remove</button></span></div>
+        <div class="serif" style="margin-top:7px;font-size:16px;line-height:1.6">${nl(n.text)}</div>
+      </div>`).join('') : blank('What did the room look like? Who did you cast? Write the film playing in your head.'));
+
+  const add = {words:'Add a word', quotes:'Add a quote', notes:'Write an entry'}[bookTab];
+
+  return `<header style="padding-bottom:10px"><div style="flex:1">
+      <button class="back" data-go="shelf">← Shelf</button>
+      <h1>${esc(b.title)}</h1>
+      <div class="muted" style="margin-top:3px">${esc(b.author) || '—'}</div>
+    </div>
+    <button class="icon-btn" onclick="dropBook('${b.id}')" title="Delete book" style="margin-top:26px">×</button>
+  </header>
+
+  <div class="card">
+    <div class="between"><div>
+      <div class="label">Stopped at</div>
+      <div style="margin-top:3px"><span class="serif" style="font-size:25px;font-weight:600">${b.page||0}</span>
+      <span class="dim">${b.pages ? ' / ' + b.pages : ''}</span></div>
+    </div>
+    <button class="btn ghost" onclick="sheetPage()">Move bookmark</button></div>
+    ${b.pages ? `<div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="dim" style="margin-top:7px">${pct}% through</div>` : ''}
+  </div>
+
+  <div class="seg">
+    <button class="${bookTab==='words'?'on':''}"  onclick="setTab('words')">Words${words.length?' · '+words.length:''}</button>
+    <button class="${bookTab==='quotes'?'on':''}" onclick="setTab('quotes')">Quotes${quotes.length?' · '+quotes.length:''}</button>
+    <button class="${bookTab==='notes'?'on':''}"  onclick="setTab('notes')">Journal${notes.length?' · '+notes.length:''}</button>
+  </div>
+
+  <button class="btn wide" onclick="sheetEntry()">${add}</button>
+  <div style="margin-top:6px">${body}</div>`;
+}
+const blank = t => `<div class="empty"><p>${t}</p></div>`;
+
+/* --- personal dictionary --- */
+function dictView(){
+  const q = (window.__q || '').toLowerCase();
+  const all = db.words
+    .filter(w => !q || w.word.toLowerCase().includes(q) || (w.meaning||'').toLowerCase().includes(q))
+    .sort((a,b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
+
+  let out = '', letter = '';
+  all.forEach(w => {
+    const L = w.word[0].toUpperCase();
+    if(L !== letter){ letter = L; out += `<div class="label" style="margin:22px 0 2px;color:var(--accent)">${esc(letter)}</div>`; }
+    const b = book(w.bookId);
+    const days = w.srs ? Math.ceil((w.srs.due - Date.now()) / DAY) : 0;
+    out += `<div class="entry">
+      <div class="between"><span class="word">${esc(w.word)}</span>
+        <span class="chip">${days <= 0 ? 'due now' : 'in ' + days + 'd'}</span></div>
+      <div class="muted" style="margin-top:4px">${nl(w.meaning)}</div>
+      <div class="dim" style="margin-top:7px">${b ? esc(b.title) + (w.page ? ' · p.' + w.page : '') : ''}</div>
+    </div>`;
+  });
+
+  return topBar() + `
+  <h1 style="margin-bottom:4px">Your dictionary</h1>
+  <div class="muted" style="margin-bottom:16px">${db.words.length} ${db.words.length===1?'word':'words'}, each one carrying the page you met it on.</div>
+  ${db.words.length ? `<input placeholder="Search your words…" value="${esc(window.__q||'')}"
+      oninput="window.__q=this.value;dictList()" style="margin-bottom:4px">
+    <div id="dl">${out || blank('Nothing matches that.')}</div>`
+  : blank('Words you save inside a book gather here — your own dictionary, in your own words.')}`;
+}
+function dictList(){
+  const el = $('#dl'); if(!el) return;
+  const scroll = window.scrollY;
+  const tmp = document.createElement('div'); tmp.innerHTML = dictView();
+  el.innerHTML = tmp.querySelector('#dl').innerHTML;
+  window.scrollTo(0, scroll);
+}
+
+/* --- review --- */
+function reviewView(){
+  if(!session || !session.queue.length){
+    const due = dueWords();
+    if(!db.words.length) return topBar() + blank('Save a few words first — then they\'ll come back to find you.');
+    if(session && session.done){
+      const s = session; session = null;
+      return topBar() + `<div class="empty" style="padding-top:64px">
+        <div class="serif" style="font-size:38px;color:var(--accent)">✓</div>
+        <p style="margin-top:12px">${s.done} ${s.done===1?'word':'words'} reviewed. They'll come back when you're just about to forget them.</p>
+        <button class="btn ghost" style="margin-top:22px" data-go="shelf">Back to shelf</button></div>`;
+    }
+    if(!due.length){
+      const next = Math.min(...db.words.map(w => w.srs?.due ?? Infinity));
+      const d = Math.max(1, Math.ceil((next - Date.now()) / DAY));
+      return topBar() + `<div class="empty" style="padding-top:64px">
+        <p>Nothing due. Your words are still settling — the next batch surfaces in about ${d} day${d>1?'s':''}.</p>
+        <button class="btn ghost" style="margin-top:22px" onclick="cram()">Practise anyway</button></div>`;
+    }
+    session = {queue: shuffle(due.slice()), flip:false, done:0, total:due.length};
+  }
+
+  const w = session.queue[0], b = book(w.bookId);
+  const n = session.total - session.queue.length + 1;
+
+  return topBar() + `
+  <div class="between" style="margin-bottom:14px">
+    <div class="label">${n} of ${session.total}</div>
+    <div class="dim">${b ? esc(b.title) : ''}</div>
+  </div>
+  <div class="flash" onclick="flip()">
+    ${session.flip ? `
+      <div class="w" style="font-size:22px">${esc(w.word)}</div>
+      <div style="margin-top:14px;font-size:15px;line-height:1.6;color:var(--ink-2);max-width:340px">${nl(w.meaning)}</div>
+      ${w.context ? `<div class="serif" style="margin-top:14px;font-style:italic;color:var(--ink-3);font-size:14px;max-width:340px">"${nl(w.context)}"</div>` : ''}
+      ${w.page ? `<div class="dim" style="margin-top:14px">page ${w.page}</div>` : ''}`
+    : `<div class="w">${esc(w.word)}</div>
+       <div class="dim" style="margin-top:16px">Tap to reveal</div>`}
+  </div>
+  ${session.flip ? `<div class="rate">
+      <button onclick="answer(0)">Again<b>&lt; 10 min</b></button>
+      <button onclick="answer(4)">Good<b>${nextIn(w,4)}</b></button>
+      <button onclick="answer(5)" style="color:var(--good)">Easy<b>${nextIn(w,5)}</b></button>
+    </div>` : `<div class="dim" style="text-align:center;margin-top:16px">Say it out loud before you flip.</div>`}`;
+}
+function nextIn(w, q){
+  const c = w.srs || freshCard();
+  const r = c.reps + 1;
+  const i = r === 1 ? 1 : r === 2 ? 6 : Math.round(c.interval * c.ease * (q === 5 ? 1.3 : 1));
+  return i === 1 ? 'tomorrow' : i < 31 ? i + ' days' : Math.round(i/30) + ' months';
+}
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+function flip(){ if(session){ session.flip = true; render(); } }
+function answer(q){
+  const w = session.queue.shift();
+  grade(w, q);
+  if(q < 3) session.queue.push(w); else session.done++;
+  session.flip = false;
+  if(!session.queue.length) session.queue = [];
+  render();
+}
+function cram(){ session = {queue: shuffle(db.words.slice(0,20)), flip:false, done:0, total:Math.min(20,db.words.length)}; render(); }
+
+/* ---------------- sheets --------------------------------------- */
+function sheet(title, html, onSave){
+  closeSheet();
+  const s = document.createElement('div');
+  s.innerHTML = `<div class="scrim" onclick="closeSheet()"></div>
+    <div class="sheet"><div class="grab"></div>
+      <h2 style="margin-bottom:16px">${title}</h2>${html}
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn ghost" style="flex:1" onclick="closeSheet()">Cancel</button>
+        <button class="btn" style="flex:2" id="ok">Save</button>
+      </div></div>`;
+  s.id = 'sh'; document.body.appendChild(s);
+  $('#ok').onclick = () => { if(onSave() !== false){ closeSheet(); render(); } };
+  setTimeout(() => s.querySelector('input,textarea')?.focus(), 90);
+}
+function closeSheet(){ document.getElementById('sh')?.remove(); }
+const val = id => ($('#'+id)?.value || '').trim();
+
+function sheetBook(){
+  sheet('Add a book', `
+    <div class="field"><span class="label">Title</span><input id="t" placeholder="The Secret History"></div>
+    <div class="field"><span class="label">Author</span><input id="a" placeholder="Donna Tartt"></div>
+    <div class="two">
+      <div class="field"><span class="label">On page</span><input id="p" type="number" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><span class="label">Total pages</span><input id="tp" type="number" inputmode="numeric" placeholder="optional"></div>
+    </div>`,
+  () => {
+    if(!val('t')) return toast('A title, at least'), false;
+    db.books.unshift({id:uid(), title:val('t'), author:val('a'), page:+val('p')||0, pages:+val('tp')||0, at:Date.now()});
+    save();
+  });
+}
+function sheetPage(){
+  const b = book(openBook);
+  sheet('Move your bookmark', `
+    <div class="two">
+      <div class="field"><span class="label">Stopped at page</span><input id="p" type="number" inputmode="numeric" value="${b.page||''}"></div>
+      <div class="field"><span class="label">Total pages</span><input id="tp" type="number" inputmode="numeric" value="${b.pages||''}"></div>
+    </div>`,
+  () => { b.page = +val('p')||0; b.pages = +val('tp')||0; save(); });
+}
+function sheetEntry(){
+  const b = book(openBook);
+  const pg = `<div class="field"><span class="label">Page</span><input id="p" type="number" inputmode="numeric" value="${b.page||''}"></div>`;
+
+  if(bookTab === 'words'){
+    sheet('A new word', `
+      <div class="field"><span class="label">Word</span>
+        <input id="w" placeholder="susurrus" onblur="autoDefine()"></div>
+      <div class="field"><span class="label">What it means <span id="st" style="color:var(--accent);text-transform:none;letter-spacing:0"></span></span>
+        <textarea id="m" placeholder="In your own words — that's the version you'll remember." style="min-height:76px"></textarea></div>
+      <div class="field"><span class="label">The sentence you found it in <span style="text-transform:none;letter-spacing:0;font-weight:400">· optional</span></span>
+        <textarea id="c" placeholder="A susurrus of leaves overhead…" style="min-height:60px"></textarea></div>
+      ${pg}`,
+    () => {
+      if(!val('w')) return toast('Type the word'), false;
+      db.words.unshift({id:uid(), bookId:b.id, word:val('w'), meaning:val('m')||'—',
+                        context:val('c'), page:+val('p')||0, at:Date.now(), srs:freshCard()});
+      save(); toast('Added to your dictionary');
+    });
+
+  }else if(bookTab === 'quotes'){
+    sheet('A line worth keeping', `
+      <div class="field"><span class="label">The line</span>
+        <textarea id="q" placeholder="Beauty is terror. Whatever we call beautiful, we quiver before it."></textarea></div>
+      ${pg}`,
+    () => {
+      if(!val('q')) return toast('Nothing to keep yet'), false;
+      db.quotes.unshift({id:uid(), bookId:b.id, text:val('q'), page:+val('p')||0, at:Date.now()});
+      save();
+    });
+
+  }else{
+    sheet('What you saw', `
+      <div class="field"><span class="label">Your entry</span>
+        <textarea id="n" placeholder="The house was colder than they wrote it. I keep picturing the hallway in green…" style="min-height:130px"></textarea></div>
+      ${pg}`,
+    () => {
+      if(!val('n')) return toast('Write something first'), false;
+      db.notes.unshift({id:uid(), bookId:b.id, text:val('n'), page:+val('p')||0, at:Date.now()});
+      save();
+    });
+  }
+}
+
+async function autoDefine(){
+  const w = val('w'), m = $('#m'), st = $('#st');
+  if(!w || !m || m.value.trim()) return;
+  st.textContent = '· looking up…';
+  try{
+    m.value = await lookup(w);
+    st.textContent = '· found — make it yours';
+  }catch(e){
+    st.textContent = '· no entry, write your own';
+  }
+  setTimeout(() => st && (st.textContent = ''), 3200);
+}
+
+/* ---------------- actions -------------------------------------- */
+function setTab(t){ bookTab = t; render(); }
+function drop(kind, id){
+  if(!confirm('Remove this? It won\'t come back.')) return;
+  db[kind] = db[kind].filter(x => x.id !== id); save(); render();
+}
+function dropBook(id){
+  const b = book(id);
+  if(!confirm(`Delete "${b.title}" and everything saved inside it?`)) return;
+  db.books = db.books.filter(x => x.id !== id);
+  ['words','quotes','notes'].forEach(k => db[k] = db[k].filter(x => x.bookId !== id));
+  save(); view = 'shelf'; render();
+}
+function toggleTheme(){
+  const dark = document.documentElement.dataset.theme === 'dark';
+  db.theme = dark ? 'light' : 'dark';
+  document.documentElement.dataset.theme = db.theme;
+  save(); render();
+}
+function go(v){ view = v; session = null; render(); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-go],[data-book]');
+  if(!t) return;
+  if(t.dataset.book){ openBook = t.dataset.book; bookTab = 'words'; view = 'book'; render(); }
+  else go(t.dataset.go);
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeSheet();
+  if(view === 'review' && session?.queue.length){
+    if(e.key === ' '){ e.preventDefault(); flip(); }
+    if(session.flip && '123'.includes(e.key)) answer([0,4,5][+e.key-1]);
+  }
+});
+
+if(db.theme) document.documentElement.dataset.theme = db.theme;
+render();
+</script>
+</body>
+</html>
