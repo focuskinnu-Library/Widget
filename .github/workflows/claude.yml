@@ -1,8 +1,14 @@
 name: Claude
 
 # Mention @claude in an issue or a review comment and Claude picks up the thread.
-# Needs one repository secret: ANTHROPIC_API_KEY.
-# Settings → Secrets and variables → Actions → New repository secret.
+#
+# Two repository secrets, under Settings → Secrets and variables → Actions:
+#   CLAUDE_SETUP_TOKEN — output of `claude setup-token`
+#   GH_PAT             — personal access token with `repo` scope
+#
+# GH_PAT rather than the built-in GITHUB_TOKEN because this job pushes branches
+# and opens pull requests: work pushed with the built-in token does not trigger
+# other workflows, so a PR raised here would sit with no checks running on it.
 
 on:
   issue_comment:
@@ -31,4 +37,5 @@ jobs:
       - name: Claude Code Action Official
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_SETUP_TOKEN }}
+          github_token: ${{ secrets.GH_PAT }}

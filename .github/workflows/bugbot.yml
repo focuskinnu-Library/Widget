@@ -1,0 +1,26 @@
+name: Claude BugBot
+
+# Third-party action, pinned to a commit rather than @main on purpose: it is
+# handed CLAUDE_SETUP_TOKEN, and a moving tag would let the code behind that
+# credential change without a diff here. Bump the SHA deliberately, after
+# reading what changed.
+#   rekpero/claude-bugbot-github-action @ 8eedc35 (main, reviewed 2026-08-08)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  bugbot:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rekpero/claude-bugbot-github-action@8eedc356796c3b6e73a2d2288fe10643702b8bfb
+        with:
+          claude-setup-token: ${{ secrets.CLAUDE_SETUP_TOKEN }}
+          max-budget: "$1.00"
