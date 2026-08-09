@@ -1,0 +1,41 @@
+name: Claude
+
+# Mention @claude in an issue or a review comment and Claude picks up the thread.
+#
+# Two repository secrets, under Settings → Secrets and variables → Actions:
+#   CLAUDE_SETUP_TOKEN — output of `claude setup-token`
+#   GH_PAT             — personal access token with `repo` scope
+#
+# GH_PAT rather than the built-in GITHUB_TOKEN because this job pushes branches
+# and opens pull requests: work pushed with the built-in token does not trigger
+# other workflows, so a PR raised here would sit with no checks running on it.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Action Official
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_SETUP_TOKEN }}
+          github_token: ${{ secrets.GH_PAT }}
