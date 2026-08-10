@@ -17,12 +17,25 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    # The review is a convenience, not a gate. Without the token there is
+    # nothing to run, so the job says so and passes — a missing optional
+    # credential should not look like a broken build.
+    env:
+      HAS_TOKEN: ${{ secrets.CLAUDE_SETUP_TOKEN != '' }}
     steps:
+      - name: Skip if no token
+        if: env.HAS_TOKEN != 'true'
+        run: |
+          echo "::notice title=Review skipped::CLAUDE_SETUP_TOKEN is not set. \
+          Add it under Settings → Secrets and variables → Actions to enable PR review."
+
       - uses: actions/checkout@v4
+        if: env.HAS_TOKEN == 'true'
         with:
           fetch-depth: 0
 
       - name: Collect the diff
+        if: env.HAS_TOKEN == 'true'
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
@@ -32,6 +45,7 @@ jobs:
           echo "Changed files:"; cat /tmp/stat.txt
 
       - name: Claude Code Base Action
+        if: env.HAS_TOKEN == 'true'
         uses: anthropics/claude-code-base-action@beta
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_SETUP_TOKEN }}
