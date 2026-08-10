@@ -296,9 +296,19 @@ const dueWords = () => db.words.filter(w => (w.srs?.due ?? 0) <= Date.now());
    it — then write what it means to you underneath. Both are saved;
    yours is the one the flashcard shows first.
 -----------------------------------------------------------------*/
+const fail = (code, msg) => Object.assign(new Error(msg), {code});
+
 async function lookup(term){
-  const r = await fetch(API + encodeURIComponent(term.trim().toLowerCase()));
-  if(!r.ok) throw new Error('no entry');
+  let r;
+  try{
+    r = await fetch(API + encodeURIComponent(term.trim().toLowerCase()));
+  }catch(e){
+    // Never reached the network at all: offline, or a page policy blocking
+    // outside requests. Worth telling apart from "this word isn't a word".
+    throw fail('unreachable', 'could not reach the dictionary');
+  }
+  if(r.status === 404) throw fail('none', 'no entry for that word');
+  if(!r.ok) throw fail('unreachable', 'dictionary returned ' + r.status);
   const d = (await r.json())[0];
   const senses = [];
   (d.meanings || []).forEach(m =>
@@ -331,7 +341,19 @@ async function doLookup(){
       (r.syn.length ? `<div class="syn">${r.syn.map(s => `<span class="chip flat">${esc(s)}</span>`).join('')}</div>` : '');
     const ph = $('#ph'); if(ph) ph.value = r.phonetic || '';
   }catch(e){
-    box.innerHTML = `<div class="lk-head"><span class="label">Nothing found — write it yourself below</span></div>`;
+    const web = `https://www.google.com/search?q=${encodeURIComponent('define ' + term)}`;
+    box.innerHTML = `<div class="lk-head" style="display:block">
+      <span class="label">${e.code === 'none'
+        ? `No entry for “${esc(term)}”`
+        : 'Couldn’t reach the dictionary'}</span>
+      <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink-2)">
+        ${e.code === 'none'
+          ? 'It may be a name, a plural, or too new for the dictionary. Try the singular, or just write the meaning yourself.'
+          : 'You’re offline, or this page is blocking outside requests. Open Margin from your own link and lookup works.'}
+      </div>
+      <a class="link" href="${web}" target="_blank" rel="noopener"
+         style="display:inline-block;margin-top:8px">Search the web for “${esc(term)}” ↗</a>
+    </div>`;
   }
 }
 function useSense(i){

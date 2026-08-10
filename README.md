@@ -28,7 +28,8 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 ## Notes
 
 - **Everything stays on the device.** Data lives in `localStorage` under `margin.v1`. Nothing is sent anywhere.
-- **One exception:** the dictionary calls [dictionaryapi.dev](https://dictionaryapi.dev) with just the single word you typed. Offline or blocked, it degrades quietly and you write the meaning yourself.
+- **One exception:** the dictionary calls [dictionaryapi.dev](https://dictionaryapi.dev) with just the single word you typed.
+- **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
 - Light and dark, following the system, with a manual toggle.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
 
