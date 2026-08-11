@@ -3,143 +3,195 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A quiet reading companion. Keep the words, the page, the lines and the pictures in your head.">
-<meta name="theme-color" content="#e9ece7">
+<meta name="description" content="Keep the words, the page, the lines and the pictures in your head — and give every book its own vibe.">
+<meta name="theme-color" content="#f7f8fa">
 <title>Margin — a reading companion</title>
 <style>
+/* ── base: neutrals per mode, hue per vibe ─────────────────────── */
 :root{
-  --paper:#e9ece7; --card:#f7f8f5; --ink:#141719; --ink-2:#535a5c; --ink-3:#868d8c;
-  --rule:#d2d7d0; --rule-2:#e1e5de; --accent:#24518c; --accent-soft:#dde4f0;
-  --good:#2f6d4f; --shadow:none; --r:4px;
-  --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  --base:#f6f7f9; --base-2:#ffffff;
+  --ink:#12141a; --ink-2:#565d70; --ink-3:#8b92a6;
+  --line:rgba(18,20,26,.10); --line-2:rgba(18,20,26,.06);
+  --on-accent:#fff; --lift:0 1px 2px rgba(18,20,26,.05),0 10px 30px -18px rgba(18,20,26,.35);
+  --accent:var(--a-l); --accent-2:var(--a2-l);
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+  --r:16px; --r-s:11px;
+  --a-l:#5b6cff; --a-d:#93a0ff; --a2-l:#9b7bff; --a2-d:#b9a3ff;
 }
+[data-vibe=dusk] {--a-l:#a855f7;--a-d:#cb92ff;--a2-l:#f472b6;--a2-d:#f9a5cf}
+[data-vibe=ember]{--a-l:#ed6b32;--a-d:#ff9c62;--a2-l:#f5a524;--a2-d:#ffc464}
+[data-vibe=fern] {--a-l:#1f9d63;--a-d:#5fd39a;--a2-l:#84cc4f;--a2-d:#a8e07c}
+[data-vibe=tide] {--a-l:#0e9ec2;--a-d:#4fd0e8;--a2-l:#5ad1c4;--a2-d:#88e5da}
+[data-vibe=blush]{--a-l:#e8407f;--a-d:#ff8ab5;--a2-l:#ff8a5c;--a2-d:#ffb08c}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme=light]){
-    --paper:#0f1212; --card:#181c1c; --ink:#e7eae6; --ink-2:#98a09f; --ink-3:#6d7574;
-    --rule:#272c2c; --rule-2:#1f2424; --accent:#8ab0e6; --accent-soft:#182534;
-    --good:#6fae8c;
+    --base:#0d0f13; --base-2:#171a20;
+    --ink:#eef0f5; --ink-2:#a2a9ba; --ink-3:#6e7589;
+    --line:rgba(255,255,255,.11); --line-2:rgba(255,255,255,.06);
+    --on-accent:#0d0f13; --lift:0 1px 2px rgba(0,0,0,.4);
+    --accent:var(--a-d); --accent-2:var(--a2-d);
   }
 }
 :root[data-theme=dark]{
-  --paper:#0f1212; --card:#181c1c; --ink:#e7eae6; --ink-2:#98a09f; --ink-3:#6d7574;
-  --rule:#272c2c; --rule-2:#1f2424; --accent:#8ab0e6; --accent-soft:#182534;
-  --good:#6fae8c;
+  --base:#0d0f13; --base-2:#171a20;
+  --ink:#eef0f5; --ink-2:#a2a9ba; --ink-3:#6e7589;
+  --line:rgba(255,255,255,.11); --line-2:rgba(255,255,255,.06);
+  --on-accent:#0d0f13; --lift:0 1px 2px rgba(0,0,0,.4);
+  --accent:var(--a-d); --accent-2:var(--a2-d);
 }
+/* tinted surfaces derive from the vibe; plain fallback first */
+:root{
+  --bg:var(--base); --bg:color-mix(in srgb,var(--accent) 3.5%,var(--base));
+  --surface:var(--base-2); --surface:color-mix(in srgb,var(--accent) 3%,var(--base-2));
+  --soft:var(--base-2); --soft:color-mix(in srgb,var(--accent) 13%,var(--base-2));
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
-  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
   font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
-  padding:0 0 92px; min-height:100vh;
+  padding:0 0 96px; min-height:100vh; transition:background .5s;
 }
-#app{max-width:560px;margin:0 auto;padding:0 20px}
-button,input,textarea,select{font:inherit;color:inherit}
-button{background:none;border:0;cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+#app{max-width:560px;margin:0 auto;padding:0 18px}
+button,input,textarea{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 input,textarea{
-  width:100%;background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);
-  padding:11px 12px;color:var(--ink);outline:none;transition:border-color .15s;
+  width:100%;background:var(--base-2);border:1px solid var(--line);border-radius:var(--r-s);
+  padding:12px 14px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;
 }
-input:focus,textarea:focus{border-color:var(--accent)}
-textarea{resize:vertical;min-height:88px;line-height:1.55}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--soft)}
+textarea{resize:vertical;min-height:82px;line-height:1.55}
 ::placeholder{color:var(--ink-3)}
 
-/* --- type: mono is the apparatus, serif is the book's voice --- */
-.label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+/* ── type ─────────────────────────────────────────────────────── */
+.label{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
 .serif{font-family:var(--serif)}
-h1{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.2;text-wrap:balance}
-h2{font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;text-wrap:balance}
-.muted{color:var(--ink-2);font-size:14px}
-.dim{font-family:var(--mono);color:var(--ink-3);font-size:11.5px;letter-spacing:.03em;font-variant-numeric:tabular-nums}
-.dim.serif{font-family:var(--serif);font-size:14px;letter-spacing:0}
+h1{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.12;text-wrap:balance}
+h2{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.25;text-wrap:balance}
+.muted{color:var(--ink-2);font-size:14.5px}
+.dim{font-family:var(--mono);color:var(--ink-3);font-size:11px;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.grad{background:linear-gradient(100deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 
-/* --- chrome --- */
-header{padding:26px 0 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.brand{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:-.01em}
-.brand span{color:var(--accent)}
-.icon-btn{width:32px;height:32px;border-radius:var(--r);display:grid;place-items:center;color:var(--ink-2);border:1px solid transparent}
-.icon-btn:hover{background:var(--rule-2);color:var(--ink)}
-.back{font-family:var(--mono);display:inline-flex;align-items:center;gap:6px;color:var(--ink-3);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:5px 0;margin-bottom:6px}
+/* ── chrome ───────────────────────────────────────────────────── */
+header{padding:24px 0 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.03em}
+.icon-btn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);flex:none}
+.icon-btn:hover{color:var(--ink);border-color:var(--accent)}
+.back{font-family:var(--mono);display:inline-flex;align-items:center;gap:6px;color:var(--ink-3);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;padding:6px 0}
 .back:hover{color:var(--accent)}
 
 nav{
-  position:fixed;left:0;right:0;bottom:0;background:var(--paper);
-  background:color-mix(in srgb,var(--paper) 90%,transparent);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--rule);
-  padding:7px 20px calc(7px + env(safe-area-inset-bottom)); z-index:40;
+  position:fixed;left:0;right:0;bottom:0;background:var(--bg);
+  background:color-mix(in srgb,var(--bg) 84%,transparent);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line-2);
+  padding:8px 18px calc(8px + env(safe-area-inset-bottom));z-index:40;
 }
-.nav-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.tab{font-family:var(--mono);padding:9px 4px;border-radius:var(--r);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);position:relative}
-.tab.on{color:var(--ink)}
-.tab.on::after{content:'';position:absolute;left:50%;bottom:2px;transform:translateX(-50%);width:16px;height:1.5px;background:var(--accent)}
-.pip{display:inline-block;min-width:16px;padding:0 4px;margin-left:5px;border-radius:8px;background:var(--accent);color:var(--card);font-size:9.5px;font-weight:700;line-height:16px;vertical-align:1px}
+.nav-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tab{padding:10px 4px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink-3);transition:color .15s,background .15s}
+.tab.on{color:var(--on-accent);background:var(--accent)}
+.pip{display:inline-block;min-width:17px;padding:0 5px;margin-left:5px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;line-height:17px}
+.tab.on .pip{background:var(--on-accent);color:var(--accent)}
 
-/* --- surfaces: index cards, not floating pills --- */
-.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:15px 16px}
-.list{display:flex;flex-direction:column;gap:8px}
-.row{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:14px 16px;text-align:left;width:100%;display:block;transition:border-color .12s,background .12s}
-button.row:hover{border-color:var(--accent);background:var(--paper)}
-.entry{padding:16px 0;border-bottom:1px solid var(--rule-2)}
+/* ── surfaces ─────────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 17px}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;text-align:left;width:100%;display:block;position:relative;overflow:hidden;transition:transform .14s,border-color .14s}
+button.row:hover{transform:translateY(-2px);border-color:var(--accent)}
+.row .spine{position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--accent),var(--accent-2))}
+.entry{padding:16px 0;border-bottom:1px solid var(--line-2)}
 .entry:last-child{border-bottom:0}
 .between{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 
-.btn{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:11px 18px;font-size:14px;font-weight:600;transition:opacity .15s}
-.btn:hover{opacity:.85}
-.btn.ghost{background:none;color:var(--ink-2);border:1px solid var(--rule)}
-.btn.ghost:hover{color:var(--ink);border-color:var(--ink-3);opacity:1}
+.btn{background:linear-gradient(100deg,var(--accent),var(--accent-2));color:var(--on-accent);border-radius:999px;padding:13px 20px;font-size:14.5px;font-weight:700;letter-spacing:-.01em;transition:filter .15s,transform .1s}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:scale(.985)}
+.btn.ghost{background:var(--surface);color:var(--ink-2);border:1px solid var(--line)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--accent);filter:none}
 .btn.wide{width:100%}
-.link{font-family:var(--mono);color:var(--accent);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.link{color:var(--accent);font-size:13px;font-weight:700}
 .link:hover{text-decoration:underline}
-.del{font-family:var(--mono);color:var(--ink-3);font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:2px 5px;border-radius:2px}
-.del:hover{color:var(--accent);background:var(--accent-soft)}
+.del{font-family:var(--mono);color:var(--ink-3);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:999px}
+.del:hover{color:var(--accent);background:var(--soft)}
 
-.bar{height:3px;background:var(--rule-2);overflow:hidden;margin-top:12px}
-.bar i{display:block;height:100%;background:var(--accent);transition:width .4s}
-.chip{font-family:var(--mono);display:inline-block;padding:3px 7px;border:1px solid var(--rule);border-radius:2px;color:var(--ink-3);font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--line-2);border-radius:999px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .5s}
+.chip{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.chip.flat{background:var(--line-2);color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
 
-/* --- pieces --- */
-.quote{font-family:var(--serif);font-size:17px;line-height:1.6;padding-left:16px;border-left:1px solid var(--rule);color:var(--ink)}
-.word{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:-.005em}
-.seg{display:flex;gap:0;border-bottom:1px solid var(--rule);margin:22px 0 14px}
-.seg button{font-family:var(--mono);flex:1;padding:9px 4px 8px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px}
-.seg button.on{color:var(--ink);border-bottom-color:var(--accent)}
-.empty{text-align:center;padding:44px 20px;color:var(--ink-3)}
-.empty p{font-family:var(--serif);font-size:16px;line-height:1.6;max-width:280px;margin:0 auto;text-wrap:balance}
-.nudge{background:var(--accent-soft);border:1px solid transparent;border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;margin-bottom:14px}
-.nudge:hover{border-color:var(--accent)}
+/* ── pieces ───────────────────────────────────────────────────── */
+.hero{border-radius:var(--r);padding:20px 18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--on-accent);position:relative;overflow:hidden}
+.hero h1{color:inherit}
+.hero .sub{opacity:.82;font-size:14.5px;margin-top:4px}
+.hero .bar{background:rgba(255,255,255,.28)}
+.hero .bar i{background:var(--on-accent)}
+.hero .dim{color:inherit;opacity:.78}
 
-/* --- sheet --- */
-.scrim{position:fixed;inset:0;background:rgba(15,18,18,.5);z-index:50;animation:fade .18s}
+.quote{font-family:var(--serif);font-size:17.5px;line-height:1.58;padding-left:15px;border-left:3px solid var(--accent);border-radius:2px}
+.word{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
+.pron{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:7px}
+.mine{background:var(--soft);border-radius:var(--r-s);padding:10px 12px;margin-top:8px;font-size:14.5px;line-height:1.5}
+.mine .label{color:var(--accent);display:block;margin-bottom:3px}
+
+.seg{display:flex;gap:5px;margin:20px 0 14px}
+.seg button{flex:1;padding:9px 4px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line)}
+.seg button.on{color:var(--on-accent);background:var(--accent);border-color:transparent}
+.empty{text-align:center;padding:44px 18px;color:var(--ink-3)}
+.empty p{font-family:var(--serif);font-size:16.5px;line-height:1.6;max-width:290px;margin:0 auto;text-wrap:balance}
+.nudge{background:linear-gradient(100deg,var(--accent),var(--accent-2));color:var(--on-accent);border-radius:var(--r);padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;margin-bottom:14px}
+.nudge:hover{filter:brightness(1.06)}
+
+/* vibe picker */
+.vibes{display:flex;gap:8px;flex-wrap:wrap}
+.vibe{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 4px;border-radius:var(--r-s);border:1px solid transparent;min-width:56px}
+.vibe i{width:26px;height:26px;border-radius:50%;display:block}
+.vibe span{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.vibe.on{border-color:var(--accent);background:var(--soft)}
+.vibe.on span{color:var(--accent)}
+
+/* dictionary lookup panel */
+.lk{margin-top:10px;border:1px solid var(--line);border-radius:var(--r-s);overflow:hidden}
+.lk-head{padding:9px 12px;background:var(--soft);display:flex;align-items:baseline;gap:8px}
+.sense{display:block;width:100%;text-align:left;padding:11px 12px;border-top:1px solid var(--line-2);transition:background .12s}
+.sense:hover{background:var(--soft)}
+.sense .pos{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.sense p{font-size:14px;line-height:1.45;margin-top:3px}
+.sense em{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-3);margin-top:4px}
+.syn{padding:9px 12px;border-top:1px solid var(--line-2);display:flex;flex-wrap:wrap;gap:5px}
+
+/* ── sheet ────────────────────────────────────────────────────── */
+.scrim{position:fixed;inset:0;background:rgba(6,8,12,.55);z-index:50;animation:fade .18s}
 .sheet{
-  position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--card);
-  border-radius:var(--r) var(--r) 0 0;border-top:1px solid var(--rule);
-  max-width:560px;margin:0 auto;padding:8px 20px calc(22px + env(safe-area-inset-bottom));
-  max-height:88vh;overflow-y:auto;animation:up .26s cubic-bezier(.2,.9,.3,1);
+  position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--base-2);
+  border-radius:22px 22px 0 0;max-width:560px;margin:0 auto;
+  padding:8px 18px calc(22px + env(safe-area-inset-bottom));
+  max-height:90vh;overflow-y:auto;animation:up .28s cubic-bezier(.2,.9,.3,1);
 }
-.grab{width:32px;height:3px;background:var(--rule);margin:6px auto 16px}
-.field{margin-bottom:13px}
+.grab{width:36px;height:4px;border-radius:999px;background:var(--line);margin:6px auto 16px}
+.field{margin-bottom:14px}
 .field .label{display:block;margin-bottom:6px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.inline{display:flex;gap:8px}
+.inline input{flex:1}
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(100%)}}
 
-/* --- review --- */
+/* ── review ───────────────────────────────────────────────────── */
 .flash{
-  background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
-  padding:38px 26px;min-height:238px;display:flex;flex-direction:column;align-items:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--lift);
+  padding:34px 24px;min-height:250px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;cursor:pointer;
 }
-.flash .w{font-family:var(--serif);font-size:32px;font-weight:600;letter-spacing:-.015em}
+.flash .w{font-family:var(--serif);font-size:33px;font-weight:600;letter-spacing:-.02em}
 .rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-.rate button{padding:12px 6px;border-radius:var(--r);border:1px solid var(--rule);font-size:13px;font-weight:600;background:var(--card)}
+.rate button{padding:13px 6px;border-radius:var(--r-s);border:1px solid var(--line);font-size:13.5px;font-weight:700;background:var(--surface)}
 .rate button:hover{border-color:var(--accent)}
-.rate b{font-family:var(--mono);display:block;font-size:9.5px;font-weight:400;color:var(--ink-3);margin-top:4px;letter-spacing:.06em;text-transform:uppercase}
-.toast{
-  position:fixed;bottom:94px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
-  padding:9px 16px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:60;animation:fade .2s;white-space:nowrap;
-}
+.rate b{font-family:var(--mono);display:block;font-size:9.5px;font-weight:400;color:var(--ink-3);margin-top:4px;letter-spacing:.05em;text-transform:uppercase}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--base);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:60;animation:fade .2s;white-space:nowrap}
 .fade{animation:fade .3s}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -157,25 +209,36 @@ button.row:hover{border-color:var(--accent);background:var(--paper)}
 <script>
 'use strict';
 /* ---------------------------------------------------------------
-   Margin — a quiet reading companion.
+   Margin — a reading companion.
    Everything lives on this device. No account, no server, no eyes.
 ----------------------------------------------------------------*/
 
 const KEY = 'margin.v1';
 const DAY = 864e5;
+const API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
+
+const VIBES = [
+  {id:'paper', name:'Paper', a:'#5b6cff', b:'#9b7bff'},
+  {id:'dusk',  name:'Dusk',  a:'#a855f7', b:'#f472b6'},
+  {id:'ember', name:'Ember', a:'#ed6b32', b:'#f5a524'},
+  {id:'fern',  name:'Fern',  a:'#1f9d63', b:'#84cc4f'},
+  {id:'tide',  name:'Tide',  a:'#0e9ec2', b:'#5ad1c4'},
+  {id:'blush', name:'Blush', a:'#e8407f', b:'#ff8a5c'}
+];
 
 let db = load();
-let view = 'shelf';       // shelf | book | dict | review
-let openBook = null;      // book id when view === 'book'
-let bookTab = 'words';    // words | quotes | journal
-let session = null;       // active review session
+let view = 'shelf';
+let openBook = null;
+let bookTab = 'words';
+let session = null;
+let draft = null;          // vibe being previewed inside a sheet
 
 function load(){
   try{
     const d = JSON.parse(localStorage.getItem(KEY));
-    if(d && d.books) return d;
+    if(d && d.books) return Object.assign({books:[],words:[],quotes:[],notes:[],theme:null,vibe:'paper'}, d);
   }catch(e){}
-  return {books:[], words:[], quotes:[], notes:[], theme:null};
+  return {books:[], words:[], quotes:[], notes:[], theme:null, vibe:'paper'};
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
@@ -199,10 +262,18 @@ function toast(msg){
   setTimeout(() => t.remove(), 1850);
 }
 
-/* ---------------- spaced repetition (SM-2) ----------------------
-   Each word carries its own forgetting curve. Answer well and it
-   steps further away; stumble and it comes straight back.
+/* ---------------- the vibe -------------------------------------
+   Each book carries a palette. Open the book and the whole app —
+   dictionary included — takes it on, so the mood of what you're
+   reading follows you around.
 -----------------------------------------------------------------*/
+function applyVibe(){
+  const b = openBook && book(openBook);
+  const v = draft || (b ? b.vibe : db.vibe) || 'paper';
+  document.documentElement.dataset.vibe = v;
+}
+
+/* ---------------- spaced repetition (SM-2) --------------------- */
 function freshCard(){ return {ease:2.5, reps:0, interval:0, due:Date.now()}; }
 
 function grade(w, q){                       // q: 0 again · 4 good · 5 easy
@@ -220,26 +291,89 @@ function grade(w, q){                       // q: 0 again · 4 good · 5 easy
 }
 const dueWords = () => db.words.filter(w => (w.srs?.due ?? 0) <= Date.now());
 
-/* ---------------- dictionary lookup ----------------------------
-   Fetches a definition to save typing — but it lands in an open,
-   editable box, because a meaning in your own words is the one
-   that sticks.
+/* ---------------- the dictionary -------------------------------
+   Pronunciation, senses, examples, synonyms. Tap a sense to keep
+   it — then write what it means to you underneath. Both are saved;
+   yours is the one the flashcard shows first.
 -----------------------------------------------------------------*/
+const fail = (code, msg) => Object.assign(new Error(msg), {code});
+
 async function lookup(term){
-  const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(term.trim()));
-  if(!r.ok) throw 0;
-  const m = (await r.json())[0].meanings[0];
-  return (m.partOfSpeech ? m.partOfSpeech + ' — ' : '') + m.definitions[0].definition;
+  let r;
+  try{
+    r = await fetch(API + encodeURIComponent(term.trim().toLowerCase()));
+  }catch(e){
+    // Never reached the network at all: offline, or a page policy blocking
+    // outside requests. Worth telling apart from "this word isn't a word".
+    throw fail('unreachable', 'could not reach the dictionary');
+  }
+  if(r.status === 404) throw fail('none', 'no entry for that word');
+  if(!r.ok) throw fail('unreachable', 'dictionary returned ' + r.status);
+  const d = (await r.json())[0];
+  const senses = [];
+  (d.meanings || []).forEach(m =>
+    (m.definitions || []).slice(0,2).forEach(def =>
+      senses.push({pos:m.partOfSpeech || '', def:def.definition, ex:def.example || ''})));
+  return {
+    phonetic: d.phonetic || (d.phonetics || []).find(p => p.text)?.text || '',
+    senses: senses.slice(0,5),
+    syn: [...new Set((d.meanings || []).flatMap(m => m.synonyms || []))].slice(0,6)
+  };
+}
+
+async function doLookup(){
+  const term = ($('#w')?.value || '').trim();
+  const box = $('#lk');
+  if(!term || !box) return;
+  box.innerHTML = `<div class="lk-head"><span class="label">Looking up ${esc(term)}…</span></div>`;
+  try{
+    const r = await lookup(term);
+    window.__senses = r.senses;
+    box.innerHTML =
+      `<div class="lk-head"><span class="word" style="font-size:16px">${esc(term)}</span>
+        ${r.phonetic ? `<span class="pron">${esc(r.phonetic)}</span>` : ''}
+        <span class="label" style="margin-left:auto">tap to keep</span></div>` +
+      (r.senses.length ? r.senses.map((s,i) => `<button type="button" class="sense" onclick="useSense(${i})">
+          ${s.pos ? `<span class="pos">${esc(s.pos)}</span>` : ''}
+          <p>${esc(s.def)}</p>${s.ex ? `<em>"${esc(s.ex)}"</em>` : ''}
+        </button>`).join('')
+        : `<div class="sense"><p>No definition came back.</p></div>`) +
+      (r.syn.length ? `<div class="syn">${r.syn.map(s => `<span class="chip flat">${esc(s)}</span>`).join('')}</div>` : '');
+    const ph = $('#ph'); if(ph) ph.value = r.phonetic || '';
+  }catch(e){
+    const web = `https://www.google.com/search?q=${encodeURIComponent('define ' + term)}`;
+    box.innerHTML = `<div class="lk-head" style="display:block">
+      <span class="label">${e.code === 'none'
+        ? `No entry for “${esc(term)}”`
+        : 'Couldn’t reach the dictionary'}</span>
+      <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink-2)">
+        ${e.code === 'none'
+          ? 'It may be a name, a plural, or too new for the dictionary. Try the singular, or just write the meaning yourself.'
+          : 'You’re offline, or this page is blocking outside requests. Open Margin from your own link and lookup works.'}
+      </div>
+      <a class="link" href="${web}" target="_blank" rel="noopener"
+         style="display:inline-block;margin-top:8px">Search the web for “${esc(term)}” ↗</a>
+    </div>`;
+  }
+}
+function useSense(i){
+  const s = (window.__senses || [])[i];
+  if(!s) return;
+  $('#m').value = (s.pos ? s.pos + ' — ' : '') + s.def;
+  if(s.ex && !$('#c').value.trim()) $('#c').value = s.ex;
+  toast('Kept — now put it in your words');
+  $('#mine')?.focus();
 }
 
 /* ---------------- render --------------------------------------- */
 function render(){
+  applyVibe();
   const app = $('#app');
   app.innerHTML =
-      view === 'shelf'  ? shelfView()
-    : view === 'book'   ? bookView()
-    : view === 'dict'   ? dictView()
-    :                     reviewView();
+      view === 'shelf' ? shelfView()
+    : view === 'book'  ? bookView()
+    : view === 'dict'  ? dictView()
+    :                    reviewView();
   app.classList.remove('fade'); void app.offsetWidth; app.classList.add('fade');
 
   const active = view === 'book' ? 'shelf' : view;
@@ -253,23 +387,27 @@ function render(){
   window.scrollTo(0,0);
 }
 
-function topBar(){
+function topBar(sub){
   const dark = document.documentElement.dataset.theme === 'dark';
   return `<header>
-    <div><div class="brand">Mar<span>gin</span></div>
-    <div class="dim" style="margin-top:2px">${db.books.length ? db.books.length + (db.books.length===1?' book':' books') + ' · ' + db.words.length + (db.words.length===1?' word':' words') : 'A quiet reading companion'}</div></div>
-    <button class="icon-btn" onclick="toggleTheme()" title="Theme">${dark ? '☀' : '☾'}</button>
+    <div><div class="brand">Mar<span class="grad">gin</span></div>
+    <div class="dim" style="margin-top:3px">${sub}</div></div>
+    <button class="icon-btn" onclick="toggleTheme()" title="Light or dark">${dark ? '☀' : '☾'}</button>
   </header>`;
 }
 
 /* --- shelf --- */
 function shelfView(){
   const due = dueWords().length;
-  return topBar() + `
+  const sub = db.books.length
+    ? `${db.books.length} ${db.books.length===1?'book':'books'} · ${db.words.length} ${db.words.length===1?'word':'words'}`
+    : 'A quiet reading companion';
+
+  return topBar(sub) + `
   ${due ? `<button class="nudge" data-go="review">
-      <span><div style="font-weight:600;font-size:14px">${due} ${due===1?'word is':'words are'} fading</div>
-      <div class="dim" style="color:var(--accent);opacity:.8">A minute now and ${due===1?'it stays':'they stay'} yours</div></span>
-      <span style="color:var(--accent);font-size:19px">→</span></button>` : ''}
+      <span><div style="font-weight:700;font-size:15px">${due} ${due===1?'word is':'words are'} fading</div>
+      <div style="opacity:.85;font-size:13.5px;margin-top:1px">A minute now and ${due===1?'it stays':'they stay'} yours</div></span>
+      <span style="font-size:20px">→</span></button>` : ''}
 
   <div class="between" style="margin-bottom:12px">
     <div class="label">Reading</div>
@@ -280,13 +418,15 @@ function shelfView(){
       const pct = b.pages ? Math.min(100, Math.round(b.page / b.pages * 100)) : 0;
       const n = k => db[k].filter(x => x.bookId === b.id).length;
       const bits = [[n('words'),'word'],[n('quotes'),'quote'],[n('notes'),'note']]
-        .filter(x => x[0]).map(x => `${x[0]} ${x[1]}${x[0]>1?'s':''}`).join(' · ');
-      return `<button class="row" data-book="${b.id}">
-        <div class="between"><h2>${esc(b.title)}</h2>
+        .filter(x => x[0]).map(x => `<span class="chip flat">${x[0]} ${x[1]}${x[0]>1?'s':''}</span>`).join('');
+      const v = VIBES.find(x => x.id === (b.vibe||'paper')) || VIBES[0];
+      return `<button class="row" data-book="${b.id}" style="--a-l:${v.a};--a2-l:${v.b}">
+        <span class="spine"></span>
+        <div class="between" style="padding-left:8px"><h2>${esc(b.title)}</h2>
         <span class="dim" style="white-space:nowrap">p.${b.page||0}</span></div>
-        <div class="dim" style="margin-top:2px">${esc(b.author) || '—'}</div>
-        ${bits ? `<div class="dim" style="margin-top:9px;color:var(--ink-2)">${bits}</div>` : ''}
-        ${b.pages ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}
+        <div class="muted" style="padding-left:8px;font-size:13.5px">${esc(b.author) || '—'}</div>
+        ${bits ? `<div class="chips" style="padding-left:8px">${bits}</div>` : ''}
+        ${b.pages ? `<div class="bar" style="margin-left:8px"><i style="width:${pct}%"></i></div>` : ''}
       </button>`;
     }).join('')}</div>`
   : `<div class="empty"><p>Your shelf is empty. Add the book that's open beside you right now.</p>
@@ -298,21 +438,22 @@ function bookView(){
   const b = book(openBook);
   if(!b){ view = 'shelf'; return shelfView(); }
   const pct = b.pages ? Math.min(100, Math.round(b.page / b.pages * 100)) : 0;
-  const of = (k) => db[k].filter(x => x.bookId === b.id).sort((x,y) => y.at - x.at);
+  const of = k => db[k].filter(x => x.bookId === b.id).sort((x,y) => y.at - x.at);
   const words = of('words'), quotes = of('quotes'), notes = of('notes');
 
   const body =
-    bookTab === 'words'  ? (words.length ? words.map(w => `<div class="entry">
-        <div class="between"><span class="word">${esc(w.word)}</span>
+    bookTab === 'words' ? (words.length ? words.map(w => `<div class="entry">
+        <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}</span>
           <span style="white-space:nowrap"><span class="dim">${w.page?'p.'+w.page:''}</span>
           <button class="del" onclick="drop('words','${w.id}')">Remove</button></span></div>
-        <div class="muted" style="margin-top:4px">${nl(w.meaning)}</div>
-        ${w.context ? `<div class="dim serif" style="margin-top:7px;font-style:italic">"${nl(w.context)}"</div>` : ''}
+        ${w.meaning && w.meaning !== '—' ? `<div class="muted" style="margin-top:5px">${nl(w.meaning)}</div>` : ''}
+        ${w.mine ? `<div class="mine"><span class="label">In your words</span>${nl(w.mine)}</div>` : ''}
+        ${w.context ? `<div class="serif" style="margin-top:8px;font-style:italic;color:var(--ink-3);font-size:14px">"${nl(w.context)}"</div>` : ''}
       </div>`).join('') : blank('Every book hands you a few words you didn\'t have. Catch the next one.'))
 
   : bookTab === 'quotes' ? (quotes.length ? quotes.map(q => `<div class="entry">
         <div class="quote">${nl(q.text)}</div>
-        <div class="between" style="margin-top:9px"><span class="dim">${q.page?'p.'+q.page:''}</span>
+        <div class="between" style="margin-top:10px"><span class="dim">${q.page?'p.'+q.page:''}</span>
         <button class="del" onclick="drop('quotes','${q.id}')">Remove</button></div>
       </div>`).join('') : blank('The line that made you stop and read it twice — keep it here.'))
 
@@ -320,38 +461,35 @@ function bookView(){
         <div class="between"><span class="label">${when(n.at)}</span>
           <span style="white-space:nowrap"><span class="dim">${n.page?'p.'+n.page:''}</span>
           <button class="del" onclick="drop('notes','${n.id}')">Remove</button></span></div>
-        <div class="serif" style="margin-top:7px;font-size:16px;line-height:1.6">${nl(n.text)}</div>
+        <div class="serif" style="margin-top:8px;font-size:16px;line-height:1.62">${nl(n.text)}</div>
       </div>`).join('') : blank('What did the room look like? Who did you cast? Write the film playing in your head.'));
 
-  const add = {words:'Add a word', quotes:'Add a quote', notes:'Write an entry'}[bookTab];
+  const add = {words:'+ Add a word', quotes:'+ Add a quote', notes:'+ Write an entry'}[bookTab];
 
-  return `<header style="padding-bottom:10px"><div style="flex:1">
-      <button class="back" data-go="shelf">← Shelf</button>
-      <h1>${esc(b.title)}</h1>
-      <div class="muted" style="margin-top:3px">${esc(b.author) || '—'}</div>
+  return `<div style="padding-top:14px"><button class="back" data-go="shelf">← Shelf</button></div>
+  <div class="hero">
+    <div class="between"><h1>${esc(b.title)}</h1>
+      <button class="icon-btn" onclick="sheetVibe()" title="Change the vibe"
+        style="background:rgba(255,255,255,.2);border-color:transparent;color:inherit">◐</button></div>
+    <div class="sub">${esc(b.author) || '—'}</div>
+    <div class="between" style="margin-top:16px;align-items:flex-end">
+      <div><span class="label" style="color:inherit;opacity:.75">Stopped at</span>
+        <div style="font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1">${b.page||0}${b.pages?`<span class="dim" style="font-size:13px"> / ${b.pages}</span>`:''}</div></div>
+      <button class="btn ghost" onclick="sheetPage()" style="background:rgba(255,255,255,.18);color:inherit;border-color:transparent;padding:9px 15px;font-size:13px">Move bookmark</button>
     </div>
-    <button class="icon-btn" onclick="dropBook('${b.id}')" title="Delete book" style="margin-top:26px">×</button>
-  </header>
-
-  <div class="card">
-    <div class="between"><div>
-      <div class="label">Stopped at</div>
-      <div style="margin-top:3px"><span class="serif" style="font-size:25px;font-weight:600">${b.page||0}</span>
-      <span class="dim">${b.pages ? ' / ' + b.pages : ''}</span></div>
-    </div>
-    <button class="btn ghost" onclick="sheetPage()">Move bookmark</button></div>
     ${b.pages ? `<div class="bar"><i style="width:${pct}%"></i></div>
     <div class="dim" style="margin-top:7px">${pct}% through</div>` : ''}
   </div>
 
   <div class="seg">
-    <button class="${bookTab==='words'?'on':''}"  onclick="setTab('words')">Words${words.length?' · '+words.length:''}</button>
-    <button class="${bookTab==='quotes'?'on':''}" onclick="setTab('quotes')">Quotes${quotes.length?' · '+quotes.length:''}</button>
-    <button class="${bookTab==='notes'?'on':''}"  onclick="setTab('notes')">Journal${notes.length?' · '+notes.length:''}</button>
+    <button class="${bookTab==='words'?'on':''}"  onclick="setTab('words')">Words${words.length?' '+words.length:''}</button>
+    <button class="${bookTab==='quotes'?'on':''}" onclick="setTab('quotes')">Quotes${quotes.length?' '+quotes.length:''}</button>
+    <button class="${bookTab==='notes'?'on':''}"  onclick="setTab('notes')">Journal${notes.length?' '+notes.length:''}</button>
   </div>
 
   <button class="btn wide" onclick="sheetEntry()">${add}</button>
-  <div style="margin-top:6px">${body}</div>`;
+  <div style="margin-top:4px">${body}</div>
+  <div style="text-align:center;margin-top:26px"><button class="del" onclick="dropBook('${b.id}')">Delete this book</button></div>`;
 }
 const blank = t => `<div class="empty"><p>${t}</p></div>`;
 
@@ -359,55 +497,57 @@ const blank = t => `<div class="empty"><p>${t}</p></div>`;
 function dictView(){
   const q = (window.__q || '').toLowerCase();
   const all = db.words
-    .filter(w => !q || w.word.toLowerCase().includes(q) || (w.meaning||'').toLowerCase().includes(q))
+    .filter(w => !q || w.word.toLowerCase().includes(q) ||
+                 (w.meaning||'').toLowerCase().includes(q) || (w.mine||'').toLowerCase().includes(q))
     .sort((a,b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
 
   let out = '', letter = '';
   all.forEach(w => {
     const L = w.word[0].toUpperCase();
-    if(L !== letter){ letter = L; out += `<div class="label" style="margin:22px 0 2px;color:var(--accent)">${esc(letter)}</div>`; }
+    if(L !== letter){ letter = L; out += `<div class="label grad" style="margin:20px 0 2px;font-size:12px">${esc(letter)}</div>`; }
     const b = book(w.bookId);
     const days = w.srs ? Math.ceil((w.srs.due - Date.now()) / DAY) : 0;
     out += `<div class="entry">
-      <div class="between"><span class="word">${esc(w.word)}</span>
+      <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}</span>
         <span class="chip">${days <= 0 ? 'due now' : 'in ' + days + 'd'}</span></div>
-      <div class="muted" style="margin-top:4px">${nl(w.meaning)}</div>
-      <div class="dim" style="margin-top:7px">${b ? esc(b.title) + (w.page ? ' · p.' + w.page : '') : ''}</div>
+      ${w.mine ? `<div class="mine"><span class="label">In your words</span>${nl(w.mine)}</div>`
+               : `<div class="muted" style="margin-top:5px">${nl(w.meaning)}</div>`}
+      <div class="dim" style="margin-top:8px">${b ? esc(b.title) + (w.page ? ' · p.' + w.page : '') : ''}</div>
     </div>`;
   });
 
-  return topBar() + `
-  <h1 style="margin-bottom:4px">Your dictionary</h1>
-  <div class="muted" style="margin-bottom:16px">${db.words.length} ${db.words.length===1?'word':'words'}, each one carrying the page you met it on.</div>
+  return topBar(`${db.words.length} ${db.words.length===1?'word':'words'} collected`) + `
+  <h1 style="margin-bottom:5px">Your <span class="grad">dictionary</span></h1>
+  <div class="muted" style="margin-bottom:16px">Every word still carrying the page you met it on.</div>
   ${db.words.length ? `<input placeholder="Search your words…" value="${esc(window.__q||'')}"
-      oninput="window.__q=this.value;dictList()" style="margin-bottom:4px">
+      oninput="window.__q=this.value;dictList()">
     <div id="dl">${out || blank('Nothing matches that.')}</div>`
   : blank('Words you save inside a book gather here — your own dictionary, in your own words.')}`;
 }
 function dictList(){
   const el = $('#dl'); if(!el) return;
-  const scroll = window.scrollY;
+  const y = window.scrollY;
   const tmp = document.createElement('div'); tmp.innerHTML = dictView();
   el.innerHTML = tmp.querySelector('#dl').innerHTML;
-  window.scrollTo(0, scroll);
+  window.scrollTo(0, y);
 }
 
 /* --- review --- */
 function reviewView(){
   if(!session || !session.queue.length){
     const due = dueWords();
-    if(!db.words.length) return topBar() + blank('Save a few words first — then they\'ll come back to find you.');
+    if(!db.words.length) return topBar('Nothing to review yet') + blank('Save a few words first — then they\'ll come back to find you.');
     if(session && session.done){
       const s = session; session = null;
-      return topBar() + `<div class="empty" style="padding-top:64px">
-        <div class="serif" style="font-size:38px;color:var(--accent)">✓</div>
-        <p style="margin-top:12px">${s.done} ${s.done===1?'word':'words'} reviewed. They'll come back when you're just about to forget them.</p>
+      return topBar('Done for now') + `<div class="empty" style="padding-top:60px">
+        <div style="font-size:40px" class="grad">✓</div>
+        <p style="margin-top:10px">${s.done} ${s.done===1?'word':'words'} reviewed. They'll come back when you're just about to forget them.</p>
         <button class="btn ghost" style="margin-top:22px" data-go="shelf">Back to shelf</button></div>`;
     }
     if(!due.length){
       const next = Math.min(...db.words.map(w => w.srs?.due ?? Infinity));
       const d = Math.max(1, Math.ceil((next - Date.now()) / DAY));
-      return topBar() + `<div class="empty" style="padding-top:64px">
+      return topBar('All caught up') + `<div class="empty" style="padding-top:60px">
         <p>Nothing due. Your words are still settling — the next batch surfaces in about ${d} day${d>1?'s':''}.</p>
         <button class="btn ghost" style="margin-top:22px" onclick="cram()">Practise anyway</button></div>`;
     }
@@ -417,24 +557,25 @@ function reviewView(){
   const w = session.queue[0], b = book(w.bookId);
   const n = session.total - session.queue.length + 1;
 
-  return topBar() + `
-  <div class="between" style="margin-bottom:14px">
-    <div class="label">${n} of ${session.total}</div>
-    <div class="dim">${b ? esc(b.title) : ''}</div>
+  return topBar(`${n} of ${session.total}`) + `
+  <div class="between" style="margin-bottom:12px">
+    <span class="chip">${b ? esc(b.title) : 'Review'}</span>
+    <span class="dim">${w.page ? 'p.' + w.page : ''}</span>
   </div>
   <div class="flash" onclick="flip()">
     ${session.flip ? `
-      <div class="w" style="font-size:22px">${esc(w.word)}</div>
-      <div style="margin-top:14px;font-size:15px;line-height:1.6;color:var(--ink-2);max-width:340px">${nl(w.meaning)}</div>
-      ${w.context ? `<div class="serif" style="margin-top:14px;font-style:italic;color:var(--ink-3);font-size:14px;max-width:340px">"${nl(w.context)}"</div>` : ''}
-      ${w.page ? `<div class="dim" style="margin-top:14px">page ${w.page}</div>` : ''}`
+      <div class="w" style="font-size:23px">${esc(w.word)}${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}</div>
+      ${w.mine ? `<div style="margin-top:14px;font-size:16.5px;line-height:1.55;max-width:350px">${nl(w.mine)}</div>
+                  <div class="label" style="margin-top:14px">What the dictionary says</div>` : ''}
+      <div style="margin-top:${w.mine?6:14}px;font-size:${w.mine?14:15.5}px;line-height:1.55;color:var(--ink-2);max-width:350px">${nl(w.meaning)}</div>
+      ${w.context ? `<div class="serif" style="margin-top:14px;font-style:italic;color:var(--ink-3);font-size:14px;max-width:350px">"${nl(w.context)}"</div>` : ''}`
     : `<div class="w">${esc(w.word)}</div>
        <div class="dim" style="margin-top:16px">Tap to reveal</div>`}
   </div>
   ${session.flip ? `<div class="rate">
       <button onclick="answer(0)">Again<b>&lt; 10 min</b></button>
       <button onclick="answer(4)">Good<b>${nextIn(w,4)}</b></button>
-      <button onclick="answer(5)" style="color:var(--good)">Easy<b>${nextIn(w,5)}</b></button>
+      <button onclick="answer(5)" style="color:var(--accent)">Easy<b>${nextIn(w,5)}</b></button>
     </div>` : `<div class="dim" style="text-align:center;margin-top:16px">Say it out loud before you flip.</div>`}`;
 }
 function nextIn(w, q){
@@ -443,49 +584,74 @@ function nextIn(w, q){
   const i = r === 1 ? 1 : r === 2 ? 6 : Math.round(c.interval * c.ease * (q === 5 ? 1.3 : 1));
   return i === 1 ? 'tomorrow' : i < 31 ? i + ' days' : Math.round(i/30) + ' months';
 }
-const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x,y) => x[0]-y[0]).map(v => v[1]);
 function flip(){ if(session){ session.flip = true; render(); } }
 function answer(q){
   const w = session.queue.shift();
   grade(w, q);
   if(q < 3) session.queue.push(w); else session.done++;
   session.flip = false;
-  if(!session.queue.length) session.queue = [];
   render();
 }
-function cram(){ session = {queue: shuffle(db.words.slice(0,20)), flip:false, done:0, total:Math.min(20,db.words.length)}; render(); }
+function cram(){ session = {queue: shuffle(db.words.slice(0,20)), flip:false, done:0, total:Math.min(20, db.words.length)}; render(); }
 
 /* ---------------- sheets --------------------------------------- */
-function sheet(title, html, onSave){
+function sheet(title, html, onSave, saveLabel){
   closeSheet();
   const s = document.createElement('div');
   s.innerHTML = `<div class="scrim" onclick="closeSheet()"></div>
     <div class="sheet"><div class="grab"></div>
-      <h2 style="margin-bottom:16px">${title}</h2>${html}
+      <h2 style="margin-bottom:16px;font-size:20px">${title}</h2>${html}
       <div style="display:flex;gap:10px;margin-top:18px">
         <button class="btn ghost" style="flex:1" onclick="closeSheet()">Cancel</button>
-        <button class="btn" style="flex:2" id="ok">Save</button>
+        <button class="btn" style="flex:2" id="ok">${saveLabel || 'Save'}</button>
       </div></div>`;
   s.id = 'sh'; document.body.appendChild(s);
   $('#ok').onclick = () => { if(onSave() !== false){ closeSheet(); render(); } };
   setTimeout(() => s.querySelector('input,textarea')?.focus(), 90);
 }
-function closeSheet(){ document.getElementById('sh')?.remove(); }
+function closeSheet(){ document.getElementById('sh')?.remove(); draft = null; applyVibe(); }
 const val = id => ($('#'+id)?.value || '').trim();
 
+function vibePicker(sel){
+  return `<div class="vibes" id="vp">${VIBES.map(v => `
+    <button type="button" class="vibe ${v.id===sel?'on':''}" onclick="pickVibe('${v.id}')">
+      <i style="background:linear-gradient(135deg,${v.a},${v.b})"></i><span>${v.name}</span>
+    </button>`).join('')}</div>`;
+}
+function pickVibe(id){
+  draft = id;
+  document.documentElement.dataset.vibe = id;
+  const vp = $('#vp');
+  if(vp) vp.outerHTML = vibePicker(id);
+}
+
 function sheetBook(){
+  draft = 'paper';
   sheet('Add a book', `
     <div class="field"><span class="label">Title</span><input id="t" placeholder="The Secret History"></div>
     <div class="field"><span class="label">Author</span><input id="a" placeholder="Donna Tartt"></div>
     <div class="two">
       <div class="field"><span class="label">On page</span><input id="p" type="number" inputmode="numeric" placeholder="0"></div>
       <div class="field"><span class="label">Total pages</span><input id="tp" type="number" inputmode="numeric" placeholder="optional"></div>
-    </div>`,
+    </div>
+    <div class="field"><span class="label">Its vibe — the app wears this while you're reading</span>
+      ${vibePicker('paper')}</div>`,
   () => {
     if(!val('t')) return toast('A title, at least'), false;
-    db.books.unshift({id:uid(), title:val('t'), author:val('a'), page:+val('p')||0, pages:+val('tp')||0, at:Date.now()});
-    save();
-  });
+    const v = draft || 'paper';
+    db.books.unshift({id:uid(), title:val('t'), author:val('a'), page:+val('p')||0,
+                      pages:+val('tp')||0, vibe:v, at:Date.now()});
+    db.vibe = v; save();
+  }, 'Add book');
+}
+function sheetVibe(){
+  const b = book(openBook);
+  draft = b.vibe || 'paper';
+  sheet('The vibe of this book', `
+    <div class="muted" style="margin-bottom:14px">Pick the mood. The shelf, your dictionary and your flashcards all wear it while you're in this book.</div>
+    ${vibePicker(b.vibe || 'paper')}`,
+  () => { b.vibe = draft || 'paper'; db.vibe = b.vibe; save(); }, 'Keep this vibe');
 }
 function sheetPage(){
   const b = book(openBook);
@@ -503,18 +669,26 @@ function sheetEntry(){
   if(bookTab === 'words'){
     sheet('A new word', `
       <div class="field"><span class="label">Word</span>
-        <input id="w" placeholder="susurrus" onblur="autoDefine()"></div>
-      <div class="field"><span class="label">What it means <span id="st" style="color:var(--accent);text-transform:none;letter-spacing:0"></span></span>
-        <textarea id="m" placeholder="In your own words — that's the version you'll remember." style="min-height:76px"></textarea></div>
-      <div class="field"><span class="label">The sentence you found it in <span style="text-transform:none;letter-spacing:0;font-weight:400">· optional</span></span>
-        <textarea id="c" placeholder="A susurrus of leaves overhead…" style="min-height:60px"></textarea></div>
+        <div class="inline"><input id="w" placeholder="susurrus" onkeydown="if(event.key==='Enter'){event.preventDefault();doLookup()}">
+        <button type="button" class="btn" style="padding:12px 16px;font-size:13.5px" onclick="doLookup()">Look up</button></div>
+        <input id="ph" type="hidden">
+        <div id="lk"></div>
+      </div>
+      <div class="field"><span class="label">What the dictionary says</span>
+        <textarea id="m" placeholder="Look it up above, or type it here." style="min-height:66px"></textarea></div>
+      <div class="field"><span class="label">In your own words — this is the one you'll remember</span>
+        <textarea id="mine" placeholder="Like wind through paper. The sound the library makes." style="min-height:66px"></textarea></div>
+      <div class="field"><span class="label">The sentence you found it in <span style="text-transform:none;letter-spacing:0">· optional</span></span>
+        <textarea id="c" placeholder="A susurrus of leaves overhead…" style="min-height:56px"></textarea></div>
       ${pg}`,
     () => {
       if(!val('w')) return toast('Type the word'), false;
-      db.words.unshift({id:uid(), bookId:b.id, word:val('w'), meaning:val('m')||'—',
-                        context:val('c'), page:+val('p')||0, at:Date.now(), srs:freshCard()});
+      if(!val('m') && !val('mine')) return toast('Give it a meaning — theirs or yours'), false;
+      db.words.unshift({id:uid(), bookId:b.id, word:val('w'), phonetic:val('ph'),
+                        meaning:val('m') || '—', mine:val('mine'), context:val('c'),
+                        page:+val('p')||0, at:Date.now(), srs:freshCard()});
       save(); toast('Added to your dictionary');
-    });
+    }, 'Keep this word');
 
   }else if(bookTab === 'quotes'){
     sheet('A line worth keeping', `
@@ -525,32 +699,19 @@ function sheetEntry(){
       if(!val('q')) return toast('Nothing to keep yet'), false;
       db.quotes.unshift({id:uid(), bookId:b.id, text:val('q'), page:+val('p')||0, at:Date.now()});
       save();
-    });
+    }, 'Keep it');
 
   }else{
     sheet('What you saw', `
       <div class="field"><span class="label">Your entry</span>
-        <textarea id="n" placeholder="The house was colder than they wrote it. I keep picturing the hallway in green…" style="min-height:130px"></textarea></div>
+        <textarea id="n" placeholder="The house was colder than they wrote it. I keep picturing the hallway in green…" style="min-height:132px"></textarea></div>
       ${pg}`,
     () => {
       if(!val('n')) return toast('Write something first'), false;
       db.notes.unshift({id:uid(), bookId:b.id, text:val('n'), page:+val('p')||0, at:Date.now()});
       save();
-    });
+    }, 'Save entry');
   }
-}
-
-async function autoDefine(){
-  const w = val('w'), m = $('#m'), st = $('#st');
-  if(!w || !m || m.value.trim()) return;
-  st.textContent = '· looking up…';
-  try{
-    m.value = await lookup(w);
-    st.textContent = '· found — make it yours';
-  }catch(e){
-    st.textContent = '· no entry, write your own';
-  }
-  setTimeout(() => st && (st.textContent = ''), 3200);
 }
 
 /* ---------------- actions -------------------------------------- */
@@ -564,7 +725,7 @@ function dropBook(id){
   if(!confirm(`Delete "${b.title}" and everything saved inside it?`)) return;
   db.books = db.books.filter(x => x.id !== id);
   ['words','quotes','notes'].forEach(k => db[k] = db[k].filter(x => x.bookId !== id));
-  save(); view = 'shelf'; render();
+  save(); view = 'shelf'; openBook = null; render();
 }
 function toggleTheme(){
   const dark = document.documentElement.dataset.theme === 'dark';
@@ -572,17 +733,19 @@ function toggleTheme(){
   document.documentElement.dataset.theme = db.theme;
   save(); render();
 }
-function go(v){ view = v; session = null; render(); }
+function go(v){ view = v; session = null; if(v !== 'book') openBook = null; render(); }
 
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-go],[data-book]');
   if(!t) return;
-  if(t.dataset.book){ openBook = t.dataset.book; bookTab = 'words'; view = 'book'; render(); }
-  else go(t.dataset.go);
+  if(t.dataset.book){
+    openBook = t.dataset.book; bookTab = 'words'; view = 'book';
+    db.vibe = book(openBook).vibe || 'paper'; save(); render();
+  }else go(t.dataset.go);
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape') closeSheet();
-  if(view === 'review' && session?.queue.length){
+  if(view === 'review' && session?.queue.length && !document.getElementById('sh')){
     if(e.key === ' '){ e.preventDefault(); flip(); }
     if(session.flip && '123'.includes(e.key)) answer([0,4,5][+e.key-1]);
   }
