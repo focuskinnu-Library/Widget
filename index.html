@@ -466,11 +466,16 @@ function bookView(){
 
   const add = {words:'+ Add a word', quotes:'+ Add a quote', notes:'+ Write an entry'}[bookTab];
 
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const heroBtn = 'background:rgba(255,255,255,.2);border-color:transparent;color:inherit';
+
   return `<div style="padding-top:14px"><button class="back" data-go="shelf">← Shelf</button></div>
   <div class="hero">
     <div class="between"><h1>${esc(b.title)}</h1>
-      <button class="icon-btn" onclick="sheetVibe()" title="Change the vibe"
-        style="background:rgba(255,255,255,.2);border-color:transparent;color:inherit">◐</button></div>
+      <span style="display:flex;gap:8px;flex:none">
+        <button class="icon-btn" onclick="toggleTheme()" title="Light or dark" style="${heroBtn}">${dark ? '☀' : '☾'}</button>
+        <button class="icon-btn" onclick="sheetVibe()" title="Change the vibe" style="${heroBtn}">◐</button>
+      </span></div>
     <div class="sub">${esc(b.author) || '—'}</div>
     <div class="between" style="margin-top:16px;align-items:flex-end">
       <div><span class="label" style="color:inherit;opacity:.75">Stopped at</span>

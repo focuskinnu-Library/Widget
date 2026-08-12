@@ -33,6 +33,21 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 - Light and dark, following the system, with a manual toggle.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
 
+## Testing
+
+`audit.mjs` drives the real app in Chromium — 67 checks across books, lookup and its
+failure modes, quotes, journal, dictionary search, SM-2 arithmetic, review, vibes,
+themes, persistence, escaping of hostile input, corrupt and legacy storage, and
+delete cascades.
+
+```
+npm i playwright && node audit.mjs
+```
+
+The one thing it cannot cover is a live call to dictionaryapi.dev: the build
+environment blocks that host, so the success path is asserted against the
+documented response shape rather than the wire.
+
 ## Ahead
 
 Sync across devices · export to Markdown or Anki · OCR a quote from a photo of the page · surfacing an old journal entry when you return to a book.
