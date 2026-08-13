@@ -28,7 +28,7 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 ## Notes
 
 - **Everything stays on the device.** Data lives in `localStorage` under `margin.v1`. Nothing is sent anywhere.
-- **One exception:** the dictionary calls [dictionaryapi.dev](https://dictionaryapi.dev) with just the single word you typed.
+- **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. The panel names whichever answered.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
 - Light and dark, following the system, with a manual toggle.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
@@ -41,8 +41,12 @@ themes, persistence, escaping of hostile input, corrupt and legacy storage, and
 delete cascades.
 
 ```
-npm i playwright && node audit.mjs
+npm i playwright && node audit.mjs && node audit-lookup.mjs
 ```
+
+`audit-lookup.mjs` adds 17 checks over the two-dictionary fallback: primary
+success without touching the fallback, primary down, primary 404, both 404,
+both unreachable, malformed JSON, and an empty-but-valid response.
 
 The one thing it cannot cover is a live call to dictionaryapi.dev: the build
 environment blocks that host, so the success path is asserted against the

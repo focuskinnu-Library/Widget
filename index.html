@@ -215,7 +215,17 @@ button.row:hover{transform:translateY(-2px);border-color:var(--accent)}
 
 const KEY = 'margin.v1';
 const DAY = 864e5;
-const API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
+// Two dictionaries, tried in order. The first is richer — pronunciation and
+// synonyms — but it is a small volunteer service that goes down. Wiktionary
+// runs on Wikimedia infrastructure and is the safety net.
+const SOURCES = [
+  {name:'Free Dictionary',
+   url: w => 'https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w),
+   parse: parseFreeDictionary},
+  {name:'Wiktionary',
+   url: w => 'https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(w),
+   parse: parseWiktionary}
+];
 
 const VIBES = [
   {id:'paper', name:'Paper', a:'#5b6cff', b:'#9b7bff'},
@@ -298,18 +308,15 @@ const dueWords = () => db.words.filter(w => (w.srs?.due ?? 0) <= Date.now());
 -----------------------------------------------------------------*/
 const fail = (code, msg) => Object.assign(new Error(msg), {code});
 
-async function lookup(term){
-  let r;
-  try{
-    r = await fetch(API + encodeURIComponent(term.trim().toLowerCase()));
-  }catch(e){
-    // Never reached the network at all: offline, or a page policy blocking
-    // outside requests. Worth telling apart from "this word isn't a word".
-    throw fail('unreachable', 'could not reach the dictionary');
-  }
-  if(r.status === 404) throw fail('none', 'no entry for that word');
-  if(!r.ok) throw fail('unreachable', 'dictionary returned ' + r.status);
-  const d = (await r.json())[0];
+// Wiktionary returns definitions as HTML. DOMParser builds an inert document —
+// no scripts run, no images fetch — so this is safe on untrusted markup.
+function stripTags(html){
+  const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+  return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
+function parseFreeDictionary(json){
+  const d = json[0];
   const senses = [];
   (d.meanings || []).forEach(m =>
     (m.definitions || []).slice(0,2).forEach(def =>
@@ -319,6 +326,48 @@ async function lookup(term){
     senses: senses.slice(0,5),
     syn: [...new Set((d.meanings || []).flatMap(m => m.synonyms || []))].slice(0,6)
   };
+}
+
+function parseWiktionary(json){
+  const senses = [];
+  (json.en || []).forEach(sec =>
+    (sec.definitions || []).slice(0,3).forEach(def => {
+      const text = stripTags(def.definition);
+      if(!text) return;
+      senses.push({
+        pos: (sec.partOfSpeech || '').toLowerCase(),
+        def: text,
+        ex: stripTags((def.parsedExamples || [])[0]?.example || (def.examples || [])[0] || '')
+      });
+    }));
+  return {phonetic:'', senses:senses.slice(0,5), syn:[]};   // neither is offered here
+}
+
+async function lookup(term){
+  const w = term.trim().toLowerCase();
+  let sawReachable = false;
+
+  for(const src of SOURCES){
+    let r;
+    try{
+      r = await fetch(src.url(w));
+    }catch(e){
+      continue;                       // never left the page — try the next one
+    }
+    sawReachable = true;
+    if(r.status === 404) continue;    // this dictionary doesn't have it
+    if(!r.ok) continue;
+    try{
+      const parsed = src.parse(await r.json());
+      if(parsed.senses.length) return Object.assign(parsed, {source:src.name});
+    }catch(e){ /* unreadable response — fall through to the next source */ }
+  }
+
+  // Only call it "not a word" if a dictionary actually answered and said so.
+  // If nothing was reachable, that is a network problem, not a vocabulary one.
+  throw sawReachable
+    ? fail('none', 'no entry for that word')
+    : fail('unreachable', 'could not reach any dictionary');
 }
 
 async function doLookup(){
@@ -332,7 +381,7 @@ async function doLookup(){
     box.innerHTML =
       `<div class="lk-head"><span class="word" style="font-size:16px">${esc(term)}</span>
         ${r.phonetic ? `<span class="pron">${esc(r.phonetic)}</span>` : ''}
-        <span class="label" style="margin-left:auto">tap to keep</span></div>` +
+        <span class="label" style="margin-left:auto">${esc(r.source)} · tap to keep</span></div>` +
       (r.senses.length ? r.senses.map((s,i) => `<button type="button" class="sense" onclick="useSense(${i})">
           ${s.pos ? `<span class="pos">${esc(s.pos)}</span>` : ''}
           <p>${esc(s.def)}</p>${s.ex ? `<em>"${esc(s.ex)}"</em>` : ''}
@@ -345,10 +394,10 @@ async function doLookup(){
     box.innerHTML = `<div class="lk-head" style="display:block">
       <span class="label">${e.code === 'none'
         ? `No entry for “${esc(term)}”`
-        : 'Couldn’t reach the dictionary'}</span>
+        : 'Couldn’t reach any dictionary'}</span>
       <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink-2)">
         ${e.code === 'none'
-          ? 'It may be a name, a plural, or too new for the dictionary. Try the singular, or just write the meaning yourself.'
+          ? 'Neither dictionary has it. It may be a name, a plural, or too new. Try the singular, or just write the meaning yourself.'
           : 'You’re offline, or this page is blocking outside requests. Open Margin from your own link and lookup works.'}
       </div>
       <a class="link" href="${web}" target="_blank" rel="noopener"
