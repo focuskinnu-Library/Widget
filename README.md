@@ -4,6 +4,8 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 Open `index.html`. That's it. No install, no account, no server.
 
+`landing.html` is the page that explains it — tap a word in the passage and watch it land in your dictionary.
+
 ## What it does
 
 **Shelf** — your books, with the page you stopped on and a thin line showing how far in you are.
@@ -12,6 +14,8 @@ Open `index.html`. That's it. No install, no account, no server.
 - **Words** — tap **Look up** and the built-in dictionary returns pronunciation, several senses, examples and synonyms. Tap a sense to keep it, then write what it means to *you* underneath. Both are saved separately; yours is what the flashcard shows first. Save the sentence you found it in too.
 - **Quotes** — the line that made you stop and read it twice.
 - **Journal** — what you saw. The room, the casting, the film playing in your head.
+
+**Pronunciation** — a play button beside every word. A real recording when the dictionary has one, otherwise the voice built into the browser, which needs no network and so works offline too.
 
 **Dictionary** — every word you've ever saved, A–Z, searchable, each one still carrying the book and page you met it on.
 
@@ -41,9 +45,10 @@ themes, persistence, escaping of hostile input, corrupt and legacy storage, and
 delete cascades.
 
 ```
-npm i playwright && node audit.mjs && node audit-lookup.mjs
+npm i playwright && node audit.mjs && node audit-lookup.mjs && node audit-say.mjs && node audit-landing.mjs
 ```
 
+`audit-say.mjs` covers pronunciation (10) and `audit-landing.mjs` the landing page (14).
 `audit-lookup.mjs` adds 17 checks over the two-dictionary fallback: primary
 success without touching the fallback, primary down, primary 404, both 404,
 both unreachable, malformed JSON, and an empty-but-valid response.

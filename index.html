@@ -134,6 +134,10 @@ button.row:hover{transform:translateY(-2px);border-color:var(--accent)}
 .quote{font-family:var(--serif);font-size:17.5px;line-height:1.58;padding-left:15px;border-left:3px solid var(--accent);border-radius:2px}
 .word{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
 .pron{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:7px}
+.say{display:inline-grid;place-items:center;width:22px;height:22px;margin-left:7px;border-radius:50%;
+  background:var(--soft);color:var(--accent);font-size:9px;vertical-align:middle;flex:none;transition:transform .1s}
+.say:hover{transform:scale(1.12)}
+.say:active{transform:scale(.92)}
 .mine{background:var(--soft);border-radius:var(--r-s);padding:10px 12px;margin-top:8px;font-size:14.5px;line-height:1.5}
 .mine .label{color:var(--accent);display:block;margin-bottom:3px}
 
@@ -323,6 +327,7 @@ function parseFreeDictionary(json){
       senses.push({pos:m.partOfSpeech || '', def:def.definition, ex:def.example || ''})));
   return {
     phonetic: d.phonetic || (d.phonetics || []).find(p => p.text)?.text || '',
+    audio: (d.phonetics || []).find(p => p.audio)?.audio || '',
     senses: senses.slice(0,5),
     syn: [...new Set((d.meanings || []).flatMap(m => m.synonyms || []))].slice(0,6)
   };
@@ -340,7 +345,7 @@ function parseWiktionary(json){
         ex: stripTags((def.parsedExamples || [])[0]?.example || (def.examples || [])[0] || '')
       });
     }));
-  return {phonetic:'', senses:senses.slice(0,5), syn:[]};   // neither is offered here
+  return {phonetic:'', audio:'', senses:senses.slice(0,5), syn:[]};   // neither is offered here
 }
 
 async function lookup(term){
@@ -380,7 +385,7 @@ async function doLookup(){
     window.__senses = r.senses;
     box.innerHTML =
       `<div class="lk-head"><span class="word" style="font-size:16px">${esc(term)}</span>
-        ${r.phonetic ? `<span class="pron">${esc(r.phonetic)}</span>` : ''}
+        ${r.phonetic ? `<span class="pron">${esc(r.phonetic)}</span>` : ''}${sayBtn(term, r.audio)}
         <span class="label" style="margin-left:auto">${esc(r.source)} · tap to keep</span></div>` +
       (r.senses.length ? r.senses.map((s,i) => `<button type="button" class="sense" onclick="useSense(${i})">
           ${s.pos ? `<span class="pos">${esc(s.pos)}</span>` : ''}
@@ -389,6 +394,7 @@ async function doLookup(){
         : `<div class="sense"><p>No definition came back.</p></div>`) +
       (r.syn.length ? `<div class="syn">${r.syn.map(s => `<span class="chip flat">${esc(s)}</span>`).join('')}</div>` : '');
     const ph = $('#ph'); if(ph) ph.value = r.phonetic || '';
+    const au = $('#au'); if(au) au.value = r.audio || '';
   }catch(e){
     const web = `https://www.google.com/search?q=${encodeURIComponent('define ' + term)}`;
     box.innerHTML = `<div class="lk-head" style="display:block">
@@ -413,6 +419,30 @@ function useSense(i){
   toast('Kept — now put it in your words');
   $('#mine')?.focus();
 }
+
+/* ---------------- saying it out loud ---------------------------
+   A real recording when the dictionary has one. Otherwise the voice
+   built into the browser, which needs no network and so still works
+   offline, or on a page that blocks outside requests.
+-----------------------------------------------------------------*/
+function say(word, url){
+  if(!word) return;
+  if(url){
+    const a = new Audio(url);
+    a.play().then(() => {}).catch(() => speak(word));   // dead link, or blocked
+    return;
+  }
+  speak(word);
+}
+function speak(word){
+  if(!('speechSynthesis' in window)) return toast('No voice on this device');
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-GB'; u.rate = 0.85;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+const sayBtn = (w, a) =>
+  `<button class="say" data-say="${esc(w)}" data-audio="${esc(a || '')}" title="Hear it" aria-label="Pronounce ${esc(w)}">▸</button>`;
 
 /* ---------------- render --------------------------------------- */
 function render(){
@@ -492,7 +522,7 @@ function bookView(){
 
   const body =
     bookTab === 'words' ? (words.length ? words.map(w => `<div class="entry">
-        <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}</span>
+        <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word, w.audio)}</span>
           <span style="white-space:nowrap"><span class="dim">${w.page?'p.'+w.page:''}</span>
           <button class="del" onclick="drop('words','${w.id}')">Remove</button></span></div>
         ${w.meaning && w.meaning !== '—' ? `<div class="muted" style="margin-top:5px">${nl(w.meaning)}</div>` : ''}
@@ -562,7 +592,7 @@ function dictView(){
     const b = book(w.bookId);
     const days = w.srs ? Math.ceil((w.srs.due - Date.now()) / DAY) : 0;
     out += `<div class="entry">
-      <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}</span>
+      <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word, w.audio)}</span>
         <span class="chip">${days <= 0 ? 'due now' : 'in ' + days + 'd'}</span></div>
       ${w.mine ? `<div class="mine"><span class="label">In your words</span>${nl(w.mine)}</div>`
                : `<div class="muted" style="margin-top:5px">${nl(w.meaning)}</div>`}
@@ -618,12 +648,12 @@ function reviewView(){
   </div>
   <div class="flash" onclick="flip()">
     ${session.flip ? `
-      <div class="w" style="font-size:23px">${esc(w.word)}${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}</div>
+      <div class="w" style="font-size:23px">${esc(w.word)}${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word, w.audio)}</div>
       ${w.mine ? `<div style="margin-top:14px;font-size:16.5px;line-height:1.55;max-width:350px">${nl(w.mine)}</div>
                   <div class="label" style="margin-top:14px">What the dictionary says</div>` : ''}
       <div style="margin-top:${w.mine?6:14}px;font-size:${w.mine?14:15.5}px;line-height:1.55;color:var(--ink-2);max-width:350px">${nl(w.meaning)}</div>
       ${w.context ? `<div class="serif" style="margin-top:14px;font-style:italic;color:var(--ink-3);font-size:14px;max-width:350px">"${nl(w.context)}"</div>` : ''}`
-    : `<div class="w">${esc(w.word)}</div>
+    : `<div class="w">${esc(w.word)}${sayBtn(w.word, w.audio)}</div>
        <div class="dim" style="margin-top:16px">Tap to reveal</div>`}
   </div>
   ${session.flip ? `<div class="rate">
@@ -725,7 +755,7 @@ function sheetEntry(){
       <div class="field"><span class="label">Word</span>
         <div class="inline"><input id="w" placeholder="susurrus" onkeydown="if(event.key==='Enter'){event.preventDefault();doLookup()}">
         <button type="button" class="btn" style="padding:12px 16px;font-size:13.5px" onclick="doLookup()">Look up</button></div>
-        <input id="ph" type="hidden">
+        <input id="ph" type="hidden"><input id="au" type="hidden">
         <div id="lk"></div>
       </div>
       <div class="field"><span class="label">What the dictionary says</span>
@@ -738,7 +768,7 @@ function sheetEntry(){
     () => {
       if(!val('w')) return toast('Type the word'), false;
       if(!val('m') && !val('mine')) return toast('Give it a meaning — theirs or yours'), false;
-      db.words.unshift({id:uid(), bookId:b.id, word:val('w'), phonetic:val('ph'),
+      db.words.unshift({id:uid(), bookId:b.id, word:val('w'), phonetic:val('ph'), audio:val('au'),
                         meaning:val('m') || '—', mine:val('mine'), context:val('c'),
                         page:+val('p')||0, at:Date.now(), srs:freshCard()});
       save(); toast('Added to your dictionary');
@@ -788,6 +818,16 @@ function toggleTheme(){
   save(); render();
 }
 function go(v){ view = v; session = null; if(v !== 'book') openBook = null; render(); }
+
+// Capture phase: the flashcard carries its own inline click handler, and a
+// bubbling listener here would fire after it — pressing play would also flip
+// the card. Catching it on the way down stops that.
+document.addEventListener('click', e => {
+  const s = e.target.closest('[data-say]');
+  if(!s) return;
+  e.stopPropagation(); e.preventDefault();
+  say(s.dataset.say, s.dataset.audio);
+}, true);
 
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-go],[data-book]');
