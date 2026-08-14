@@ -1,0 +1,19 @@
+{
+  "name": "Margin — a reading companion",
+  "short_name": "Margin",
+  "description": "Keep the words, the page, the lines and the pictures in your head.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#f6f7f9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -4,6 +4,8 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 Open `index.html`. That's it. No install, no account, no server.
 
+`landing.html` is the page that explains it — tap a word in the passage and watch it land in your dictionary.
+
 ## What it does
 
 **Shelf** — your books, with the page you stopped on and a thin line showing how far in you are.
@@ -13,9 +15,13 @@ Open `index.html`. That's it. No install, no account, no server.
 - **Quotes** — the line that made you stop and read it twice.
 - **Journal** — what you saw. The room, the casting, the film playing in your head.
 
+**Pronunciation** — a play button beside every word. A real recording when the dictionary has one, otherwise the voice built into the browser, which needs no network and so works offline too.
+
 **Dictionary** — every word you've ever saved, A–Z, searchable, each one still carrying the book and page you met it on.
 
 **Vibes** — every book carries a palette (Paper, Dusk, Ember, Fern, Tide, Blush). Open the book and the whole app, your dictionary included, wears it. The mood of what you're reading follows you around.
+
+**Backup & export** — download everything as JSON and restore it later, or take it out as Markdown for Obsidian and Notion, or as a deck for Anki. Restoring only adds what's missing, so it never overwrites what you already have.
 
 **Review** — proper spaced repetition (SM-2). Every word runs its own forgetting curve: answer well and it steps further away, stumble and it comes straight back. The shelf nudges you when words start to fade.
 
@@ -28,7 +34,8 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 ## Notes
 
 - **Everything stays on the device.** Data lives in `localStorage` under `margin.v1`. Nothing is sent anywhere.
-- **One exception:** the dictionary calls [dictionaryapi.dev](https://dictionaryapi.dev) with just the single word you typed.
+- **Which is why backups matter.** `localStorage` is per-browser and per-origin, and it goes when browsing data is cleared — iOS Safari also evicts it after about a week of not visiting, unless the app has been added to the home screen. Take a backup now and then; it is the only copy that survives a new phone.
+- **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. The panel names whichever answered.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
 - Light and dark, following the system, with a manual toggle.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
@@ -41,8 +48,14 @@ themes, persistence, escaping of hostile input, corrupt and legacy storage, and
 delete cascades.
 
 ```
-npm i playwright && node audit.mjs
+npm i playwright && node audit.mjs && node audit-lookup.mjs && node audit-say.mjs && node audit-landing.mjs && node audit-export.mjs
 ```
+
+`audit-say.mjs` covers pronunciation (10), `audit-landing.mjs` the landing page (14),
+and `audit-export.mjs` backup, export and restore (19) — 127 checks in total.
+`audit-lookup.mjs` adds 17 checks over the two-dictionary fallback: primary
+success without touching the fallback, primary down, primary 404, both 404,
+both unreachable, malformed JSON, and an empty-but-valid response.
 
 The one thing it cannot cover is a live call to dictionaryapi.dev: the build
 environment blocks that host, so the success path is asserted against the
@@ -50,4 +63,4 @@ documented response shape rather than the wire.
 
 ## Ahead
 
-Sync across devices · export to Markdown or Anki · OCR a quote from a photo of the page · surfacing an old journal entry when you return to a book.
+Sync across devices · OCR a quote from a photo of the page · surfacing an old journal entry when you return to a book.
