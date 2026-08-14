@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Keep the words, the page, the lines and the pictures in your head — and give every book its own vibe.">
-<meta name="theme-color" content="#f7f8fa">
+<meta name="theme-color" content="#f6f7f9">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Margin">
 <title>Margin — a reading companion</title>
 <style>
 /* ── base: neutrals per mode, hue per vibe ─────────────────────── */
@@ -420,6 +423,91 @@ function useSense(i){
   $('#mine')?.focus();
 }
 
+/* ---------------- taking it with you ---------------------------
+   localStorage is real storage, but it is one browser on one device
+   and it can be cleared without you meaning to. A backup is the only
+   copy that survives that.
+-----------------------------------------------------------------*/
+const stamp = () => new Date().toISOString().slice(0,10);
+
+async function offer(filename, text, mime){
+  // A published artifact frame cannot start its own download; the host
+  // asks the viewer instead. Everywhere else, an anchor does it.
+  if(window.claude?.downloads?.save){
+    try{ await window.claude.downloads.save({filename, data:text}); toast('Saved'); }
+    catch(e){ if(e && e.code !== 'declined') toast('Could not save from this page'); }
+    return;
+  }
+  const url = URL.createObjectURL(new Blob([text], {type:mime}));
+  const a = Object.assign(document.createElement('a'), {href:url, download:filename});
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast('Downloaded');
+}
+
+function exportBackup(){
+  offer(`margin-backup-${stamp()}.json`, JSON.stringify(db, null, 2), 'application/json');
+}
+
+function exportMarkdown(){
+  const L = [`# Margin — ${stamp()}`, ''];
+  db.books.forEach(b => {
+    L.push(`## ${b.title}`, `*${b.author || '—'}* · page ${b.page||0}${b.pages ? ' of ' + b.pages : ''}`, '');
+    const of = k => db[k].filter(x => x.bookId === b.id);
+    const ws = of('words');
+    if(ws.length){ L.push('### Words', '');
+      ws.forEach(w => {
+        L.push(`**${w.word}**${w.phonetic ? ' ' + w.phonetic : ''}${w.page ? ` · p.${w.page}` : ''}`);
+        if(w.meaning && w.meaning !== '—') L.push(`- ${w.meaning}`);
+        if(w.mine) L.push(`- *In my words:* ${w.mine}`);
+        if(w.context) L.push(`- Found in: "${w.context}"`);
+        L.push('');
+      }); }
+    const qs = of('quotes');
+    if(qs.length){ L.push('### Quotes', '');
+      qs.forEach(q => L.push('> ' + q.text.replace(/\n/g, '\n> '), q.page ? `— p.${q.page}` : '', '')); }
+    const ns = of('notes');
+    if(ns.length){ L.push('### Journal', '');
+      ns.forEach(n => L.push(`**${new Date(n.at).toLocaleDateString()}**${n.page ? ` · p.${n.page}` : ''}`, '', n.text, '')); }
+  });
+  offer(`margin-${stamp()}.md`, L.join('\n'), 'text/markdown');
+}
+
+function exportAnki(){
+  // Two columns, quoted — Anki reads this straight in as front/back.
+  const q = t => '"' + String(t == null ? '' : t).replace(/"/g, '""') + '"';
+  const rows = db.words.map(w => {
+    const b = book(w.bookId);
+    const back = [w.mine, (w.meaning && w.meaning !== '—') ? w.meaning : '',
+                  b ? b.title + (w.page ? ' · p.' + w.page : '') : '']
+                 .filter(Boolean).join('<br><br>');
+    return q(w.word) + ',' + q(back);
+  });
+  if(!rows.length) return toast('No words to export yet');
+  offer(`margin-anki-${stamp()}.txt`, rows.join('\n'), 'text/plain');
+}
+
+function importBackup(input){
+  const f = input.files && input.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let d;
+    try{ d = JSON.parse(r.result); }catch(e){ return toast('That is not a Margin backup'); }
+    if(!d || !Array.isArray(d.books)) return toast('That is not a Margin backup');
+    let added = 0;
+    ['books','words','quotes','notes'].forEach(k => {
+      const have = new Set((db[k] || []).map(x => x.id));
+      (d[k] || []).forEach(x => {
+        if(x && x.id && !have.has(x.id)){ db[k].push(x); added++; }   // never overwrite
+      });
+    });
+    save(); closeSheet(); render();
+    toast(added ? `${added} item${added > 1 ? 's' : ''} restored` : 'Already up to date');
+  };
+  r.readAsText(f);
+}
+
 /* ---------------- saying it out loud ---------------------------
    A real recording when the dictionary has one. Otherwise the voice
    built into the browser, which needs no network and so still works
@@ -509,7 +597,9 @@ function shelfView(){
       </button>`;
     }).join('')}</div>`
   : `<div class="empty"><p>Your shelf is empty. Add the book that's open beside you right now.</p>
-     <button class="btn" style="margin-top:20px" onclick="sheetBook()">Add a book</button></div>`}`;
+     <button class="btn" style="margin-top:20px" onclick="sheetBook()">Add a book</button></div>`}
+  <div style="text-align:center;margin-top:26px">
+    <button class="del" onclick="sheetData()">Backup &amp; export</button></div>`;
 }
 
 /* --- one book --- */
@@ -729,6 +819,25 @@ function sheetBook(){
     db.vibe = v; save();
   }, 'Add book');
 }
+function sheetData(){
+  const n = db.books.length + db.words.length + db.quotes.length + db.notes.length;
+  sheet('Your data', `
+    <div class="muted" style="margin-bottom:15px">${n} thing${n===1?'':'s'} saved, all of it on this device.
+    Nothing is sent anywhere — which also means a backup is the only copy that survives
+    a cleared browser or a new phone.</div>
+    <button class="btn wide" onclick="exportBackup()">Download a backup</button>
+    <div class="two" style="margin-top:10px">
+      <button class="btn ghost" onclick="exportMarkdown()">Markdown</button>
+      <button class="btn ghost" onclick="exportAnki()">Anki deck</button>
+    </div>
+    <div class="field" style="margin-top:20px">
+      <span class="label">Restore from a backup</span>
+      <input id="imp" type="file" accept=".json,application/json" onchange="importBackup(this)">
+      <div class="dim" style="margin-top:7px;letter-spacing:0;font-size:12px">Adds anything missing. Nothing already here is changed.</div>
+    </div>`,
+  () => true, 'Done');
+}
+
 function sheetVibe(){
   const b = book(openBook);
   draft = b.vibe || 'paper';
