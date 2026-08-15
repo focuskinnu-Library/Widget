@@ -2,7 +2,7 @@
 
 A quiet reading companion. Keep the words, the page, the lines and the pictures in your head — all attached to the book you met them in.
 
-`index.html` is the page that explains it — tap a word in the passage and watch it land in your dictionary.
+`index.html` is the page that explains it — tap a word in the passage and watch it land in your dictionary, then tap a genre and watch the weather change.
 `app.html` is LingoBox itself. No install, no account, no server.
 
 ## What it does
@@ -60,7 +60,7 @@ for f in audit-*.mjs; do node $f; done
 | `audit-app.mjs` | a whole session, first launch to practice | 46 |
 | `audit-lookup.mjs` | the two-dictionary chain and every failure mode | 18 |
 | `audit-export.mjs` | backup, export, restore, junk files | 18 |
-| `audit-landing.mjs` | the landing page | 14 |
+| `audit-landing.mjs` | the landing page, genre worlds included | 20 |
 | `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
 | `audit-migration.mjs` | old Margin data surviving the rename | 9 |
 | `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
