@@ -67,7 +67,7 @@ for(const [w,m] of [['liminal','between two states'],['reciprocity','giving back
   await p.fill('#w',w); await p.fill('#mine',m); await p.click('#ok'); await p.waitForTimeout(250);
 }
 await p.click('.tab[data-go=practice]'); await p.waitForTimeout(400);
-ok('three practice modes', (await p.locator('.mode').count())===3);
+ok('four practice modes', (await p.locator('.mode').count())===4);
 ok('due count on nav pip', await p.isVisible('nav .pip'));
 await p.click('.mode:has-text("Flashcards")'); await p.waitForTimeout(300);
 ok('flashcard hides answer', !(await p.textContent('.flash')).includes('wind through paper'));

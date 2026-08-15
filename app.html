@@ -147,6 +147,11 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);
   color:var(--on-g);background:rgba(255,255,255,.18);padding:4px 10px;border-radius:999px;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .bookcard .body{padding:13px 15px 15px}
+.cov{width:46px;height:68px;border-radius:6px;object-fit:cover;flex:none;background:var(--line2);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35)}
+.cov.sm{width:34px;height:50px;border-radius:4px}
+.cov.ph{display:block;background:linear-gradient(135deg,var(--g1),var(--g2));opacity:.35}
+.cov.hero{width:56px;height:82px;border-radius:7px;box-shadow:0 4px 14px -4px rgba(0,0,0,.5)}
 .bar{height:7px;background:var(--line2);border-radius:999px;overflow:hidden;margin-top:11px}
 .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--g1),var(--g2));transition:width .5s}
 
@@ -503,6 +508,58 @@ function useSense(i){
   toast('Kept — now put it in your words'); $('#mine')?.focus();
 }
 
+/* ══ finding a book ═══════════════════════════════════════════════
+   Open Library is free, needs no key, and answers browsers directly.
+   One search fills in the author, the length and the cover.
+------------------------------------------------------------------*/
+const coverUrl=(id,size)=>`https://covers.openlibrary.org/b/id/${id}-${size||'M'}.jpg`;
+
+async function findBook(){
+  const q=($('#t')?.value||'').trim(), box=$('#fb');
+  if(!q||!box) return;
+  box.innerHTML=`<div class="lkh" style="border-radius:var(--r2)"><span class="lbl">Searching…</span></div>`;
+  try{
+    const r=await fetch('https://openlibrary.org/search.json?limit=5&fields=title,author_name,number_of_pages_median,first_publish_year,cover_i&q='+encodeURIComponent(q));
+    if(!r.ok) throw 0;
+    const docs=(await r.json()).docs||[];
+    if(!docs.length){box.innerHTML=`<div class="lkh" style="border-radius:var(--r2)"><span class="lbl">Nothing found — just type it in</span></div>`;return}
+    window.__found=docs;
+    box.innerHTML=`<div class="lk">${docs.map((d,i)=>`
+      <button type="button" class="sense" style="display:flex;gap:11px;align-items:center" onclick="useBook(${i})">
+        ${d.cover_i?`<img src="${coverUrl(d.cover_i,'S')}" alt="" class="cov sm" onerror="this.style.visibility='hidden'">`
+                   :`<span class="cov sm ph"></span>`}
+        <span style="flex:1;min-width:0"><span style="font-weight:700;font-size:14.5px">${esc(d.title||'')}</span>
+        <span class="dim" style="display:block;margin-top:2px">${esc((d.author_name||[])[0]||'—')}${d.first_publish_year?' · '+d.first_publish_year:''}${d.number_of_pages_median?' · '+d.number_of_pages_median+'pp':''}</span></span>
+      </button>`).join('')}</div>`;
+  }catch(e){
+    box.innerHTML=`<div class="lkh" style="border-radius:var(--r2);display:block">
+      <span class="lbl">${navigator.onLine===false?'You’re offline':'This page blocked the search'}</span>
+      <div style="font-size:13px;margin-top:4px;color:var(--ink2)">Type the details in yourself — it all works the same.</div></div>`;
+  }
+}
+function useBook(i){
+  const d=(window.__found||[])[i]; if(!d) return;
+  $('#t').value=d.title||''; $('#a').value=(d.author_name||[])[0]||'';
+  if(d.number_of_pages_median&&!$('#tp').value) $('#tp').value=d.number_of_pages_median;
+  draftCover=d.cover_i?coverUrl(d.cover_i,'M'):'';
+  $('#fb').innerHTML=`<div class="lkh" style="border-radius:var(--r2);display:flex;gap:10px;align-items:center">
+    ${draftCover?`<img src="${draftCover}" alt="" class="cov sm" onerror="this.style.visibility='hidden'">`:''}
+    <span class="lbl">Filled in — change anything you like</span></div>`;
+  toast('Found it');
+}
+
+/* ══ keeping the data ═════════════════════════════════════════════
+   Ask the browser to treat this as worth keeping, so it is not the
+   first thing evicted when the device runs short.
+------------------------------------------------------------------*/
+async function askPersist(){
+  try{
+    if(!navigator.storage||!navigator.storage.persist) return;
+    if(navigator.storage.persisted && await navigator.storage.persisted()){db.prefs.persisted=true;save();return}
+    db.prefs.persisted=await navigator.storage.persist(); save();
+  }catch(e){}
+}
+
 /* ══ saying it ════════════════════════════════════════════════════*/
 function say(word,url){
   if(!word) return;
@@ -515,6 +572,100 @@ function speak(w){
   speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
 const sayBtn=(w,a)=>`<button class="say" data-say="${esc(w)}" data-audio="${esc(a||'')}" aria-label="Hear ${esc(w)}">▸</button>`;
+
+/* ══ listening ════════════════════════════════════════════════════
+   The browser can hear. Say the word and it checks you — no network,
+   no key, and nothing recorded anywhere.
+------------------------------------------------------------------*/
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const canListen=!!SR;
+const flat=t=>String(t||'').toLowerCase().replace(/[^a-z]/g,'');
+
+function listen(){
+  if(!SR) return toast('This browser can’t listen');
+  const w=sess.queue[0];
+  let rec;
+  try{ rec=new SR(); }catch(e){ return toast('This browser can’t listen') }
+  rec.lang='en-GB'; rec.interimResults=false; rec.maxAlternatives=5;
+  sess.listening=true; sess.heard=''; sess.micErr=''; render();
+  rec.onresult=e=>{
+    const alts=[...e.results[0]].map(a=>String(a.transcript||'').trim());
+    const hit=alts.some(a=>flat(a)===flat(w.word));
+    sess.heard=alts[0]||''; sess.listening=false; sess.picked=hit?'ok':'no';
+    grade(w,hit?4:0); if(hit) sess.done++;
+    render();
+  };
+  rec.onerror=e=>{
+    sess.listening=false;
+    sess.micErr = e.error==='not-allowed' ? 'Microphone permission was refused.'
+                : e.error==='no-speech'   ? 'Didn’t catch anything — try again.'
+                : 'The microphone isn’t available here.';
+    render();
+  };
+  rec.onend=()=>{ if(sess&&sess.listening){sess.listening=false;render()} };
+  try{ rec.start(); }catch(e){ sess.listening=false; sess.micErr='Could not start listening.'; render(); }
+}
+
+/* ══ a quote worth sharing ════════════════════════════════════════
+   Drawn on a canvas in the book's own colours. Nothing is uploaded —
+   the image is made here and handed to the share sheet.
+------------------------------------------------------------------*/
+function wrapText(x,text,maxW,size){
+  x.font=`600 ${size}px Georgia, 'Iowan Old Style', serif`;
+  const words=String(text).split(/\s+/), lines=[]; let line='';
+  for(const w of words){
+    const t=line?line+' '+w:w;
+    if(x.measureText(t).width>maxW&&line){lines.push(line);line=w} else line=t;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+async function shareQuote(id){
+  const q=db.quotes.find(x=>x.id===id); if(!q) return;
+  const b=book(q.bookId), g=genreOf(b&&b.genre);
+  const S=1080, c=document.createElement('canvas'); c.width=S; c.height=S;
+  const x=c.getContext('2d');
+  const grad=x.createLinearGradient(0,0,S,S);
+  grad.addColorStop(0,g.a); grad.addColorStop(1,g.b);
+  x.fillStyle=grad; x.fillRect(0,0,S,S);
+  x.fillStyle='rgba(255,255,255,.10)';
+  for(let i=0;i<40;i++){const r=6+Math.random()*26;
+    x.beginPath();x.arc(Math.random()*S,Math.random()*S,r,0,6.3);x.fill();}
+  // a big soft quotation mark, the way a pull-quote is set
+  x.save(); x.globalAlpha=.22; x.fillStyle='#fff';
+  x.font="700 260px Georgia, 'Iowan Old Style', serif";
+  x.fillText('\u201C',60,300); x.restore();
+  x.fillStyle='#fff';
+  let size=64;
+  let lines=wrapText(x,q.text,S-190,size);
+  while(lines.length>9&&size>34){size-=4;lines=wrapText(x,q.text,S-190,size);}
+  x.font=`600 ${size}px Georgia, 'Iowan Old Style', serif`;
+  const lh=size*1.38, top=(S-lines.length*lh)/2 - 30;
+  lines.forEach((l,i)=>x.fillText(l,95,top+i*lh+size));
+  x.globalAlpha=.9; x.font='500 30px -apple-system, Helvetica, Arial, sans-serif';
+  const who=(b?b.title:'')+(b&&b.author?' · '+b.author:'')+(q.page?' · p.'+q.page:'');
+  x.fillText(who.slice(0,64),95,S-140);
+  x.globalAlpha=.78; x.font='800 27px -apple-system, Helvetica, Arial, sans-serif';
+  x.fillText('LingoBox',95,S-86);
+  c.toBlob(async blob=>{
+    if(!blob) return toast('Could not make the image');
+    const file=new File([blob],`lingobox-quote-${stamp()}.png`,{type:'image/png'});
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file]}); return;
+      }
+    }catch(e){ if(e&&e.name==='AbortError') return; }
+    if(window.claude?.downloads?.save){
+      try{ await window.claude.downloads.save({filename:file.name,data:blob}); toast('Saved'); }
+      catch(e){ if(e&&e.code!=='declined') toast('Could not save here'); }
+      return;
+    }
+    const url=URL.createObjectURL(blob);
+    const a=Object.assign(document.createElement('a'),{href:url,download:file.name});
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000); toast('Image saved');
+  },'image/png');
+}
 
 /* ══ notifications ════════════════════════════════════════════════
    Local only: the browser reminds you when words are going stale.
@@ -606,6 +757,7 @@ const I={
   pen:'<path d="M16 4l4 4L8 20H4v-4z"/>',
   cards:'<rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 4h11a2 2 0 012 2v11"/>',
   quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 015 .3c0 1.7-2.5 1.9-2.5 3.7M12 17.2v.01"/>',
+  say:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
   spell:'<path d="M4 17h16M7 13l3.5-8 3.5 8M8 11h5"/>'
 };
 const svg=(k,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24">${I[k]}</svg>`;
@@ -662,7 +814,7 @@ function startUp(){
   const n=($('#nm')?.value||'').trim();
   if(!n) return toast('A name, or a nickname');
   db.profile={name:n,at:Date.now(),streak:1,lastDay:new Date().toDateString()};
-  db.prefs=db.prefs||{}; save(); view='home'; render();
+  db.prefs=db.prefs||{}; save(); askPersist(); view='home'; render();
   toast(`Welcome, ${n}`);
 }
 
@@ -701,8 +853,9 @@ function home(){
       return `<button class="bookcard" data-book="${b.id}" style="--g1:${g.a};--g2:${g.b}">
         <div class="top-strip"><span class="gbadge">${g.name}</span></div>
         <div class="body">
-          <div class="row" style="align-items:flex-start">
-            <div style="min-width:0"><h2>${esc(b.title)}</h2>
+          <div class="row" style="align-items:flex-start;gap:13px">
+            ${b.cover?`<img src="${esc(b.cover)}" alt="" class="cov" onerror="this.style.display='none'">`:''}
+            <div style="min-width:0;flex:1"><h2>${esc(b.title)}</h2>
               <div class="muted" style="font-size:13.5px">${esc(b.author)||'—'}</div></div>
             ${b.pages?`<div class="ring">${ringSvg(pct)}<b>${pct}%</b></div>`:`<span class="chip">p.${b.page||0}</span>`}
           </div>
@@ -747,7 +900,8 @@ function bookView(){
   : bookTab==='quotes' ? (quotes.length? quotes.map(q=>`<div class="entry">
       <div class="quote">${nl(q.text)}</div>
       <div class="row" style="margin-top:10px"><span class="dim">${q.page?'p.'+q.page:''}</span>
-      <button class="del" onclick="drop('quotes','${q.id}')">Remove</button></div></div>`).join('')
+      <span style="display:flex;gap:6px"><button class="del" onclick="shareQuote('${q.id}')">Share as image</button>
+      <button class="del" onclick="drop('quotes','${q.id}')">Remove</button></span></div></div>`).join('')
       : emptyBlock('quote','No lines kept','The one that made you stop and read it twice — put it here before you lose the page.'))
 
   : (notes.length? notes.map(n=>`<div class="entry">
@@ -765,7 +919,10 @@ function bookView(){
       <button class="iconb" onclick="sheetGenre()" aria-label="Change world">◐</button></div></div>
 
     <div class="hero">
-      <h1>${esc(b.title)}</h1><div class="sub">${esc(b.author)||'—'}</div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        ${b.cover?`<img src="${esc(b.cover)}" alt="" class="cov hero" onerror="this.style.display='none'">`:''}
+        <div style="min-width:0"><h1>${esc(b.title)}</h1><div class="sub">${esc(b.author)||'—'}</div></div>
+      </div>
       <div class="row" style="margin-top:18px;align-items:flex-end">
         <div><span class="lbl" style="color:inherit;opacity:.75">Stopped at</span>
           <div style="font-size:29px;font-weight:800;letter-spacing:-.03em;line-height:1.1">${b.page||0}${b.pages?`<span class="dim" style="font-size:13px"> / ${b.pages}</span>`:''}</div></div>
@@ -834,7 +991,8 @@ function practice(){
   const modes=[
     ['cards','Flashcards','Your wording first, the dictionary underneath.',n?`${n} due`:'practise anyway','flash'],
     ['quiz','Quiz','Four meanings, one word. Fastest way to find the gaps.',total<4?'needs 4 words':'any time','quiz'],
-    ['spell','Spelling','Hear it, then spell it. Harder than it sounds.',total<1?'—':'any time','spell']
+    ['spell','Spelling','Hear it, then spell it. Harder than it sounds.',total<1?'—':'any time','spell'],
+    ['speak','Say it','The app listens and tells you if you got it.',canListen?'any time':'not in this browser','say']
   ];
   return `<div class="top"><div><h1>Practice</h1>
       <div class="dim" style="margin-top:3px">${n?`${n} word${n>1?'s':''} due now`:'all caught up'}</div></div>
@@ -853,6 +1011,7 @@ function practice(){
 function startSession(kind){
   const pool=due().length?due():db.words;
   if(kind==='quiz'&&db.words.length<4) return toast('Save at least four words first');
+  if(kind==='speak'&&!canListen) return toast('This browser can’t listen — try Chrome or Safari');
   if(!pool.length) return toast('Nothing to practise');
   sess={kind,queue:shuffle(pool.slice(0,20)),i:0,done:0,flip:false,picked:null,total:Math.min(20,pool.length)};
   render();
@@ -906,6 +1065,22 @@ function runSession(){
       ${s.picked?`<button class="btn wide" style="margin-top:14px" onclick="nextQ()">Next →</button>`:''}`;
   }
 
+  if(s.kind==='speak'){
+    return head+`<div class="card" style="text-align:center;padding:26px 18px">
+        <span class="lbl">Which word is this? Say it out loud</span>
+        <p class="serif" style="font-size:19px;line-height:1.5;margin-top:10px">${nl(w.mine||w.meaning)}</p>
+        ${b?`<div class="dim" style="margin-top:10px">${esc(b.title)}${w.page?' · p.'+w.page:''}</div>`:''}</div>
+      ${s.picked?`<div class="card" style="margin-top:12px;text-align:center">
+          <div class="word" style="font-size:26px">${esc(w.word)}${sayBtn(w.word,w.audio)}</div>
+          ${s.heard?`<p class="dim" style="margin-top:8px">heard: “${esc(s.heard)}”</p>`:''}
+          <p class="muted" style="margin-top:6px">${s.picked==='ok'?'That’s it — nicely said.':'Not quite. Tap ▸ to hear it.'}</p>
+          <button class="btn wide" style="margin-top:12px" onclick="nextQ()">Next →</button></div>`
+      :`<button class="btn wide" style="margin-top:12px" onclick="listen()" ${s.listening?'disabled':''}>
+          ${s.listening?'Listening…':'🎙 Tap and say it'}</button>
+        ${s.micErr?`<p class="muted" style="text-align:center;margin-top:10px;font-size:13.5px">${esc(s.micErr)}</p>`:''}
+        <p class="dim" style="text-align:center;margin-top:10px">Your voice never leaves the device</p>`}`;
+  }
+
   // spelling
   return head+`<div class="card" style="text-align:center;padding:26px 18px">
       <span class="lbl">Hear it, then spell it</span>
@@ -932,7 +1107,7 @@ function checkSpell(){
   const ok=v===w.word.trim().toLowerCase();
   sess.picked=ok?'ok':'no'; grade(w,ok?4:0); if(ok) sess.done++; render();
 }
-function nextQ(){sess.queue.shift(); sess.opts=null; sess.picked=null; render();}
+function nextQ(){sess.queue.shift(); sess.opts=null; sess.picked=null; sess.heard=''; sess.micErr=''; render();}
 
 /* ── you ── */
 function you(){
@@ -952,8 +1127,9 @@ function you(){
       <button class="btn ghost sm" onclick="askNotify()">${db.prefs.notify?'Re-check':'Turn on'}</button></div></div>
 
     <div class="card"><h3>Your data</h3>
-      <p class="muted" style="font-size:13.5px;margin-top:3px">${n} thing${n===1?'':'s'} saved, all of it on this device.
-      A backup is the only copy that survives a cleared browser or a new phone.</p>
+      <p class="muted" style="font-size:13.5px;margin-top:3px">${n} thing${n===1?'':'s'} saved, all of it on this device.${
+        db.prefs.persisted?' The browser has agreed to keep it rather than evict it when space runs short.':''}
+      A backup is still the only copy that survives a cleared browser or a new phone.</p>
       <button class="btn wide" style="margin-top:13px" onclick="exportBackup()">Download a backup</button>
       <div class="two" style="margin-top:9px">
         <button class="btn ghost sm" onclick="exportMarkdown()">Markdown</button>
@@ -983,7 +1159,7 @@ function sheet(title,html,onSave,label){
   $('#ok').onclick=()=>{if(onSave()!==false){closeSheet();render()}};
   setTimeout(()=>s.querySelector('input,textarea')?.focus(),90);
 }
-function closeSheet(){document.getElementById('sh')?.remove(); draft=null; applyWorld();}
+function closeSheet(){document.getElementById('sh')?.remove(); draft=null; draftCover=''; applyWorld();}
 const val=id=>($('#'+id)?.value||'').trim();
 
 function genrePicker(sel){
@@ -994,10 +1170,14 @@ function genrePicker(sel){
 function pickGenre(id){draft=id; applyWorld();
   const gp=$('#gp'); if(gp) gp.outerHTML=genrePicker(id);}
 
+let draftCover='';
 function sheetBook(){
-  draft='literary';
+  draft='literary'; draftCover='';
   sheet('Add a book',`
-    <div class="field"><span class="lbl">Title</span><input id="t" placeholder="The Secret History"></div>
+    <div class="field"><span class="lbl">Title</span>
+      <div class="inline"><input id="t" placeholder="The Secret History" onkeydown="if(event.key==='Enter'){event.preventDefault();findBook()}">
+      <button type="button" class="btn sm" onclick="findBook()">Find</button></div>
+      <div id="fb"></div></div>
     <div class="field"><span class="lbl">Author</span><input id="a" placeholder="Donna Tartt"></div>
     <div class="two">
       <div class="field"><span class="lbl">On page</span><input id="p" type="number" inputmode="numeric" placeholder="0"></div>
@@ -1006,7 +1186,8 @@ function sheetBook(){
   ()=>{
     if(!val('t')) return toast('A title, at least'),false;
     const g=draft||'literary';
-    db.books.unshift({id:uid(),title:val('t'),author:val('a'),page:+val('p')||0,pages:+val('tp')||0,genre:g,at:Date.now()});
+    db.books.unshift({id:uid(),title:val('t'),author:val('a'),page:+val('p')||0,pages:+val('tp')||0,
+      genre:g,cover:draftCover||'',at:Date.now()});
     db.prefs.lastGenre=g; save();
   },'Add book');
 }
@@ -1097,7 +1278,7 @@ document.addEventListener('keydown',e=>{
 });
 
 if(db.prefs?.theme) document.documentElement.dataset.theme=db.prefs.theme;
-sizeSky(); touchStreak(); render();
+sizeSky(); touchStreak(); render(); askPersist();
 if(!calm) raf=requestAnimationFrame(tick);
 setTimeout(maybeNotify,2500);
 </script>
