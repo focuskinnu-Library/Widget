@@ -61,7 +61,7 @@ console.log('\n-- both 404 --');
 p=await go([[FD,r=>r.fulfill({status:404,body:'{}'})],[WK,r=>r.fulfill({status:404,body:'{}'})]]);
 t=await p.textContent('#lk');
 ok('says no entry', t.includes('No entry for'));
-ok('names both dictionaries', t.includes('Neither dictionary'));
+ok('explains why, without blaming the word', t.includes('strongest in English'));
 await p.context().close();
 
 console.log('\n-- both unreachable --');

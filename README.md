@@ -41,8 +41,9 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 - **Everything stays on the device.** Data lives in `localStorage` under `lingobox.v1`. Nothing is sent anywhere.
 - **Renamed from Margin.** Anything saved under the old `margin.v1` key still loads, and the first write moves it across. The old key is left in place as a safety net.
 - **Which is why backups matter.** `localStorage` is per-browser and per-origin, and it goes when browsing data is cleared — iOS Safari also evicts it after about a week of not visiting, unless the app has been added to the home screen. Take a backup now and then; it is the only copy that survives a new phone.
-- **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. The panel names whichever answered.
+- **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. Wiktionary answers in many languages — English first, then whichever language actually has the word — so `pyar` resolves as Hindi. The panel names the source and the language.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
+- **No Google, no LLM, and that is a constraint rather than a choice.** Google has no free search API and browsers cannot fetch google.com at all, and every LLM API needs a secret key — which in a page with no server would be readable by anyone. Both become possible the day there is a backend. Until then, any word that neither dictionary has offers a web search instead.
 - Light and dark, following the system, with a manual toggle.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
 
@@ -64,8 +65,9 @@ for f in audit-*.mjs; do node $f; done
 | `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
 | `audit-migration.mjs` | old Margin data surviving the rename | 9 |
 | `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
+| `audit-languages.mjs` | words in languages other than English | 11 |
 
-123 checks in total.
+140 checks in total.
 
 The one thing it cannot cover is a live call to dictionaryapi.dev: the build
 environment blocks that host, so the success path is asserted against the

@@ -420,12 +420,23 @@ function pFree(j){const d=j[0],s=[];
   return{phonetic:d.phonetic||(d.phonetics||[]).find(p=>p.text)?.text||'',
     audio:(d.phonetics||[]).find(p=>p.audio)?.audio||'',senses:s.slice(0,5),
     syn:[...new Set((d.meanings||[]).flatMap(m=>m.synonyms||[]))].slice(0,6)};}
-function pWik(j){const s=[];
-  (j.en||[]).forEach(sec=>(sec.definitions||[]).slice(0,3).forEach(d=>{
+// Wiktionary keys its answer by language. Reading only `en` threw away every
+// other one — so a word like "pyar" came back as if it did not exist. English
+// first, then whatever language actually has it.
+const LANGS={en:'English',hi:'Hindi',ur:'Urdu',es:'Spanish',fr:'French',de:'German',it:'Italian',
+  pt:'Portuguese',nl:'Dutch',ru:'Russian',ja:'Japanese',zh:'Chinese',ko:'Korean',ar:'Arabic',
+  fa:'Persian',bn:'Bengali',ta:'Tamil',te:'Telugu',mr:'Marathi',gu:'Gujarati',pa:'Punjabi',
+  la:'Latin',el:'Greek',tr:'Turkish',pl:'Polish',sv:'Swedish',he:'Hebrew'};
+function pWik(j){
+  const has=k=>(j[k]||[]).some(sec=>(sec.definitions||[]).length);
+  const lang=has('en')?'en':Object.keys(j||{}).find(has);
+  if(!lang) return{phonetic:'',audio:'',senses:[],syn:[],lang:''};
+  const s=[];
+  (j[lang]||[]).forEach(sec=>(sec.definitions||[]).slice(0,3).forEach(d=>{
     const t=stripTags(d.definition); if(!t) return;
     s.push({pos:(sec.partOfSpeech||'').toLowerCase(),def:t,
       ex:stripTags((d.parsedExamples||[])[0]?.example||(d.examples||[])[0]||'')});}));
-  return{phonetic:'',audio:'',senses:s.slice(0,5),syn:[]};}
+  return{phonetic:'',audio:'',senses:s.slice(0,5),syn:[],lang};}
 
 async function lookup(term){
   const w=term.trim().toLowerCase(); let reachable=false;
@@ -433,7 +444,13 @@ async function lookup(term){
     let r; try{r=await fetch(s.url(w))}catch(e){continue}
     reachable=true;
     if(r.status===404||!r.ok) continue;
-    try{const p=s.parse(await r.json()); if(p.senses.length) return Object.assign(p,{source:s.name});}catch(e){}
+    try{
+      const p=s.parse(await r.json());
+      if(p.senses.length){
+        const tag=p.lang&&p.lang!=='en' ? s.name+' · '+(LANGS[p.lang]||p.lang.toUpperCase()) : s.name;
+        return Object.assign(p,{source:tag});
+      }
+    }catch(e){}
   }
   throw reachable?fail('none','no entry'):fail('unreachable','nothing reachable');
 }
@@ -442,7 +459,8 @@ async function lookup(term){
 const hearLinks=w=>`<div class="hear">
   <a href="https://youglish.com/pronounce/${encodeURIComponent(w)}/english" target="_blank" rel="noopener">▸ Real speakers ↗</a>
   <a href="https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(w)}" target="_blank" rel="noopener">Cambridge ↗</a>
-  <a href="https://forvo.com/word/${encodeURIComponent(w)}/#en" target="_blank" rel="noopener">Forvo ↗</a></div>`;
+  <a href="https://forvo.com/word/${encodeURIComponent(w)}/#en" target="_blank" rel="noopener">Forvo ↗</a>
+  <a href="https://www.google.com/search?q=${encodeURIComponent(w+' meaning')}" target="_blank" rel="noopener">Search the web ↗</a></div>`;
 
 async function doLookup(){
   const term=($('#w')?.value||'').trim(), box=$('#lk');
@@ -469,7 +487,7 @@ async function doLookup(){
     const head = e.code==='none' ? `No entry for “${esc(term)}”`
                : offline         ? 'You’re offline'
                                  : 'This page blocked the lookup';
-    const why  = e.code==='none' ? 'Neither dictionary has it — try the singular, or just write the meaning yourself.'
+    const why  = e.code==='none' ? 'Both dictionaries are word-by-word references, strongest in English. If it is from another language, a name, or very new, the links below will find it — then write the meaning in your own words.'
                : offline         ? 'Your device says it has no connection. Try again once you’re back online — or write the meaning yourself, which works either way.'
                                  : 'Your connection is fine. Previews like this one refuse outside requests, so the dictionary can’t be reached from here. Open LingoBox from its own address and Look up works. You can still write the meaning yourself below.';
     box.innerHTML=`<div class="lkh" style="display:block">
