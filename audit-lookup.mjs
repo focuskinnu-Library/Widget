@@ -61,13 +61,13 @@ console.log('\n-- both 404 --');
 p=await go([[FD,r=>r.fulfill({status:404,body:'{}'})],[WK,r=>r.fulfill({status:404,body:'{}'})]]);
 t=await p.textContent('#lk');
 ok('says no entry', t.includes('No entry for'));
-ok('names both dictionaries', t.includes('Neither dictionary'));
+ok('explains why, without blaming the word', t.includes('strongest in English'));
 await p.context().close();
 
 console.log('\n-- both unreachable --');
 p=await go([[FD,r=>r.abort()],[WK,r=>r.abort()]]);
 t=await p.textContent('#lk');
-ok('says could not reach', t.includes('Couldn’t reach'));
+ok('says the page blocked it', t.includes('This page blocked the lookup'));
 ok('does NOT claim not-a-word', !t.includes('No entry for'));
 ok('still offers a way to hear it', await p.isVisible('#lk a'));
 await p.context().close();
