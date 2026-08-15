@@ -1,5 +1,5 @@
 import {chromium} from 'playwright';
-const URL='file:///home/user/Widget/index.html';
+const URL='file:///home/user/Widget/app.html';
 const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
 let pass=0,fail=0; const bad=[];
 const ok=(n,c)=>{c?pass++:(fail++,bad.push(n));console.log(`${c?'PASS':'FAIL'}  ${n}`)};

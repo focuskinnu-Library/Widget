@@ -3,7 +3,7 @@ const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
 const p=await br.newPage({viewport:{width:390,height:844}});
 let pass=0,fail=0;const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
-await p.goto('file:///home/user/Widget/index.html');
+await p.goto('file:///home/user/Widget/app.html');
 // pretend the user had data saved under the OLD name
 await p.evaluate(()=>{localStorage.clear();const n=Date.now();
   localStorage.setItem('margin.v1',JSON.stringify({

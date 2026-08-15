@@ -1,962 +1,303 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Keep the words, the page, the lines and the pictures in your head — and give every book its own vibe.">
-<meta name="theme-color" content="#f6f7f9">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="LingoBox">
-<title>LingoBox — a reading companion</title>
+<title>LingoBox</title>
 <style>
-/* ── base: neutrals per mode, hue per vibe ─────────────────────── */
 :root{
-  --base:#f6f7f9; --base-2:#ffffff;
-  --ink:#12141a; --ink-2:#565d70; --ink-3:#8b92a6;
-  --line:rgba(18,20,26,.10); --line-2:rgba(18,20,26,.06);
-  --on-accent:#fff; --lift:0 1px 2px rgba(18,20,26,.05),0 10px 30px -18px rgba(18,20,26,.35);
-  --accent:var(--a-l); --accent-2:var(--a2-l);
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --paper:#fbf9f6; --card:#fff; --ink:#16151a; --ink-2:#5c5866; --ink-3:#928d9c;
+  --line:rgba(22,21,26,.09); --accent:#6b5cff; --accent-2:#c46bff; --glow:rgba(107,92,255,.16);
   --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
-  --r:16px; --r-s:11px;
-  --a-l:#5b6cff; --a-d:#93a0ff; --a2-l:#9b7bff; --a2-d:#b9a3ff;
 }
-[data-vibe=dusk] {--a-l:#a855f7;--a-d:#cb92ff;--a2-l:#f472b6;--a2-d:#f9a5cf}
-[data-vibe=ember]{--a-l:#ed6b32;--a-d:#ff9c62;--a2-l:#f5a524;--a2-d:#ffc464}
-[data-vibe=fern] {--a-l:#1f9d63;--a-d:#5fd39a;--a2-l:#84cc4f;--a2-d:#a8e07c}
-[data-vibe=tide] {--a-l:#0e9ec2;--a-d:#4fd0e8;--a2-l:#5ad1c4;--a2-d:#88e5da}
-[data-vibe=blush]{--a-l:#e8407f;--a-d:#ff8ab5;--a2-l:#ff8a5c;--a2-d:#ffb08c}
+[data-v=dusk] {--accent:#a855f7;--accent-2:#f472b6;--glow:rgba(168,85,247,.18)}
+[data-v=ember]{--accent:#ed6b32;--accent-2:#f5a524;--glow:rgba(237,107,50,.18)}
+[data-v=fern] {--accent:#1f9d63;--accent-2:#84cc4f;--glow:rgba(31,157,99,.18)}
+[data-v=tide] {--accent:#0e9ec2;--accent-2:#5ad1c4;--glow:rgba(14,158,194,.18)}
+[data-v=blush]{--accent:#e8407f;--accent-2:#ff8a5c;--glow:rgba(232,64,127,.18)}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme=light]){
-    --base:#0d0f13; --base-2:#171a20;
-    --ink:#eef0f5; --ink-2:#a2a9ba; --ink-3:#6e7589;
-    --line:rgba(255,255,255,.11); --line-2:rgba(255,255,255,.06);
-    --on-accent:#0d0f13; --lift:0 1px 2px rgba(0,0,0,.4);
-    --accent:var(--a-d); --accent-2:var(--a2-d);
+    --paper:#0c0b10; --card:#16151c; --ink:#f2f0f7; --ink-2:#a7a2b4; --ink-3:#736e80;
+    --line:rgba(255,255,255,.10); --glow:rgba(107,92,255,.22);
   }
 }
 :root[data-theme=dark]{
-  --base:#0d0f13; --base-2:#171a20;
-  --ink:#eef0f5; --ink-2:#a2a9ba; --ink-3:#6e7589;
-  --line:rgba(255,255,255,.11); --line-2:rgba(255,255,255,.06);
-  --on-accent:#0d0f13; --lift:0 1px 2px rgba(0,0,0,.4);
-  --accent:var(--a-d); --accent-2:var(--a2-d);
+  --paper:#0c0b10; --card:#16151c; --ink:#f2f0f7; --ink-2:#a7a2b4; --ink-3:#736e80;
+  --line:rgba(255,255,255,.10); --glow:rgba(107,92,255,.22);
 }
-/* tinted surfaces derive from the vibe; plain fallback first */
-:root{
-  --bg:var(--base); --bg:color-mix(in srgb,var(--accent) 3.5%,var(--base));
-  --surface:var(--base-2); --surface:color-mix(in srgb,var(--accent) 3%,var(--base-2));
-  --soft:var(--base-2); --soft:color-mix(in srgb,var(--accent) 13%,var(--base-2));
-}
-
 *{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
-body{
-  background:var(--bg); color:var(--ink); font-family:var(--sans);
-  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
-  padding:0 0 96px; min-height:100vh; transition:background .5s;
-}
-#app{max-width:560px;margin:0 auto;padding:0 18px}
-button,input,textarea{font:inherit;color:inherit}
-button{background:none;border:0;cursor:pointer;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
-input,textarea{
-  width:100%;background:var(--base-2);border:1px solid var(--line);border-radius:var(--r-s);
-  padding:12px 14px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;
-}
-input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--soft)}
-textarea{resize:vertical;min-height:82px;line-height:1.55}
-::placeholder{color:var(--ink-3)}
+/* the blur orbs deliberately sit past the viewport edge; clip at the root so
+   they decorate without giving the page a sideways scroll */
+html,body{overflow-x:hidden;overflow-x:clip}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;
+  -webkit-font-smoothing:antialiased;transition:background .6s}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
 
-/* ── type ─────────────────────────────────────────────────────── */
-.label{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
-.serif{font-family:var(--serif)}
-h1{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.12;text-wrap:balance}
-h2{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.25;text-wrap:balance}
-.muted{color:var(--ink-2);font-size:14.5px}
-.dim{font-family:var(--mono);color:var(--ink-3);font-size:11px;letter-spacing:.03em;font-variant-numeric:tabular-nums}
-.grad{background:linear-gradient(100deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-size:clamp(38px,8vw,68px);font-weight:800;letter-spacing:-.04em;line-height:1.02;text-wrap:balance}
+h2{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.12;text-wrap:balance}
+.grad{background:linear-gradient(100deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:clamp(16.5px,2.4vw,19px);color:var(--ink-2);max-width:52ch;text-wrap:pretty}
 
-/* ── chrome ───────────────────────────────────────────────────── */
-header{padding:24px 0 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.brand{font-size:19px;font-weight:800;letter-spacing:-.03em}
-.icon-btn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);flex:none}
-.icon-btn:hover{color:var(--ink);border-color:var(--accent)}
-.back{font-family:var(--mono);display:inline-flex;align-items:center;gap:6px;color:var(--ink-3);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;padding:6px 0}
-.back:hover{color:var(--accent)}
+/* hero */
+header{padding:74px 0 30px;position:relative}
+.orb{position:absolute;border-radius:50%;filter:blur(64px);opacity:.5;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle,var(--accent),transparent 68%)}
+.o1{width:340px;height:340px;top:-90px;left:-130px}
+.o2{width:270px;height:270px;top:30px;right:-110px;background:radial-gradient(circle,var(--accent-2),transparent 68%)}
 
-nav{
-  position:fixed;left:0;right:0;bottom:0;background:var(--bg);
-  background:color-mix(in srgb,var(--bg) 84%,transparent);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line-2);
-  padding:8px 18px calc(8px + env(safe-area-inset-bottom));z-index:40;
-}
-.nav-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.tab{padding:10px 4px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink-3);transition:color .15s,background .15s}
-.tab.on{color:var(--on-accent);background:var(--accent)}
-.pip{display:inline-block;min-width:17px;padding:0 5px;margin-left:5px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;line-height:17px}
-.tab.on .pip{background:var(--on-accent);color:var(--accent)}
+/* the passage you can actually tap */
+.passage{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 24px;
+  font-family:var(--serif);font-size:19px;line-height:1.75;margin-top:30px;position:relative}
+.passage .hint{position:absolute;top:-11px;left:20px;background:var(--card);padding:0 9px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
+mark{background:none;color:inherit;cursor:pointer;position:relative;padding:1px 2px;border-radius:3px;
+  box-shadow:inset 0 -.42em 0 var(--glow);transition:box-shadow .25s,color .25s}
+mark:hover{box-shadow:inset 0 -1.1em 0 var(--glow)}
+mark.got{color:var(--accent);font-weight:600}
 
-/* ── surfaces ─────────────────────────────────────────────────── */
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 17px}
-.list{display:flex;flex-direction:column;gap:10px}
-.row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;text-align:left;width:100%;display:block;position:relative;overflow:hidden;transition:transform .14s,border-color .14s}
-button.row:hover{transform:translateY(-2px);border-color:var(--accent)}
-.row .spine{position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--accent),var(--accent-2))}
-.entry{padding:16px 0;border-bottom:1px solid var(--line-2)}
-.entry:last-child{border-bottom:0}
-.between{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-
-.btn{background:linear-gradient(100deg,var(--accent),var(--accent-2));color:var(--on-accent);border-radius:999px;padding:13px 20px;font-size:14.5px;font-weight:700;letter-spacing:-.01em;transition:filter .15s,transform .1s}
-.btn:hover{filter:brightness(1.07)}
-.btn:active{transform:scale(.985)}
-.btn.ghost{background:var(--surface);color:var(--ink-2);border:1px solid var(--line)}
-.btn.ghost:hover{color:var(--ink);border-color:var(--accent);filter:none}
-.btn.wide{width:100%}
-.link{color:var(--accent);font-size:13px;font-weight:700}
-.link:hover{text-decoration:underline}
-.del{font-family:var(--mono);color:var(--ink-3);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:999px}
-.del:hover{color:var(--accent);background:var(--soft)}
-
-.bar{height:6px;background:var(--line-2);border-radius:999px;overflow:hidden;margin-top:12px}
-.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .5s}
-.chip{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.01em;font-variant-numeric:tabular-nums}
-.chip.flat{background:var(--line-2);color:var(--ink-2)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
-
-/* ── pieces ───────────────────────────────────────────────────── */
-.hero{border-radius:var(--r);padding:20px 18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--on-accent);position:relative;overflow:hidden}
-.hero h1{color:inherit}
-.hero .sub{opacity:.82;font-size:14.5px;margin-top:4px}
-.hero .bar{background:rgba(255,255,255,.28)}
-.hero .bar i{background:var(--on-accent)}
-.hero .dim{color:inherit;opacity:.78}
-
-.quote{font-family:var(--serif);font-size:17.5px;line-height:1.58;padding-left:15px;border-left:3px solid var(--accent);border-radius:2px}
-.word{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
-.pron{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:7px}
+.catch{margin-top:16px;min-height:132px}
+.slip{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:14px;padding:14px 16px;margin-top:10px;animation:slip .42s cubic-bezier(.2,.9,.3,1) both}
+@keyframes slip{from{opacity:0;transform:translateY(-8px) rotate(-.6deg)}}
+.slip .w{font-family:var(--serif);font-size:19px;font-weight:600}
+.slip .ph{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-left:7px}
+.slip .d{font-size:14px;color:var(--ink-2);margin-top:3px}
+.slip .m{font-size:14.5px;background:var(--glow);border-radius:9px;padding:8px 11px;margin-top:9px}
+.slip .m b{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
 .say{display:inline-grid;place-items:center;width:22px;height:22px;margin-left:7px;border-radius:50%;
-  background:var(--soft);color:var(--accent);font-size:9px;vertical-align:middle;flex:none;transition:transform .1s}
-.say:hover{transform:scale(1.12)}
-.say:active{transform:scale(.92)}
-.mine{background:var(--soft);border-radius:var(--r-s);padding:10px 12px;margin-top:8px;font-size:14.5px;line-height:1.5}
-.mine .label{color:var(--accent);display:block;margin-bottom:3px}
+  background:var(--glow);color:var(--accent);font-size:9px;vertical-align:middle}
+.say:hover{transform:scale(1.14)}
+.empty-slip{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-3);
+  border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;margin-top:10px}
 
-.seg{display:flex;gap:5px;margin:20px 0 14px}
-.seg button{flex:1;padding:9px 4px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line)}
-.seg button.on{color:var(--on-accent);background:var(--accent);border-color:transparent}
-.empty{text-align:center;padding:44px 18px;color:var(--ink-3)}
-.empty p{font-family:var(--serif);font-size:16.5px;line-height:1.6;max-width:290px;margin:0 auto;text-wrap:balance}
-.nudge{background:linear-gradient(100deg,var(--accent),var(--accent-2));color:var(--on-accent);border-radius:var(--r);padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;margin-bottom:14px}
-.nudge:hover{filter:brightness(1.06)}
+/* sections */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
 
-/* vibe picker */
-.vibes{display:flex;gap:8px;flex-wrap:wrap}
-.vibe{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 4px;border-radius:var(--r-s);border:1px solid transparent;min-width:56px}
-.vibe i{width:26px;height:26px;border-radius:50%;display:block}
-.vibe span{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
-.vibe.on{border-color:var(--accent);background:var(--soft)}
-.vibe.on span{color:var(--accent)}
+.four{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-top:26px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;
+  transition:transform .2s,border-color .2s}
+.tile:hover{transform:translateY(-3px);border-color:var(--accent)}
+.tile h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.tile p{font-size:13.5px;color:var(--ink-2);margin-top:5px}
+.tile i{display:block;width:26px;height:26px;border-radius:8px;margin-bottom:11px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2))}
 
-/* dictionary lookup panel */
-.lk{margin-top:10px;border:1px solid var(--line);border-radius:var(--r-s);overflow:hidden}
-.lk-head{padding:9px 12px;background:var(--soft);display:flex;align-items:baseline;gap:8px}
-.sense{display:block;width:100%;text-align:left;padding:11px 12px;border-top:1px solid var(--line-2);transition:background .12s}
-.sense:hover{background:var(--soft)}
-.sense .pos{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
-.sense p{font-size:14px;line-height:1.45;margin-top:3px}
-.sense em{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-3);margin-top:4px}
-.syn{padding:9px 12px;border-top:1px solid var(--line-2);display:flex;flex-wrap:wrap;gap:5px}
+/* vibes */
+.swatches{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;border-radius:12px;
+  border:1px solid transparent;min-width:62px}
+.sw i{width:32px;height:32px;border-radius:50%;display:block;transition:transform .2s}
+.sw:hover i{transform:scale(1.12)}
+.sw span{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.sw.on{border-color:var(--accent);background:var(--glow)}
+.sw.on span{color:var(--accent)}
 
-/* ── sheet ────────────────────────────────────────────────────── */
-.scrim{position:fixed;inset:0;background:rgba(6,8,12,.55);z-index:50;animation:fade .18s}
-.sheet{
-  position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--base-2);
-  border-radius:22px 22px 0 0;max-width:560px;margin:0 auto;
-  padding:8px 18px calc(22px + env(safe-area-inset-bottom));
-  max-height:90vh;overflow-y:auto;animation:up .28s cubic-bezier(.2,.9,.3,1);
-}
-.grab{width:36px;height:4px;border-radius:999px;background:var(--line);margin:6px auto 16px}
-.field{margin-bottom:14px}
-.field .label{display:block;margin-bottom:6px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.inline{display:flex;gap:8px}
-.inline input{flex:1}
-@keyframes fade{from{opacity:0}}
-@keyframes up{from{transform:translateY(100%)}}
+/* flashcard */
+.stage{perspective:1200px;margin-top:24px}
+.fc{position:relative;height:210px;cursor:pointer;transform-style:preserve-3d;
+  transition:transform .68s cubic-bezier(.3,.9,.3,1)}
+.fc.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px}
+.face.back{transform:rotateY(180deg)}
+.face .w{font-family:var(--serif);font-size:31px;font-weight:600;letter-spacing:-.02em}
+.face small{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin-top:14px}
+.pills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
+.pills button{padding:11px 6px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+  font-size:13px;font-weight:700}
+.pills button:hover{border-color:var(--accent)}
+.pills b{display:block;font-family:var(--mono);font-size:9px;font-weight:400;color:var(--ink-3);margin-top:3px;
+  letter-spacing:.05em;text-transform:uppercase}
 
-/* ── review ───────────────────────────────────────────────────── */
-.flash{
-  background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--lift);
-  padding:34px 24px;min-height:250px;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;cursor:pointer;
-}
-.flash .w{font-family:var(--serif);font-size:33px;font-weight:600;letter-spacing:-.02em}
-.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-.rate button{padding:13px 6px;border-radius:var(--r-s);border:1px solid var(--line);font-size:13.5px;font-weight:700;background:var(--surface)}
-.rate button:hover{border-color:var(--accent)}
-.rate b{font-family:var(--mono);display:block;font-size:9.5px;font-weight:400;color:var(--ink-3);margin-top:4px;letter-spacing:.05em;text-transform:uppercase}
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--base);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:60;animation:fade .2s;white-space:nowrap}
-.fade{animation:fade .3s}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* compare */
+.tbl{width:100%;border-collapse:collapse;margin-top:22px;font-size:14px;display:block;overflow-x:auto}
+.tbl th,.tbl td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.tbl td:first-child{font-weight:600}
+.yes{color:var(--accent);font-weight:800}
+.no{color:var(--ink-3)}
+.tbl tr.us td{background:var(--glow)}
+
+/* cta */
+.cta{text-align:center;padding:78px 0 30px}
+.big{display:inline-block;background:linear-gradient(100deg,var(--accent),var(--accent-2));color:#fff;
+  border-radius:999px;padding:16px 34px;font-size:16px;font-weight:700;text-decoration:none;
+  box-shadow:0 12px 34px -12px var(--accent);transition:transform .15s,filter .15s}
+.big:hover{transform:translateY(-2px);filter:brightness(1.08)}
+footer{padding:30px 0 60px;text-align:center;color:var(--ink-3);font-size:12.5px}
+footer a{color:var(--accent);text-decoration:none}
+.toggle{position:fixed;top:16px;right:16px;width:38px;height:38px;border-radius:50%;background:var(--card);
+  border:1px solid var(--line);display:grid;place-items:center;z-index:9}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}}
 </style>
-</head>
-<body>
-<div id="app"></div>
-<nav>
-  <div class="nav-in">
-    <button class="tab" data-go="shelf">Shelf</button>
-    <button class="tab" data-go="dict">Dictionary</button>
-    <button class="tab" data-go="review">Review</button>
+
+<button class="toggle" onclick="theme()" aria-label="Light or dark">☾</button>
+
+<div class="wrap">
+  <header>
+    <div class="orb o1"></div><div class="orb o2"></div>
+    <div class="eyebrow">A reading companion</div>
+    <h1 style="margin-top:12px">Books give you<br><span class="grad">words</span>. Keep them.</h1>
+    <p class="lede" style="margin-top:18px">
+      Every book hands you a few words you didn't have — and you meet them once, on one page,
+      and then they're gone. LingoBox keeps them, with the page you found them on.
+    </p>
+
+    <div class="passage">
+      <span class="hint">Tap a word ↓</span>
+      The house was older than the trees. A <mark data-w="0">susurrus</mark> of leaves moved
+      over the roof, and in the hall the light fell in long <mark data-w="1">liminal</mark> bars,
+      the whole place holding its breath with a kind of <mark data-w="2">reciprocity</mark>,
+      as though it were waiting to be read.
+    </div>
+    <div class="catch" id="catch">
+      <div class="empty-slip">Your dictionary starts empty. Tap an underlined word.</div>
+    </div>
+  </header>
+
+  <section class="reveal">
+    <div class="eyebrow">Four kinds of memory</div>
+    <h2 style="margin-top:9px">One book. Everything it left with you.</h2>
+    <div class="four">
+      <div class="tile"><i></i><h3>Words</h3><p>Looked up, spoken aloud, and rewritten in your own words — the version that sticks.</p></div>
+      <div class="tile"><i></i><h3>The page</h3><p>Where you stopped. No bookmark to lose, no guessing tomorrow night.</p></div>
+      <div class="tile"><i></i><h3>Quotes</h3><p>The line that made you stop and read it twice.</p></div>
+      <div class="tile"><i></i><h3>Imagination</h3><p>The room, the casting, the film playing in your head. Nowhere else has this.</p></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="eyebrow">Vibes</div>
+    <h2 style="margin-top:9px">Every book gets its own mood.</h2>
+    <p class="lede" style="margin-top:10px">
+      Pick a palette per book and the whole app wears it — shelf, dictionary, flashcards.
+      Try one; this page will change too.
+    </p>
+    <div class="swatches" id="sw"></div>
+  </section>
+
+  <section class="reveal">
+    <div class="eyebrow">Review</div>
+    <h2 style="margin-top:9px">The words come back<br>just before you forget.</h2>
+    <p class="lede" style="margin-top:10px">
+      Proper spaced repetition. Every word runs its own forgetting curve — answer well and it steps
+      further away, stumble and it comes straight back. Tap the card.
+    </p>
+    <div class="stage">
+      <div class="fc" id="fc" onclick="this.classList.toggle('flipped')">
+        <div class="face"><div class="w">susurrus<button class="say" onclick="event.stopPropagation();sayIt('susurrus')">▸</button></div><small>Tap to reveal</small></div>
+        <div class="face back">
+          <div style="font-size:17px;line-height:1.5;max-width:300px">Like wind through paper. The sound the library makes.</div>
+          <small>In your words</small>
+        </div>
+      </div>
+    </div>
+    <div class="pills">
+      <button onclick="unflip()">Again<b>&lt; 10 min</b></button>
+      <button onclick="unflip()">Good<b>6 days</b></button>
+      <button onclick="unflip()">Easy<b>2 weeks</b></button>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="eyebrow">Why it exists</div>
+    <h2 style="margin-top:9px">The gap nobody fills.</h2>
+    <p class="lede" style="margin-top:10px">
+      Book trackers know <em>what</em> you read. Vocabulary apps drill words with no idea where they
+      came from. Only one app joins them, and only if you read on its device.
+    </p>
+    <table class="tbl">
+      <tr><th>&nbsp;</th><th>Tracks books</th><th>Saves words</th><th>Spaced review</th><th>Imagination</th></tr>
+      <tr><td>Goodreads</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+      <tr><td>StoryGraph</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+      <tr><td>Anki</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td></tr>
+      <tr><td>Kindle</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td></tr>
+      <tr class="us"><td>LingoBox</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    </table>
+    <p style="font-size:13px;color:var(--ink-3);margin-top:12px">
+      Kindle only for books bought on a Kindle. LingoBox works with the paperback in your bag.
+    </p>
+  </section>
+
+  <div class="cta reveal">
+    <h2>It's free, and it's yours.</h2>
+    <p class="lede" style="margin:12px auto 0">
+      Everything stays on your device. No account, no sign-up, nothing sent anywhere.
+    </p>
+    <a class="big" style="margin-top:26px" href="./app.html">Open LingoBox →</a>
+    <p style="font-size:12.5px;color:var(--ink-3);margin-top:14px">Works in any browser · add it to your home screen</p>
   </div>
-</nav>
+
+  <footer>
+    Built for people who read with a pen nearby ·
+    <a href="https://github.com/focuskinnu-Library/Widget">Source</a>
+  </footer>
+</div>
 
 <script>
-'use strict';
-/* ---------------------------------------------------------------
-   LingoBox — a reading companion.
-   Everything lives on this device. No account, no server, no eyes.
-----------------------------------------------------------------*/
-
-const KEY = 'lingobox.v1';
-const OLD_KEY = 'margin.v1';   // renamed from LingoBox; keep reading the old box
-const DAY = 864e5;
-// Two dictionaries, tried in order. The first is richer — pronunciation and
-// synonyms — but it is a small volunteer service that goes down. Wiktionary
-// runs on Wikimedia infrastructure and is the safety net.
-const SOURCES = [
-  {name:'Free Dictionary',
-   url: w => 'https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w),
-   parse: parseFreeDictionary},
-  {name:'Wiktionary',
-   url: w => 'https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(w),
-   parse: parseWiktionary}
+const WORDS=[
+  {w:'susurrus',ph:'/suh-SUR-uhs/',d:'noun — a soft whispering or rustling sound',m:'Like wind through paper. The sound the library makes.'},
+  {w:'liminal',ph:'/LIM-uh-nl/',d:'adjective — occupying a threshold; between two states',m:'Hallways at 3am. Airports. The bit before you decide.'},
+  {w:'reciprocity',ph:'/res-uh-PROS-i-tee/',d:'noun — giving back in return for what you receive',m:'The house is listening back.'}
 ];
+const got=new Set();
 
-const VIBES = [
-  {id:'paper', name:'Paper', a:'#5b6cff', b:'#9b7bff'},
-  {id:'dusk',  name:'Dusk',  a:'#a855f7', b:'#f472b6'},
-  {id:'ember', name:'Ember', a:'#ed6b32', b:'#f5a524'},
-  {id:'fern',  name:'Fern',  a:'#1f9d63', b:'#84cc4f'},
-  {id:'tide',  name:'Tide',  a:'#0e9ec2', b:'#5ad1c4'},
-  {id:'blush', name:'Blush', a:'#e8407f', b:'#ff8a5c'}
-];
+document.querySelectorAll('mark').forEach(m=>m.addEventListener('click',()=>{
+  const i=+m.dataset.w; if(got.has(i)) return;
+  got.add(i); m.classList.add('got');
+  const c=document.getElementById('catch');
+  if(got.size===1) c.innerHTML='';
+  const d=WORDS[i], el=document.createElement('div');
+  el.className='slip';
+  el.innerHTML='<div><span class="w">'+d.w+'</span><span class="ph">'+d.ph+'</span>'+
+    '<button class="say" aria-label="Hear it">▸</button></div>'+
+    '<div class="d">'+d.d+'</div>'+
+    '<div class="m"><b>In your words</b>'+d.m+'</div>';
+  el.querySelector('.say').addEventListener('click',()=>sayIt(d.w));
+  c.appendChild(el);
+  sayIt(d.w);
+}));
 
-let db = load();
-let view = 'shelf';
-let openBook = null;
-let bookTab = 'words';
-let session = null;
-let draft = null;          // vibe being previewed inside a sheet
-
-function load(){
-  try{
-    const d = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY));
-    if(d && d.books) return Object.assign({books:[],words:[],quotes:[],notes:[],theme:null,vibe:'paper'}, d);
-  }catch(e){}
-  return {books:[], words:[], quotes:[], notes:[], theme:null, vibe:'paper'};
+function sayIt(w){
+  if(!('speechSynthesis' in window)) return;
+  const u=new SpeechSynthesisUtterance(w); u.lang='en-GB'; u.rate=.85;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
-function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nl  = s => esc(s).replace(/\n/g,'<br>');
-const book = id => db.books.find(b => b.id === id);
-const $ = s => document.querySelector(s);
+function unflip(){document.getElementById('fc').classList.remove('flipped')}
 
-function when(ts){
-  const d = Math.floor((Date.now() - ts) / DAY);
-  if(d <= 0) return 'today';
-  if(d === 1) return 'yesterday';
-  if(d < 30) return d + ' days ago';
-  return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+const VIBES=[['paper','Paper','#6b5cff','#c46bff'],['dusk','Dusk','#a855f7','#f472b6'],
+  ['ember','Ember','#ed6b32','#f5a524'],['fern','Fern','#1f9d63','#84cc4f'],
+  ['tide','Tide','#0e9ec2','#5ad1c4'],['blush','Blush','#e8407f','#ff8a5c']];
+let vibe='paper';
+const sw=document.getElementById('sw');
+function drawVibes(){
+  sw.innerHTML=VIBES.map(([id,name,a,b])=>
+    '<button class="sw'+(id===vibe?' on':'')+'" data-v="'+id+'">'+
+    '<i style="background:linear-gradient(135deg,'+a+','+b+')"></i><span>'+name+'</span></button>').join('');
+  sw.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{
+    vibe=b.dataset.v;
+    if(vibe==='paper') document.documentElement.removeAttribute('data-v');
+    else document.documentElement.dataset.v=vibe;
+    drawVibes();
+  }));
 }
-function toast(msg){
-  const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity = 0; t.style.transition = 'opacity .3s'; }, 1500);
-  setTimeout(() => t.remove(), 1850);
-}
+drawVibes();
 
-/* ---------------- the vibe -------------------------------------
-   Each book carries a palette. Open the book and the whole app —
-   dictionary included — takes it on, so the mood of what you're
-   reading follows you around.
------------------------------------------------------------------*/
-function applyVibe(){
-  const b = openBook && book(openBook);
-  const v = draft || (b ? b.vibe : db.vibe) || 'paper';
-  document.documentElement.dataset.vibe = v;
+function theme(){
+  const dark=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=dark?'light':'dark';
+  document.querySelector('.toggle').textContent=dark?'☾':'☀';
 }
 
-/* ---------------- spaced repetition (SM-2) --------------------- */
-function freshCard(){ return {ease:2.5, reps:0, interval:0, due:Date.now()}; }
-
-function grade(w, q){                       // q: 0 again · 4 good · 5 easy
-  const c = w.srs || (w.srs = freshCard());
-  if(q < 3){
-    c.reps = 0; c.interval = 0;
-    c.due = Date.now() + 6e5;               // back in ~10 minutes
-  }else{
-    c.reps++;
-    c.interval = c.reps === 1 ? 1 : c.reps === 2 ? 6 : Math.round(c.interval * c.ease);
-    c.ease = Math.max(1.3, c.ease + (0.1 - (5-q) * (0.08 + (5-q) * 0.02)));
-    c.due = Date.now() + c.interval * DAY;
-  }
-  save();
-}
-const dueWords = () => db.words.filter(w => (w.srs?.due ?? 0) <= Date.now());
-
-/* ---------------- the dictionary -------------------------------
-   Pronunciation, senses, examples, synonyms. Tap a sense to keep
-   it — then write what it means to you underneath. Both are saved;
-   yours is the one the flashcard shows first.
------------------------------------------------------------------*/
-const fail = (code, msg) => Object.assign(new Error(msg), {code});
-
-// Wiktionary returns definitions as HTML. DOMParser builds an inert document —
-// no scripts run, no images fetch — so this is safe on untrusted markup.
-function stripTags(html){
-  const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
-  return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
-}
-
-function parseFreeDictionary(json){
-  const d = json[0];
-  const senses = [];
-  (d.meanings || []).forEach(m =>
-    (m.definitions || []).slice(0,2).forEach(def =>
-      senses.push({pos:m.partOfSpeech || '', def:def.definition, ex:def.example || ''})));
-  return {
-    phonetic: d.phonetic || (d.phonetics || []).find(p => p.text)?.text || '',
-    audio: (d.phonetics || []).find(p => p.audio)?.audio || '',
-    senses: senses.slice(0,5),
-    syn: [...new Set((d.meanings || []).flatMap(m => m.synonyms || []))].slice(0,6)
-  };
-}
-
-function parseWiktionary(json){
-  const senses = [];
-  (json.en || []).forEach(sec =>
-    (sec.definitions || []).slice(0,3).forEach(def => {
-      const text = stripTags(def.definition);
-      if(!text) return;
-      senses.push({
-        pos: (sec.partOfSpeech || '').toLowerCase(),
-        def: text,
-        ex: stripTags((def.parsedExamples || [])[0]?.example || (def.examples || [])[0] || '')
-      });
-    }));
-  return {phonetic:'', audio:'', senses:senses.slice(0,5), syn:[]};   // neither is offered here
-}
-
-async function lookup(term){
-  const w = term.trim().toLowerCase();
-  let sawReachable = false;
-
-  for(const src of SOURCES){
-    let r;
-    try{
-      r = await fetch(src.url(w));
-    }catch(e){
-      continue;                       // never left the page — try the next one
-    }
-    sawReachable = true;
-    if(r.status === 404) continue;    // this dictionary doesn't have it
-    if(!r.ok) continue;
-    try{
-      const parsed = src.parse(await r.json());
-      if(parsed.senses.length) return Object.assign(parsed, {source:src.name});
-    }catch(e){ /* unreadable response — fall through to the next source */ }
-  }
-
-  // Only call it "not a word" if a dictionary actually answered and said so.
-  // If nothing was reachable, that is a network problem, not a vocabulary one.
-  throw sawReachable
-    ? fail('none', 'no entry for that word')
-    : fail('unreachable', 'could not reach any dictionary');
-}
-
-async function doLookup(){
-  const term = ($('#w')?.value || '').trim();
-  const box = $('#lk');
-  if(!term || !box) return;
-  box.innerHTML = `<div class="lk-head"><span class="label">Looking up ${esc(term)}…</span></div>`;
-  try{
-    const r = await lookup(term);
-    window.__senses = r.senses;
-    box.innerHTML =
-      `<div class="lk-head"><span class="word" style="font-size:16px">${esc(term)}</span>
-        ${r.phonetic ? `<span class="pron">${esc(r.phonetic)}</span>` : ''}${sayBtn(term, r.audio)}
-        <span class="label" style="margin-left:auto">${esc(r.source)} · tap to keep</span></div>` +
-      (r.senses.length ? r.senses.map((s,i) => `<button type="button" class="sense" onclick="useSense(${i})">
-          ${s.pos ? `<span class="pos">${esc(s.pos)}</span>` : ''}
-          <p>${esc(s.def)}</p>${s.ex ? `<em>"${esc(s.ex)}"</em>` : ''}
-        </button>`).join('')
-        : `<div class="sense"><p>No definition came back.</p></div>`) +
-      (r.syn.length ? `<div class="syn">${r.syn.map(s => `<span class="chip flat">${esc(s)}</span>`).join('')}</div>` : '');
-    const ph = $('#ph'); if(ph) ph.value = r.phonetic || '';
-    const au = $('#au'); if(au) au.value = r.audio || '';
-  }catch(e){
-    const web = `https://www.google.com/search?q=${encodeURIComponent('define ' + term)}`;
-    box.innerHTML = `<div class="lk-head" style="display:block">
-      <span class="label">${e.code === 'none'
-        ? `No entry for “${esc(term)}”`
-        : 'Couldn’t reach any dictionary'}</span>
-      <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink-2)">
-        ${e.code === 'none'
-          ? 'Neither dictionary has it. It may be a name, a plural, or too new. Try the singular, or just write the meaning yourself.'
-          : 'You’re offline, or this page is blocking outside requests. Open LingoBox from your own link and lookup works.'}
-      </div>
-      <a class="link" href="${web}" target="_blank" rel="noopener"
-         style="display:inline-block;margin-top:8px">Search the web for “${esc(term)}” ↗</a>
-    </div>`;
-  }
-}
-function useSense(i){
-  const s = (window.__senses || [])[i];
-  if(!s) return;
-  $('#m').value = (s.pos ? s.pos + ' — ' : '') + s.def;
-  if(s.ex && !$('#c').value.trim()) $('#c').value = s.ex;
-  toast('Kept — now put it in your words');
-  $('#mine')?.focus();
-}
-
-/* ---------------- taking it with you ---------------------------
-   localStorage is real storage, but it is one browser on one device
-   and it can be cleared without you meaning to. A backup is the only
-   copy that survives that.
------------------------------------------------------------------*/
-const stamp = () => new Date().toISOString().slice(0,10);
-
-async function offer(filename, text, mime){
-  // A published artifact frame cannot start its own download; the host
-  // asks the viewer instead. Everywhere else, an anchor does it.
-  if(window.claude?.downloads?.save){
-    try{ await window.claude.downloads.save({filename, data:text}); toast('Saved'); }
-    catch(e){ if(e && e.code !== 'declined') toast('Could not save from this page'); }
-    return;
-  }
-  const url = URL.createObjectURL(new Blob([text], {type:mime}));
-  const a = Object.assign(document.createElement('a'), {href:url, download:filename});
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-  toast('Downloaded');
-}
-
-function exportBackup(){
-  offer(`lingobox-backup-${stamp()}.json`, JSON.stringify(db, null, 2), 'application/json');
-}
-
-function exportMarkdown(){
-  const L = [`# LingoBox — ${stamp()}`, ''];
-  db.books.forEach(b => {
-    L.push(`## ${b.title}`, `*${b.author || '—'}* · page ${b.page||0}${b.pages ? ' of ' + b.pages : ''}`, '');
-    const of = k => db[k].filter(x => x.bookId === b.id);
-    const ws = of('words');
-    if(ws.length){ L.push('### Words', '');
-      ws.forEach(w => {
-        L.push(`**${w.word}**${w.phonetic ? ' ' + w.phonetic : ''}${w.page ? ` · p.${w.page}` : ''}`);
-        if(w.meaning && w.meaning !== '—') L.push(`- ${w.meaning}`);
-        if(w.mine) L.push(`- *In my words:* ${w.mine}`);
-        if(w.context) L.push(`- Found in: "${w.context}"`);
-        L.push('');
-      }); }
-    const qs = of('quotes');
-    if(qs.length){ L.push('### Quotes', '');
-      qs.forEach(q => L.push('> ' + q.text.replace(/\n/g, '\n> '), q.page ? `— p.${q.page}` : '', '')); }
-    const ns = of('notes');
-    if(ns.length){ L.push('### Journal', '');
-      ns.forEach(n => L.push(`**${new Date(n.at).toLocaleDateString()}**${n.page ? ` · p.${n.page}` : ''}`, '', n.text, '')); }
-  });
-  offer(`lingobox-${stamp()}.md`, L.join('\n'), 'text/markdown');
-}
-
-function exportAnki(){
-  // Two columns, quoted — Anki reads this straight in as front/back.
-  const q = t => '"' + String(t == null ? '' : t).replace(/"/g, '""') + '"';
-  const rows = db.words.map(w => {
-    const b = book(w.bookId);
-    const back = [w.mine, (w.meaning && w.meaning !== '—') ? w.meaning : '',
-                  b ? b.title + (w.page ? ' · p.' + w.page : '') : '']
-                 .filter(Boolean).join('<br><br>');
-    return q(w.word) + ',' + q(back);
-  });
-  if(!rows.length) return toast('No words to export yet');
-  offer(`lingobox-anki-${stamp()}.txt`, rows.join('\n'), 'text/plain');
-}
-
-function importBackup(input){
-  const f = input.files && input.files[0];
-  if(!f) return;
-  const r = new FileReader();
-  r.onload = () => {
-    let d;
-    try{ d = JSON.parse(r.result); }catch(e){ return toast('That is not a LingoBox backup'); }
-    if(!d || !Array.isArray(d.books)) return toast('That is not a LingoBox backup');
-    let added = 0;
-    ['books','words','quotes','notes'].forEach(k => {
-      const have = new Set((db[k] || []).map(x => x.id));
-      (d[k] || []).forEach(x => {
-        if(x && x.id && !have.has(x.id)){ db[k].push(x); added++; }   // never overwrite
-      });
-    });
-    save(); closeSheet(); render();
-    toast(added ? `${added} item${added > 1 ? 's' : ''} restored` : 'Already up to date');
-  };
-  r.readAsText(f);
-}
-
-/* ---------------- saying it out loud ---------------------------
-   A real recording when the dictionary has one. Otherwise the voice
-   built into the browser, which needs no network and so still works
-   offline, or on a page that blocks outside requests.
------------------------------------------------------------------*/
-function say(word, url){
-  if(!word) return;
-  if(url){
-    const a = new Audio(url);
-    a.play().then(() => {}).catch(() => speak(word));   // dead link, or blocked
-    return;
-  }
-  speak(word);
-}
-function speak(word){
-  if(!('speechSynthesis' in window)) return toast('No voice on this device');
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = 'en-GB'; u.rate = 0.85;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-}
-const sayBtn = (w, a) =>
-  `<button class="say" data-say="${esc(w)}" data-audio="${esc(a || '')}" title="Hear it" aria-label="Pronounce ${esc(w)}">▸</button>`;
-
-/* ---------------- render --------------------------------------- */
-function render(){
-  applyVibe();
-  const app = $('#app');
-  app.innerHTML =
-      view === 'shelf' ? shelfView()
-    : view === 'book'  ? bookView()
-    : view === 'dict'  ? dictView()
-    :                    reviewView();
-  app.classList.remove('fade'); void app.offsetWidth; app.classList.add('fade');
-
-  const active = view === 'book' ? 'shelf' : view;
-  document.querySelectorAll('.tab').forEach(t => {
-    t.classList.toggle('on', t.dataset.go === active);
-    if(t.dataset.go === 'review'){
-      const n = dueWords().length;
-      t.innerHTML = 'Review' + (n ? `<span class="pip">${n}</span>` : '');
-    }
-  });
-  window.scrollTo(0,0);
-}
-
-function topBar(sub){
-  const dark = document.documentElement.dataset.theme === 'dark';
-  return `<header>
-    <div><div class="brand">Lingo<span class="grad">Box</span></div>
-    <div class="dim" style="margin-top:3px">${sub}</div></div>
-    <button class="icon-btn" onclick="toggleTheme()" title="Light or dark">${dark ? '☀' : '☾'}</button>
-  </header>`;
-}
-
-/* --- shelf --- */
-function shelfView(){
-  const due = dueWords().length;
-  const sub = db.books.length
-    ? `${db.books.length} ${db.books.length===1?'book':'books'} · ${db.words.length} ${db.words.length===1?'word':'words'}`
-    : 'A quiet reading companion';
-
-  return topBar(sub) + `
-  ${due ? `<button class="nudge" data-go="review">
-      <span><div style="font-weight:700;font-size:15px">${due} ${due===1?'word is':'words are'} fading</div>
-      <div style="opacity:.85;font-size:13.5px;margin-top:1px">A minute now and ${due===1?'it stays':'they stay'} yours</div></span>
-      <span style="font-size:20px">→</span></button>` : ''}
-
-  <div class="between" style="margin-bottom:12px">
-    <div class="label">Reading</div>
-    <button class="link" onclick="sheetBook()">+ Add a book</button>
-  </div>
-
-  ${db.books.length ? `<div class="list">${db.books.map(b => {
-      const pct = b.pages ? Math.min(100, Math.round(b.page / b.pages * 100)) : 0;
-      const n = k => db[k].filter(x => x.bookId === b.id).length;
-      const bits = [[n('words'),'word'],[n('quotes'),'quote'],[n('notes'),'note']]
-        .filter(x => x[0]).map(x => `<span class="chip flat">${x[0]} ${x[1]}${x[0]>1?'s':''}</span>`).join('');
-      const v = VIBES.find(x => x.id === (b.vibe||'paper')) || VIBES[0];
-      return `<button class="row" data-book="${b.id}" style="--a-l:${v.a};--a2-l:${v.b}">
-        <span class="spine"></span>
-        <div class="between" style="padding-left:8px"><h2>${esc(b.title)}</h2>
-        <span class="dim" style="white-space:nowrap">p.${b.page||0}</span></div>
-        <div class="muted" style="padding-left:8px;font-size:13.5px">${esc(b.author) || '—'}</div>
-        ${bits ? `<div class="chips" style="padding-left:8px">${bits}</div>` : ''}
-        ${b.pages ? `<div class="bar" style="margin-left:8px"><i style="width:${pct}%"></i></div>` : ''}
-      </button>`;
-    }).join('')}</div>`
-  : `<div class="empty"><p>Your shelf is empty. Add the book that's open beside you right now.</p>
-     <button class="btn" style="margin-top:20px" onclick="sheetBook()">Add a book</button></div>`}
-  <div style="text-align:center;margin-top:26px">
-    <button class="del" onclick="sheetData()">Backup &amp; export</button></div>`;
-}
-
-/* --- one book --- */
-function bookView(){
-  const b = book(openBook);
-  if(!b){ view = 'shelf'; return shelfView(); }
-  const pct = b.pages ? Math.min(100, Math.round(b.page / b.pages * 100)) : 0;
-  const of = k => db[k].filter(x => x.bookId === b.id).sort((x,y) => y.at - x.at);
-  const words = of('words'), quotes = of('quotes'), notes = of('notes');
-
-  const body =
-    bookTab === 'words' ? (words.length ? words.map(w => `<div class="entry">
-        <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word, w.audio)}</span>
-          <span style="white-space:nowrap"><span class="dim">${w.page?'p.'+w.page:''}</span>
-          <button class="del" onclick="drop('words','${w.id}')">Remove</button></span></div>
-        ${w.meaning && w.meaning !== '—' ? `<div class="muted" style="margin-top:5px">${nl(w.meaning)}</div>` : ''}
-        ${w.mine ? `<div class="mine"><span class="label">In your words</span>${nl(w.mine)}</div>` : ''}
-        ${w.context ? `<div class="serif" style="margin-top:8px;font-style:italic;color:var(--ink-3);font-size:14px">"${nl(w.context)}"</div>` : ''}
-      </div>`).join('') : blank('Every book hands you a few words you didn\'t have. Catch the next one.'))
-
-  : bookTab === 'quotes' ? (quotes.length ? quotes.map(q => `<div class="entry">
-        <div class="quote">${nl(q.text)}</div>
-        <div class="between" style="margin-top:10px"><span class="dim">${q.page?'p.'+q.page:''}</span>
-        <button class="del" onclick="drop('quotes','${q.id}')">Remove</button></div>
-      </div>`).join('') : blank('The line that made you stop and read it twice — keep it here.'))
-
-  : (notes.length ? notes.map(n => `<div class="entry">
-        <div class="between"><span class="label">${when(n.at)}</span>
-          <span style="white-space:nowrap"><span class="dim">${n.page?'p.'+n.page:''}</span>
-          <button class="del" onclick="drop('notes','${n.id}')">Remove</button></span></div>
-        <div class="serif" style="margin-top:8px;font-size:16px;line-height:1.62">${nl(n.text)}</div>
-      </div>`).join('') : blank('What did the room look like? Who did you cast? Write the film playing in your head.'));
-
-  const add = {words:'+ Add a word', quotes:'+ Add a quote', notes:'+ Write an entry'}[bookTab];
-
-  const dark = document.documentElement.dataset.theme === 'dark';
-  const heroBtn = 'background:rgba(255,255,255,.2);border-color:transparent;color:inherit';
-
-  return `<div style="padding-top:14px"><button class="back" data-go="shelf">← Shelf</button></div>
-  <div class="hero">
-    <div class="between"><h1>${esc(b.title)}</h1>
-      <span style="display:flex;gap:8px;flex:none">
-        <button class="icon-btn" onclick="toggleTheme()" title="Light or dark" style="${heroBtn}">${dark ? '☀' : '☾'}</button>
-        <button class="icon-btn" onclick="sheetVibe()" title="Change the vibe" style="${heroBtn}">◐</button>
-      </span></div>
-    <div class="sub">${esc(b.author) || '—'}</div>
-    <div class="between" style="margin-top:16px;align-items:flex-end">
-      <div><span class="label" style="color:inherit;opacity:.75">Stopped at</span>
-        <div style="font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1">${b.page||0}${b.pages?`<span class="dim" style="font-size:13px"> / ${b.pages}</span>`:''}</div></div>
-      <button class="btn ghost" onclick="sheetPage()" style="background:rgba(255,255,255,.18);color:inherit;border-color:transparent;padding:9px 15px;font-size:13px">Move bookmark</button>
-    </div>
-    ${b.pages ? `<div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="dim" style="margin-top:7px">${pct}% through</div>` : ''}
-  </div>
-
-  <div class="seg">
-    <button class="${bookTab==='words'?'on':''}"  onclick="setTab('words')">Words${words.length?' '+words.length:''}</button>
-    <button class="${bookTab==='quotes'?'on':''}" onclick="setTab('quotes')">Quotes${quotes.length?' '+quotes.length:''}</button>
-    <button class="${bookTab==='notes'?'on':''}"  onclick="setTab('notes')">Journal${notes.length?' '+notes.length:''}</button>
-  </div>
-
-  <button class="btn wide" onclick="sheetEntry()">${add}</button>
-  <div style="margin-top:4px">${body}</div>
-  <div style="text-align:center;margin-top:26px"><button class="del" onclick="dropBook('${b.id}')">Delete this book</button></div>`;
-}
-const blank = t => `<div class="empty"><p>${t}</p></div>`;
-
-/* --- personal dictionary --- */
-function dictView(){
-  const q = (window.__q || '').toLowerCase();
-  const all = db.words
-    .filter(w => !q || w.word.toLowerCase().includes(q) ||
-                 (w.meaning||'').toLowerCase().includes(q) || (w.mine||'').toLowerCase().includes(q))
-    .sort((a,b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase()));
-
-  let out = '', letter = '';
-  all.forEach(w => {
-    const L = w.word[0].toUpperCase();
-    if(L !== letter){ letter = L; out += `<div class="label grad" style="margin:20px 0 2px;font-size:12px">${esc(letter)}</div>`; }
-    const b = book(w.bookId);
-    const days = w.srs ? Math.ceil((w.srs.due - Date.now()) / DAY) : 0;
-    out += `<div class="entry">
-      <div class="between"><span><span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word, w.audio)}</span>
-        <span class="chip">${days <= 0 ? 'due now' : 'in ' + days + 'd'}</span></div>
-      ${w.mine ? `<div class="mine"><span class="label">In your words</span>${nl(w.mine)}</div>`
-               : `<div class="muted" style="margin-top:5px">${nl(w.meaning)}</div>`}
-      <div class="dim" style="margin-top:8px">${b ? esc(b.title) + (w.page ? ' · p.' + w.page : '') : ''}</div>
-    </div>`;
-  });
-
-  return topBar(`${db.words.length} ${db.words.length===1?'word':'words'} collected`) + `
-  <h1 style="margin-bottom:5px">Your <span class="grad">dictionary</span></h1>
-  <div class="muted" style="margin-bottom:16px">Every word still carrying the page you met it on.</div>
-  ${db.words.length ? `<input placeholder="Search your words…" value="${esc(window.__q||'')}"
-      oninput="window.__q=this.value;dictList()">
-    <div id="dl">${out || blank('Nothing matches that.')}</div>`
-  : blank('Words you save inside a book gather here — your own dictionary, in your own words.')}`;
-}
-function dictList(){
-  const el = $('#dl'); if(!el) return;
-  const y = window.scrollY;
-  const tmp = document.createElement('div'); tmp.innerHTML = dictView();
-  el.innerHTML = tmp.querySelector('#dl').innerHTML;
-  window.scrollTo(0, y);
-}
-
-/* --- review --- */
-function reviewView(){
-  if(!session || !session.queue.length){
-    const due = dueWords();
-    if(!db.words.length) return topBar('Nothing to review yet') + blank('Save a few words first — then they\'ll come back to find you.');
-    if(session && session.done){
-      const s = session; session = null;
-      return topBar('Done for now') + `<div class="empty" style="padding-top:60px">
-        <div style="font-size:40px" class="grad">✓</div>
-        <p style="margin-top:10px">${s.done} ${s.done===1?'word':'words'} reviewed. They'll come back when you're just about to forget them.</p>
-        <button class="btn ghost" style="margin-top:22px" data-go="shelf">Back to shelf</button></div>`;
-    }
-    if(!due.length){
-      const next = Math.min(...db.words.map(w => w.srs?.due ?? Infinity));
-      const d = Math.max(1, Math.ceil((next - Date.now()) / DAY));
-      return topBar('All caught up') + `<div class="empty" style="padding-top:60px">
-        <p>Nothing due. Your words are still settling — the next batch surfaces in about ${d} day${d>1?'s':''}.</p>
-        <button class="btn ghost" style="margin-top:22px" onclick="cram()">Practise anyway</button></div>`;
-    }
-    session = {queue: shuffle(due.slice()), flip:false, done:0, total:due.length};
-  }
-
-  const w = session.queue[0], b = book(w.bookId);
-  const n = session.total - session.queue.length + 1;
-
-  return topBar(`${n} of ${session.total}`) + `
-  <div class="between" style="margin-bottom:12px">
-    <span class="chip">${b ? esc(b.title) : 'Review'}</span>
-    <span class="dim">${w.page ? 'p.' + w.page : ''}</span>
-  </div>
-  <div class="flash" onclick="flip()">
-    ${session.flip ? `
-      <div class="w" style="font-size:23px">${esc(w.word)}${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word, w.audio)}</div>
-      ${w.mine ? `<div style="margin-top:14px;font-size:16.5px;line-height:1.55;max-width:350px">${nl(w.mine)}</div>
-                  <div class="label" style="margin-top:14px">What the dictionary says</div>` : ''}
-      <div style="margin-top:${w.mine?6:14}px;font-size:${w.mine?14:15.5}px;line-height:1.55;color:var(--ink-2);max-width:350px">${nl(w.meaning)}</div>
-      ${w.context ? `<div class="serif" style="margin-top:14px;font-style:italic;color:var(--ink-3);font-size:14px;max-width:350px">"${nl(w.context)}"</div>` : ''}`
-    : `<div class="w">${esc(w.word)}${sayBtn(w.word, w.audio)}</div>
-       <div class="dim" style="margin-top:16px">Tap to reveal</div>`}
-  </div>
-  ${session.flip ? `<div class="rate">
-      <button onclick="answer(0)">Again<b>&lt; 10 min</b></button>
-      <button onclick="answer(4)">Good<b>${nextIn(w,4)}</b></button>
-      <button onclick="answer(5)" style="color:var(--accent)">Easy<b>${nextIn(w,5)}</b></button>
-    </div>` : `<div class="dim" style="text-align:center;margin-top:16px">Say it out loud before you flip.</div>`}`;
-}
-function nextIn(w, q){
-  const c = w.srs || freshCard();
-  const r = c.reps + 1;
-  const i = r === 1 ? 1 : r === 2 ? 6 : Math.round(c.interval * c.ease * (q === 5 ? 1.3 : 1));
-  return i === 1 ? 'tomorrow' : i < 31 ? i + ' days' : Math.round(i/30) + ' months';
-}
-const shuffle = a => a.map(v => [Math.random(), v]).sort((x,y) => x[0]-y[0]).map(v => v[1]);
-function flip(){ if(session){ session.flip = true; render(); } }
-function answer(q){
-  const w = session.queue.shift();
-  grade(w, q);
-  if(q < 3) session.queue.push(w); else session.done++;
-  session.flip = false;
-  render();
-}
-function cram(){ session = {queue: shuffle(db.words.slice(0,20)), flip:false, done:0, total:Math.min(20, db.words.length)}; render(); }
-
-/* ---------------- sheets --------------------------------------- */
-function sheet(title, html, onSave, saveLabel){
-  closeSheet();
-  const s = document.createElement('div');
-  s.innerHTML = `<div class="scrim" onclick="closeSheet()"></div>
-    <div class="sheet"><div class="grab"></div>
-      <h2 style="margin-bottom:16px;font-size:20px">${title}</h2>${html}
-      <div style="display:flex;gap:10px;margin-top:18px">
-        <button class="btn ghost" style="flex:1" onclick="closeSheet()">Cancel</button>
-        <button class="btn" style="flex:2" id="ok">${saveLabel || 'Save'}</button>
-      </div></div>`;
-  s.id = 'sh'; document.body.appendChild(s);
-  $('#ok').onclick = () => { if(onSave() !== false){ closeSheet(); render(); } };
-  setTimeout(() => s.querySelector('input,textarea')?.focus(), 90);
-}
-function closeSheet(){ document.getElementById('sh')?.remove(); draft = null; applyVibe(); }
-const val = id => ($('#'+id)?.value || '').trim();
-
-function vibePicker(sel){
-  return `<div class="vibes" id="vp">${VIBES.map(v => `
-    <button type="button" class="vibe ${v.id===sel?'on':''}" onclick="pickVibe('${v.id}')">
-      <i style="background:linear-gradient(135deg,${v.a},${v.b})"></i><span>${v.name}</span>
-    </button>`).join('')}</div>`;
-}
-function pickVibe(id){
-  draft = id;
-  document.documentElement.dataset.vibe = id;
-  const vp = $('#vp');
-  if(vp) vp.outerHTML = vibePicker(id);
-}
-
-function sheetBook(){
-  draft = 'paper';
-  sheet('Add a book', `
-    <div class="field"><span class="label">Title</span><input id="t" placeholder="The Secret History"></div>
-    <div class="field"><span class="label">Author</span><input id="a" placeholder="Donna Tartt"></div>
-    <div class="two">
-      <div class="field"><span class="label">On page</span><input id="p" type="number" inputmode="numeric" placeholder="0"></div>
-      <div class="field"><span class="label">Total pages</span><input id="tp" type="number" inputmode="numeric" placeholder="optional"></div>
-    </div>
-    <div class="field"><span class="label">Its vibe — the app wears this while you're reading</span>
-      ${vibePicker('paper')}</div>`,
-  () => {
-    if(!val('t')) return toast('A title, at least'), false;
-    const v = draft || 'paper';
-    db.books.unshift({id:uid(), title:val('t'), author:val('a'), page:+val('p')||0,
-                      pages:+val('tp')||0, vibe:v, at:Date.now()});
-    db.vibe = v; save();
-  }, 'Add book');
-}
-function sheetData(){
-  const n = db.books.length + db.words.length + db.quotes.length + db.notes.length;
-  sheet('Your data', `
-    <div class="muted" style="margin-bottom:15px">${n} thing${n===1?'':'s'} saved, all of it on this device.
-    Nothing is sent anywhere — which also means a backup is the only copy that survives
-    a cleared browser or a new phone.</div>
-    <button class="btn wide" onclick="exportBackup()">Download a backup</button>
-    <div class="two" style="margin-top:10px">
-      <button class="btn ghost" onclick="exportMarkdown()">Markdown</button>
-      <button class="btn ghost" onclick="exportAnki()">Anki deck</button>
-    </div>
-    <div class="field" style="margin-top:20px">
-      <span class="label">Restore from a backup</span>
-      <input id="imp" type="file" accept=".json,application/json" onchange="importBackup(this)">
-      <div class="dim" style="margin-top:7px;letter-spacing:0;font-size:12px">Adds anything missing. Nothing already here is changed.</div>
-    </div>`,
-  () => true, 'Done');
-}
-
-function sheetVibe(){
-  const b = book(openBook);
-  draft = b.vibe || 'paper';
-  sheet('The vibe of this book', `
-    <div class="muted" style="margin-bottom:14px">Pick the mood. The shelf, your dictionary and your flashcards all wear it while you're in this book.</div>
-    ${vibePicker(b.vibe || 'paper')}`,
-  () => { b.vibe = draft || 'paper'; db.vibe = b.vibe; save(); }, 'Keep this vibe');
-}
-function sheetPage(){
-  const b = book(openBook);
-  sheet('Move your bookmark', `
-    <div class="two">
-      <div class="field"><span class="label">Stopped at page</span><input id="p" type="number" inputmode="numeric" value="${b.page||''}"></div>
-      <div class="field"><span class="label">Total pages</span><input id="tp" type="number" inputmode="numeric" value="${b.pages||''}"></div>
-    </div>`,
-  () => { b.page = +val('p')||0; b.pages = +val('tp')||0; save(); });
-}
-function sheetEntry(){
-  const b = book(openBook);
-  const pg = `<div class="field"><span class="label">Page</span><input id="p" type="number" inputmode="numeric" value="${b.page||''}"></div>`;
-
-  if(bookTab === 'words'){
-    sheet('A new word', `
-      <div class="field"><span class="label">Word</span>
-        <div class="inline"><input id="w" placeholder="susurrus" onkeydown="if(event.key==='Enter'){event.preventDefault();doLookup()}">
-        <button type="button" class="btn" style="padding:12px 16px;font-size:13.5px" onclick="doLookup()">Look up</button></div>
-        <input id="ph" type="hidden"><input id="au" type="hidden">
-        <div id="lk"></div>
-      </div>
-      <div class="field"><span class="label">What the dictionary says</span>
-        <textarea id="m" placeholder="Look it up above, or type it here." style="min-height:66px"></textarea></div>
-      <div class="field"><span class="label">In your own words — this is the one you'll remember</span>
-        <textarea id="mine" placeholder="Like wind through paper. The sound the library makes." style="min-height:66px"></textarea></div>
-      <div class="field"><span class="label">The sentence you found it in <span style="text-transform:none;letter-spacing:0">· optional</span></span>
-        <textarea id="c" placeholder="A susurrus of leaves overhead…" style="min-height:56px"></textarea></div>
-      ${pg}`,
-    () => {
-      if(!val('w')) return toast('Type the word'), false;
-      if(!val('m') && !val('mine')) return toast('Give it a meaning — theirs or yours'), false;
-      db.words.unshift({id:uid(), bookId:b.id, word:val('w'), phonetic:val('ph'), audio:val('au'),
-                        meaning:val('m') || '—', mine:val('mine'), context:val('c'),
-                        page:+val('p')||0, at:Date.now(), srs:freshCard()});
-      save(); toast('Added to your dictionary');
-    }, 'Keep this word');
-
-  }else if(bookTab === 'quotes'){
-    sheet('A line worth keeping', `
-      <div class="field"><span class="label">The line</span>
-        <textarea id="q" placeholder="Beauty is terror. Whatever we call beautiful, we quiver before it."></textarea></div>
-      ${pg}`,
-    () => {
-      if(!val('q')) return toast('Nothing to keep yet'), false;
-      db.quotes.unshift({id:uid(), bookId:b.id, text:val('q'), page:+val('p')||0, at:Date.now()});
-      save();
-    }, 'Keep it');
-
-  }else{
-    sheet('What you saw', `
-      <div class="field"><span class="label">Your entry</span>
-        <textarea id="n" placeholder="The house was colder than they wrote it. I keep picturing the hallway in green…" style="min-height:132px"></textarea></div>
-      ${pg}`,
-    () => {
-      if(!val('n')) return toast('Write something first'), false;
-      db.notes.unshift({id:uid(), bookId:b.id, text:val('n'), page:+val('p')||0, at:Date.now()});
-      save();
-    }, 'Save entry');
-  }
-}
-
-/* ---------------- actions -------------------------------------- */
-function setTab(t){ bookTab = t; render(); }
-function drop(kind, id){
-  if(!confirm('Remove this? It won\'t come back.')) return;
-  db[kind] = db[kind].filter(x => x.id !== id); save(); render();
-}
-function dropBook(id){
-  const b = book(id);
-  if(!confirm(`Delete "${b.title}" and everything saved inside it?`)) return;
-  db.books = db.books.filter(x => x.id !== id);
-  ['words','quotes','notes'].forEach(k => db[k] = db[k].filter(x => x.bookId !== id));
-  save(); view = 'shelf'; openBook = null; render();
-}
-function toggleTheme(){
-  const dark = document.documentElement.dataset.theme === 'dark';
-  db.theme = dark ? 'light' : 'dark';
-  document.documentElement.dataset.theme = db.theme;
-  save(); render();
-}
-function go(v){ view = v; session = null; if(v !== 'book') openBook = null; render(); }
-
-// Capture phase: the flashcard carries its own inline click handler, and a
-// bubbling listener here would fire after it — pressing play would also flip
-// the card. Catching it on the way down stops that.
-document.addEventListener('click', e => {
-  const s = e.target.closest('[data-say]');
-  if(!s) return;
-  e.stopPropagation(); e.preventDefault();
-  say(s.dataset.say, s.dataset.audio);
-}, true);
-
-document.addEventListener('click', e => {
-  const t = e.target.closest('[data-go],[data-book]');
-  if(!t) return;
-  if(t.dataset.book){
-    openBook = t.dataset.book; bookTab = 'words'; view = 'book';
-    db.vibe = book(openBook).vibe || 'paper'; save(); render();
-  }else go(t.dataset.go);
-});
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') closeSheet();
-  if(view === 'review' && session?.queue.length && !document.getElementById('sh')){
-    if(e.key === ' '){ e.preventDefault(); flip(); }
-    if(session.flip && '123'.includes(e.key)) answer([0,4,5][+e.key-1]);
-  }
-});
-
-if(db.theme) document.documentElement.dataset.theme = db.theme;
-render();
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-</body>
-</html>
