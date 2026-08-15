@@ -14,7 +14,7 @@ async function go(routes){
   const ctx=await br.newContext({viewport:{width:390,height:844}});
   const p=await ctx.newPage();
   p.on('pageerror',e=>{fail++;console.log('FAIL  JS ERROR '+e.message)});
-  await p.goto('file:///home/user/Widget/index.html');
+  await p.goto('file:///home/user/Widget/app.html');
   for(const [pat,fn] of routes) await p.route(pat,fn);
   await p.click('text=Add a book');await p.fill('#t','B');await p.click('#ok');
   await p.click('.row');await p.click('text=Add a word');

@@ -2,9 +2,8 @@
 
 A quiet reading companion. Keep the words, the page, the lines and the pictures in your head — all attached to the book you met them in.
 
-Open `index.html`. That's it. No install, no account, no server.
-
-`landing.html` is the page that explains it — tap a word in the passage and watch it land in your dictionary.
+`index.html` is the page that explains it — tap a word in the passage and watch it land in your dictionary.
+`app.html` is LingoBox itself. No install, no account, no server.
 
 ## What it does
 

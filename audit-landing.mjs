@@ -4,7 +4,7 @@ const p=await br.newPage({viewport:{width:400,height:860}});
 let pass=0,fail=0;const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
 await p.addInitScript(()=>{speechSynthesis.speak=()=>{};speechSynthesis.cancel=()=>{}});
-await p.goto('file:///home/user/Widget/landing.html');
+await p.goto('file:///home/user/Widget/index.html');
 ok('empty state shown first', await p.isVisible('text=Your dictionary starts empty'));
 await p.click('mark >> nth=0'); await p.waitForTimeout(400);
 ok('tapping a word collects it', await p.isVisible('text=a soft whispering'));
@@ -31,7 +31,7 @@ ok('no horizontal scroll', await p.evaluate(()=>document.documentElement.scrollW
 await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
 await p.waitForTimeout(900);
 ok('scroll reveals fire', await p.evaluate(()=>[...document.querySelectorAll('.reveal')].every(e=>e.classList.contains('in'))));
-ok('CTA links to the app', await p.getAttribute('.big','href')==='./index.html');
+ok('CTA links to the app', await p.getAttribute('.big','href')==='./app.html');
 await p.click('.toggle'); await p.waitForTimeout(600);
 await p.evaluate(()=>window.scrollTo(0,0)); await p.waitForTimeout(400);
 await p.screenshot({path:'land-top.png'});
@@ -39,7 +39,7 @@ await p.evaluate(()=>window.scrollTo(0,900)); await p.waitForTimeout(500);
 await p.screenshot({path:'land-mid.png'});
 // desktop
 const d=await br.newPage({viewport:{width:1000,height:800}});
-await d.goto('file:///home/user/Widget/landing.html'); await d.waitForTimeout(600);
+await d.goto('file:///home/user/Widget/index.html'); await d.waitForTimeout(600);
 console.log('desktop no h-scroll:', await d.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1));
 console.log(`\nPASSED ${pass}  FAILED ${fail}`);
 await br.close();

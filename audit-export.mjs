@@ -4,7 +4,7 @@ const ctx=await br.newContext({viewport:{width:390,height:844},acceptDownloads:t
 const p=await ctx.newPage(); let pass=0,fail=0;
 const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
-await p.goto('file:///home/user/Widget/index.html');
+await p.goto('file:///home/user/Widget/app.html');
 // seed
 await p.evaluate(()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.stringify({
  books:[{id:'b1',title:'The Secret History',author:'Donna Tartt',page:142,pages:559,vibe:'dusk',at:n}],
