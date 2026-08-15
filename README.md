@@ -63,8 +63,9 @@ for f in audit-*.mjs; do node $f; done
 | `audit-landing.mjs` | the landing page | 14 |
 | `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
 | `audit-migration.mjs` | old Margin data surviving the rename | 9 |
+| `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
 
-116 checks in total.
+123 checks in total.
 
 The one thing it cannot cover is a live call to dictionaryapi.dev: the build
 environment blocks that host, so the success path is asserted against the

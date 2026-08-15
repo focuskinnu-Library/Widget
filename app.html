@@ -462,11 +462,19 @@ async function doLookup(){
     if($('#ph')) $('#ph').value=r.phonetic||'';
     if($('#au')) $('#au').value=r.audio||'';
   }catch(e){
+    // The browser knows whether it has a connection. If it does and the request
+    // still never left, the page is blocking it — say that, rather than making
+    // someone go and check their wifi.
+    const offline = ('onLine' in navigator) && navigator.onLine === false;
+    const head = e.code==='none' ? `No entry for “${esc(term)}”`
+               : offline         ? 'You’re offline'
+                                 : 'This page blocked the lookup';
+    const why  = e.code==='none' ? 'Neither dictionary has it — try the singular, or just write the meaning yourself.'
+               : offline         ? 'Your device says it has no connection. Try again once you’re back online — or write the meaning yourself, which works either way.'
+                                 : 'Your connection is fine. Previews like this one refuse outside requests, so the dictionary can’t be reached from here. Open LingoBox from its own address and Look up works. You can still write the meaning yourself below.';
     box.innerHTML=`<div class="lkh" style="display:block">
-      <span class="lbl">${e.code==='none'?`No entry for “${esc(term)}”`:'Couldn’t reach a dictionary'}</span>
-      <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink2)">
-        ${e.code==='none'?'Neither dictionary has it — try the singular, or just write it yourself.'
-          :'You’re offline, or this page blocks outside requests. It works on your own link.'}</div>
+      <span class="lbl">${head}</span>
+      <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink2)">${why}</div>
       ${hearLinks(term)}</div>`;
   }
 }
