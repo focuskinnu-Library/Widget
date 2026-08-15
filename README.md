@@ -1,4 +1,4 @@
-# Margin
+# LingoBox
 
 A quiet reading companion. Keep the words, the page, the lines and the pictures in your head — all attached to the book you met them in.
 
@@ -33,7 +33,8 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 
 ## Notes
 
-- **Everything stays on the device.** Data lives in `localStorage` under `margin.v1`. Nothing is sent anywhere.
+- **Everything stays on the device.** Data lives in `localStorage` under `lingobox.v1`. Nothing is sent anywhere.
+- **Renamed from Margin.** Anything saved under the old `margin.v1` key still loads, and the first write moves it across. The old key is left in place as a safety net.
 - **Which is why backups matter.** `localStorage` is per-browser and per-origin, and it goes when browsing data is cleared — iOS Safari also evicts it after about a week of not visiting, unless the app has been added to the home screen. Take a backup now and then; it is the only copy that survives a new phone.
 - **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. The panel names whichever answered.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
@@ -48,11 +49,12 @@ themes, persistence, escaping of hostile input, corrupt and legacy storage, and
 delete cascades.
 
 ```
-npm i playwright && node audit.mjs && node audit-lookup.mjs && node audit-say.mjs && node audit-landing.mjs && node audit-export.mjs
+npm i playwright && node audit.mjs && node audit-lookup.mjs && node audit-say.mjs && node audit-landing.mjs && node audit-export.mjs && node audit-migration.mjs
 ```
 
 `audit-say.mjs` covers pronunciation (10), `audit-landing.mjs` the landing page (14),
-and `audit-export.mjs` backup, export and restore (19) — 127 checks in total.
+`audit-export.mjs` backup, export and restore (19), and `audit-migration.mjs`
+the rename from Margin (9) — 136 checks in total.
 `audit-lookup.mjs` adds 17 checks over the two-dictionary fallback: primary
 success without touching the fallback, primary down, primary 404, both 404,
 both unreachable, malformed JSON, and an empty-but-valid response.

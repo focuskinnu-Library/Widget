@@ -131,7 +131,7 @@ ok('vibe persists into dictionary', await p.evaluate(()=>document.documentElemen
 await p.click('.tab[data-go=shelf]');await p.click('.row');
 await p.click('.hero .icon-btn >> nth=1');await p.click('.vibe:has-text("Fern")');await p.click('#ok');
 ok('vibe changeable from book', await p.evaluate(()=>document.documentElement.dataset.vibe)==='fern');
-ok('vibe stored on the book', await p.evaluate(()=>JSON.parse(localStorage.getItem('margin.v1')).books[0].vibe)==='fern');
+ok('vibe stored on the book', await p.evaluate(()=>JSON.parse(localStorage.getItem('lingobox.v1')).books[0].vibe)==='fern');
 
 console.log('\n── 9. THEME ──');
 ok('theme toggle exists inside a book', await p.locator('.hero .icon-btn').count()===2);
@@ -147,7 +147,7 @@ ok('theme survives reload', await p.evaluate(()=>document.documentElement.datase
 
 console.log('\n── 10. PERSISTENCE + SAFETY ──');
 ok('books survive reload', await p.isVisible('text=The Secret History'));
-const counts=await p.evaluate(()=>{const d=JSON.parse(localStorage.getItem('margin.v1'));return [d.books.length,d.words.length,d.quotes.length,d.notes.length]});
+const counts=await p.evaluate(()=>{const d=JSON.parse(localStorage.getItem('lingobox.v1'));return [d.books.length,d.words.length,d.quotes.length,d.notes.length]});
 ok('all records persisted '+JSON.stringify(counts), counts[0]===1&&counts[1]===2&&counts[2]===1&&counts[3]===1);
 ok('no horizontal overflow', await p.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1));
 await p.close();
@@ -167,10 +167,10 @@ await p.close();
 
 console.log('\n── 12. CORRUPT / LEGACY DATA ──');
 p=await fresh();
-await p.evaluate(()=>localStorage.setItem('margin.v1','{ not json'));
+await p.evaluate(()=>localStorage.setItem('lingobox.v1','{ not json'));
 await p.reload();await p.waitForTimeout(300);
 ok('survives corrupt storage', await p.isVisible('text=Your shelf is empty'));
-await p.evaluate(()=>localStorage.setItem('margin.v1',JSON.stringify({
+await p.evaluate(()=>localStorage.setItem('lingobox.v1',JSON.stringify({
   books:[{id:'b1',title:'Old Book',author:'A',page:10,pages:100,at:Date.now()}],
   words:[{id:'w1',bookId:'b1',word:'old',meaning:'legacy meaning',page:5,at:Date.now(),srs:{ease:2.5,reps:0,interval:0,due:Date.now()}}],
   quotes:[],notes:[]})));
@@ -191,7 +191,7 @@ await p.fill('#w','w');await p.fill('#mine','m');await p.click('#ok');
 p.once('dialog',d=>d.accept());
 await p.click('text=Delete this book');await p.waitForTimeout(400);
 ok('book deleted', await p.isVisible('text=Your shelf is empty'));
-const left=await p.evaluate(()=>{const d=JSON.parse(localStorage.getItem('margin.v1'));return d.words.length});
+const left=await p.evaluate(()=>{const d=JSON.parse(localStorage.getItem('lingobox.v1'));return d.words.length});
 ok('orphan words cleaned up', left===0);
 await p.close();
 

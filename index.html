@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#f6f7f9">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Margin">
-<title>Margin — a reading companion</title>
+<meta name="apple-mobile-web-app-title" content="LingoBox">
+<title>LingoBox — a reading companion</title>
 <style>
 /* ── base: neutrals per mode, hue per vibe ─────────────────────── */
 :root{
@@ -216,11 +216,12 @@ button.row:hover{transform:translateY(-2px);border-color:var(--accent)}
 <script>
 'use strict';
 /* ---------------------------------------------------------------
-   Margin — a reading companion.
+   LingoBox — a reading companion.
    Everything lives on this device. No account, no server, no eyes.
 ----------------------------------------------------------------*/
 
-const KEY = 'margin.v1';
+const KEY = 'lingobox.v1';
+const OLD_KEY = 'margin.v1';   // renamed from LingoBox; keep reading the old box
 const DAY = 864e5;
 // Two dictionaries, tried in order. The first is richer — pronunciation and
 // synonyms — but it is a small volunteer service that goes down. Wiktionary
@@ -252,7 +253,7 @@ let draft = null;          // vibe being previewed inside a sheet
 
 function load(){
   try{
-    const d = JSON.parse(localStorage.getItem(KEY));
+    const d = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY));
     if(d && d.books) return Object.assign({books:[],words:[],quotes:[],notes:[],theme:null,vibe:'paper'}, d);
   }catch(e){}
   return {books:[], words:[], quotes:[], notes:[], theme:null, vibe:'paper'};
@@ -407,7 +408,7 @@ async function doLookup(){
       <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink-2)">
         ${e.code === 'none'
           ? 'Neither dictionary has it. It may be a name, a plural, or too new. Try the singular, or just write the meaning yourself.'
-          : 'You’re offline, or this page is blocking outside requests. Open Margin from your own link and lookup works.'}
+          : 'You’re offline, or this page is blocking outside requests. Open LingoBox from your own link and lookup works.'}
       </div>
       <a class="link" href="${web}" target="_blank" rel="noopener"
          style="display:inline-block;margin-top:8px">Search the web for “${esc(term)}” ↗</a>
@@ -446,11 +447,11 @@ async function offer(filename, text, mime){
 }
 
 function exportBackup(){
-  offer(`margin-backup-${stamp()}.json`, JSON.stringify(db, null, 2), 'application/json');
+  offer(`lingobox-backup-${stamp()}.json`, JSON.stringify(db, null, 2), 'application/json');
 }
 
 function exportMarkdown(){
-  const L = [`# Margin — ${stamp()}`, ''];
+  const L = [`# LingoBox — ${stamp()}`, ''];
   db.books.forEach(b => {
     L.push(`## ${b.title}`, `*${b.author || '—'}* · page ${b.page||0}${b.pages ? ' of ' + b.pages : ''}`, '');
     const of = k => db[k].filter(x => x.bookId === b.id);
@@ -470,7 +471,7 @@ function exportMarkdown(){
     if(ns.length){ L.push('### Journal', '');
       ns.forEach(n => L.push(`**${new Date(n.at).toLocaleDateString()}**${n.page ? ` · p.${n.page}` : ''}`, '', n.text, '')); }
   });
-  offer(`margin-${stamp()}.md`, L.join('\n'), 'text/markdown');
+  offer(`lingobox-${stamp()}.md`, L.join('\n'), 'text/markdown');
 }
 
 function exportAnki(){
@@ -484,7 +485,7 @@ function exportAnki(){
     return q(w.word) + ',' + q(back);
   });
   if(!rows.length) return toast('No words to export yet');
-  offer(`margin-anki-${stamp()}.txt`, rows.join('\n'), 'text/plain');
+  offer(`lingobox-anki-${stamp()}.txt`, rows.join('\n'), 'text/plain');
 }
 
 function importBackup(input){
@@ -493,8 +494,8 @@ function importBackup(input){
   const r = new FileReader();
   r.onload = () => {
     let d;
-    try{ d = JSON.parse(r.result); }catch(e){ return toast('That is not a Margin backup'); }
-    if(!d || !Array.isArray(d.books)) return toast('That is not a Margin backup');
+    try{ d = JSON.parse(r.result); }catch(e){ return toast('That is not a LingoBox backup'); }
+    if(!d || !Array.isArray(d.books)) return toast('That is not a LingoBox backup');
     let added = 0;
     ['books','words','quotes','notes'].forEach(k => {
       const have = new Set((db[k] || []).map(x => x.id));
@@ -557,7 +558,7 @@ function render(){
 function topBar(sub){
   const dark = document.documentElement.dataset.theme === 'dark';
   return `<header>
-    <div><div class="brand">Mar<span class="grad">gin</span></div>
+    <div><div class="brand">Lingo<span class="grad">Box</span></div>
     <div class="dim" style="margin-top:3px">${sub}</div></div>
     <button class="icon-btn" onclick="toggleTheme()" title="Light or dark">${dark ? '☀' : '☾'}</button>
   </header>`;
