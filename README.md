@@ -7,7 +7,9 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 ## What it does
 
-**Your shelf** — a greeting, a streak, and every book as a card in its own colours, with a progress ring and what you've saved inside it.
+**Your shelf** — a greeting, a streak, and every book as a card with its cover, in its own colours, with a progress ring and what you've saved inside it.
+
+**Adding a book takes one search** — type part of a title and [Open Library](https://openlibrary.org/developers/api) fills in the author, the length and the cover. Free, no key, no account. Type it all in by hand if you'd rather.
 
 **A world per book** — pick a genre and the whole app dresses for it, palette *and* weather: petals for romance, embers for fantasy, rain for thrillers, dust motes for literary, stars for sci-fi, leaves for nature, fog for horror, drifting light for poetry. It runs on a canvas behind the page and turns itself off for anyone who asks for reduced motion.
 
@@ -20,12 +22,15 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 **Dictionary** — every word you've ever saved, A–Z, searchable, each one still carrying the book and page you met it on.
 
+**Quotes as images** — any quote becomes a square image in that book's colours, drawn on a canvas here and handed straight to the share sheet. Nothing is uploaded.
+
 **Backup & export** — download everything as JSON and restore it later, or take it out as Markdown for Obsidian and Notion, or as a deck for Anki. Restoring only adds what's missing, so it never overwrites what you already have.
 
 **Practice** — three ways, all on the same SM-2 schedule so every answer moves the word's forgetting curve:
 - **Flashcards** — your wording first, the dictionary's underneath
 - **Quiz** — four words, one meaning; the fastest way to find the gaps
 - **Spelling** — hear it, then spell it
+- **Say it** — the browser listens and tells you whether you got it. Your voice never leaves the device, and there is no key or service behind it
 
 **Reminders** — the browser nudges you when words go stale. Only ever about your own words. They need the app to have been opened, because there is no server behind this.
 
@@ -40,6 +45,7 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 - **No account, by design.** You pick a name on first run and that's it — no password, no email, nothing sent anywhere. Real sign-in would need a server, which would mean your journal leaving your device.
 - **Everything stays on the device.** Data lives in `localStorage` under `lingobox.v1`. Nothing is sent anywhere.
 - **Renamed from Margin.** Anything saved under the old `margin.v1` key still loads, and the first write moves it across. The old key is left in place as a safety net.
+- **The browser is asked to keep it.** On first run LingoBox calls `navigator.storage.persist()`, which asks the browser not to evict this data when space runs short. It is a request, not a guarantee.
 - **Which is why backups matter.** `localStorage` is per-browser and per-origin, and it goes when browsing data is cleared — iOS Safari also evicts it after about a week of not visiting, unless the app has been added to the home screen. Take a backup now and then; it is the only copy that survives a new phone.
 - **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. Wiktionary answers in many languages — English first, then whichever language actually has the word — so `pyar` resolves as Hindi. The panel names the source and the language.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
@@ -66,8 +72,9 @@ for f in audit-*.mjs; do node $f; done
 | `audit-migration.mjs` | old Margin data surviving the rename | 9 |
 | `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
 | `audit-languages.mjs` | words in languages other than English | 11 |
+| `audit-extras.mjs` | covers from Open Library, speech practice, quote images | 25 |
 
-140 checks in total.
+165 checks in total.
 
 The one thing it cannot cover is a live call to dictionaryapi.dev: the build
 environment blocks that host, so the success path is asserted against the
