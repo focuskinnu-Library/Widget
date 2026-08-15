@@ -25,7 +25,7 @@ await p.click('#lk .say');await p.waitForTimeout(300);
 ok('tries the real recording first', (await p.evaluate(()=>window.__played)).includes('https://example.com/love.mp3'));
 ok('falls back to voice when audio fails', (await p.evaluate(()=>window.__spoke)).includes('love'));
 await p.click('.sense >> nth=0');await p.fill('#mine','safe room');await p.click('#ok');await p.waitForTimeout(300);
-ok('audio url stored on the word', await p.evaluate(()=>JSON.parse(localStorage.getItem('margin.v1')).words[0].audio==='https://example.com/love.mp3'));
+ok('audio url stored on the word', await p.evaluate(()=>JSON.parse(localStorage.getItem('lingobox.v1')).words[0].audio==='https://example.com/love.mp3'));
 ok('speaker on word in book', await p.isVisible('.entry .say'));
 await p.click('.tab[data-go=dict]');
 ok('speaker in dictionary', await p.isVisible('.entry .say'));
@@ -37,7 +37,7 @@ ok('speaking does NOT flip the card', !(await p.isVisible('.rate')));
 await p.click('.flash');await p.waitForTimeout(250);
 ok('card still flips normally', await p.isVisible('.rate'));
 // word with no audio -> straight to voice
-await p.evaluate(()=>{const d=JSON.parse(localStorage.getItem('margin.v1'));d.words[0].audio='';localStorage.setItem('margin.v1',JSON.stringify(d))});
+await p.evaluate(()=>{const d=JSON.parse(localStorage.getItem('lingobox.v1'));d.words[0].audio='';localStorage.setItem('lingobox.v1',JSON.stringify(d))});
 await p.reload();await p.waitForTimeout(300);
 await p.click('.tab[data-go=dict]');await p.evaluate(()=>{window.__spoke=[];window.__played=[]});
 await p.click('.entry .say');await p.waitForTimeout(250);

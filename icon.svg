@@ -4,6 +4,6 @@
   </linearGradient></defs>
   <rect width="512" height="512" rx="112" fill="url(#g)"/>
   <path d="M150 132v248" stroke="#fff" stroke-width="20" stroke-linecap="round" opacity=".55"/>
-  <text x="196" y="330" font-family="Palatino,Georgia,serif" font-size="210"
-        font-weight="600" fill="#fff">M</text>
+  <text x="212" y="330" font-family="Palatino,Georgia,serif" font-size="210"
+        font-weight="600" fill="#fff">L</text>
 </svg>

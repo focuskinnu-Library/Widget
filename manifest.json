@@ -1,6 +1,6 @@
 {
-  "name": "Margin — a reading companion",
-  "short_name": "Margin",
+  "name": "LingoBox — a reading companion",
+  "short_name": "LingoBox",
   "description": "Keep the words, the page, the lines and the pictures in your head.",
   "start_url": "./index.html",
   "scope": "./",
