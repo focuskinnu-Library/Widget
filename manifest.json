@@ -1,19 +1,37 @@
 {
-  "name": "LingoBox \u2014 a reading companion",
+  "id": "./",
+  "name": "LingoBox — a reading companion",
   "short_name": "LingoBox",
-  "description": "Keep the words, the page, the lines and the pictures in your head.",
+  "description": "Keep the words a book gives you — with the page you met them on, the lines worth remembering, and the pictures they put in your head.",
   "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f7f9",
-  "theme_color": "#f6f7f9",
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
+  "background_color": "#0e0f14",
+  "theme_color": "#0e0f14",
+  "categories": ["education", "books", "productivity"],
   "icons": [
+    { "src": "icon.svg",        "type": "image/svg+xml", "sizes": "any" },
+    { "src": "icon-192.png",    "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "icon-512.png",    "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "icon-maskable-192.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
+    { "src": "icon-maskable-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
-      "purpose": "any maskable"
+      "name": "Practice due words",
+      "short_name": "Practice",
+      "url": "./app.html#practice",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My dictionary",
+      "short_name": "Words",
+      "url": "./app.html#words",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

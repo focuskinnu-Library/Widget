@@ -1,9 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#5b6cff"/><stop offset="1" stop-color="#9b7bff"/>
-  </linearGradient></defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="LingoBox">
+  <!-- LingoBox mark: three book spines, and a word caught mid-flight.
+       Pure geometry — no text, so it renders identically everywhere. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b6cff"/>
+      <stop offset="1" stop-color="#9b7bff"/>
+    </linearGradient>
+  </defs>
   <rect width="512" height="512" rx="112" fill="url(#g)"/>
-  <path d="M150 132v248" stroke="#fff" stroke-width="20" stroke-linecap="round" opacity=".55"/>
-  <text x="212" y="330" font-family="Palatino,Georgia,serif" font-size="210"
-        font-weight="600" fill="#fff">L</text>
+  <!-- spines: standing, standing, leaning -->
+  <rect x="152" y="136" width="46" height="240" rx="15" fill="#ffffff" opacity=".94"/>
+  <rect x="216" y="164" width="46" height="212" rx="15" fill="#ffffff" opacity=".74"/>
+  <g transform="rotate(12 296 258)">
+    <rect x="273" y="128" width="46" height="260" rx="15" fill="#ffffff" opacity=".88"/>
+  </g>
+  <!-- the word that escaped the page -->
+  <path d="M368 96 l16 38 38 16 -38 16 -16 38 -16 -38 -38 -16 38 -16 z" fill="#ffffff"/>
+  <circle cx="128" cy="128" r="9" fill="#ffffff" opacity=".7"/>
+  <circle cx="404" cy="316" r="7" fill="#ffffff" opacity=".55"/>
+  <circle cx="118" cy="330" r="5" fill="#ffffff" opacity=".45"/>
 </svg>
