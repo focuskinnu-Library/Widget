@@ -752,15 +752,23 @@ function showResult(r) {
 
 /* ==========================================================  online   == */
 
-function openOnline(prefillCode) {
+async function openOnline(prefillCode) {
   show('online');
   const p = store.load();
-  const canNet = typeof window.Peer === 'function';
   const body = $('#onlineBody');
+  body.innerHTML = `<div class="card" style="text-align:center"><span class="spinner"></span>
+    <p class="small muted" style="margin-top:10px">finding a way through…</p></div>`;
 
-  if (!canNet) {
-    body.innerHTML = `<div class="notice">Online play needs the connection library, which did not load.
-      Check your network and reload — everything else works offline.</div>`;
+  // Our own relay first — it depends on nothing we do not ship. Peer to peer
+  // is the fallback for a purely static deployment.
+  app.transport = (await net.relayAvailable()) ? 'relay' : (net.available() ? 'peer' : null);
+
+  if (!app.transport) {
+    body.innerHTML = `<div class="notice">No way to reach other players from here.
+      Online play needs either the app's own server running, or the peer-to-peer
+      library to load. Everything else works offline.</div>
+      <button class="btn" style="margin-top:12px" id="retryNet">Try again</button>`;
+    $('#retryNet').onclick = () => openOnline(prefillCode);
     return;
   }
 
@@ -788,7 +796,9 @@ function openOnline(prefillCode) {
       <button class="btn" id="joinBtn" style="margin-top:10px">Join</button>
     </div>
     <p class="tiny muted" style="text-align:center">
-      Connections are peer to peer. Keep this tab open — the room lives in it.
+      ${app.transport === 'relay'
+        ? 'Rooms run on this app’s own server. Keep this tab open — the host holds the game.'
+        : 'Connections are peer to peer. Keep this tab open — the room lives in it.'}
     </p>`;
 
   $$('#seatSeg button').forEach((b) => b.onclick = () => {
@@ -811,7 +821,8 @@ async function createRoom() {
   body.innerHTML = `<div class="card" style="text-align:center"><span class="spinner"></span>
     <p class="small muted" style="margin-top:10px">opening a room…</p></div>`;
 
-  const host = new net.Host({
+  const Maker = app.transport === 'relay' ? net.RelayHost : net.Host;
+  const host = new Maker({
     name: p.name, seats: app.lobbySeats,
     onEvent: (e) => onHostEvent(e),
   });
@@ -819,8 +830,9 @@ async function createRoom() {
     await host.open();
   } catch (err) {
     body.innerHTML = `<div class="notice">Could not open a room (${esc(err.message || err)}).
-      The signalling service may be busy — try again in a moment.</div>
-      <button class="btn" style="margin-top:10px" onclick="location.reload()">Reload</button>`;
+      Try again in a moment.</div>
+      <button class="btn" style="margin-top:12px" id="retryHost">Try again</button>`;
+    $('#retryHost').onclick = () => openOnline(null);
     return;
   }
   app.net = { role: 'host', host, code: host.code };
@@ -834,15 +846,24 @@ function renderLobby() {
   const seats = Array.from({ length: host.seats }, (_, i) => host.players[i] || null);
   $('#onlineBody').innerHTML = `
     <div class="card" style="text-align:center">
-      <div class="up muted" style="margin-bottom:8px">Room code</div>
+      <div class="up muted" style="margin-bottom:var(--s2)">Room code</div>
       <div class="codebox">${esc(host.code)}</div>
-      <div class="row" style="margin-top:12px">
+      <p class="tiny muted" style="margin-top:var(--s2)">They can type this code in, or open the link below.</p>
+    </div>
+    <div class="card">
+      <div class="up muted" style="margin-bottom:var(--s2)">The invite link</div>
+      <input type="text" id="linkField" readonly value="${esc(link)}"
+        style="font-size:.82rem;text-align:center" onclick="this.select()">
+      <div class="row" style="margin-top:var(--s2)">
         <button class="btn" id="copyLink">Copy link</button>
         <button class="btn" id="shareLink">Share</button>
       </div>
+      <p class="tiny muted" id="copyNote" style="margin-top:var(--s2);text-align:center">
+        Tap the link to select it if the button is blocked.
+      </p>
     </div>
     <div class="card">
-      <div class="up muted" style="margin-bottom:8px">At the desk</div>
+      <div class="up muted" style="margin-bottom:var(--s2)">At the desk</div>
       <div class="seatlist">
         ${seats.map((s, i) => `<div class="seat ${s ? '' : 'empty'}"><span class="d"></span>
           ${s ? esc(s.name) + (i === 0 ? ' · you' : '') : 'waiting…'}</div>`).join('')}
@@ -853,26 +874,68 @@ function renderLobby() {
     </button>
     <button class="btn ghost" id="cancelRoom">Close the room</button>`;
 
+  const note = $('#copyNote');
   $('#copyLink').onclick = async () => {
-    try { await navigator.clipboard.writeText(link); flashToastGlobal('link copied'); }
-    catch { prompt('Copy this link', link); }
+    const done = await copyText(link);
+    note.textContent = done ? 'Copied. Send it to whoever you are playing.'
+                            : 'Could not reach the clipboard — the link is selected, copy it by hand.';
+    if (done) flashToastGlobal('link copied');
+    else selectLink();
   };
   $('#shareLink').onclick = async () => {
     const data = { title: 'Last Page', text: `Room ${host.code} — come play squares`, url: link };
-    if (navigator.share) { try { await navigator.share(data); } catch { /* cancelled */ } }
-    else { try { await navigator.clipboard.writeText(link); flashToastGlobal('link copied'); } catch { prompt('Copy this link', link); } }
+    if (navigator.share) {
+      try { await navigator.share(data); return; } catch { /* cancelled or blocked */ }
+    }
+    const done = await copyText(link);
+    note.textContent = done ? 'Sharing is not available here, so the link was copied instead.'
+                            : 'Sharing is not available here — the link is selected, copy it by hand.';
+    if (!done) selectLink();
   };
   $('#startOnline').onclick = startOnlineGame;
   $('#cancelRoom').onclick = () => { leaveOnline(); back(); };
 }
 
+function selectLink() {
+  const f = $('#linkField');
+  if (!f) return;
+  f.focus();
+  f.select();
+  f.setSelectionRange(0, f.value.length);
+}
+
+/** Clipboard access is blocked in a lot of embedded contexts. Try every way,
+ *  and if they all fail let the caller fall back to showing the text. */
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* blocked, try the old way */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (ok) return true;
+  } catch { /* nothing left to try */ }
+  return false;
+}
+
 function onHostEvent(e) {
+  if (e.t === 'roster') { if (app.screen === 'online') renderLobby(); return; }
   if (e.t === 'join' || e.t === 'leave') {
     if (app.screen === 'online') renderLobby();
-    if (e.t === 'join') flashToastGlobal(`${e.players[e.players.length - 1].name} joined`);
+    if (e.t === 'join') flashToastGlobal(`${e.players[e.players.length - 1]?.name || 'someone'} joined`);
     if (e.t === 'leave' && app.screen === 'game') {
-      flashToast(`${e.who.name} left`);
-      app.seats = app.seats.map((s, i) => (i === e.who.seat ? { ...s, gone: true } : s));
+      flashToast(`${e.who?.name || 'someone'} left`);
+      if (e.who?.seat >= 0) app.seats = app.seats.map((s, i) => (i === e.who.seat ? { ...s, gone: true } : s));
     }
   }
   if (e.t === 'move') {
@@ -910,11 +973,15 @@ async function joinRoom(code) {
   body.innerHTML = `<div class="card" style="text-align:center"><span class="spinner"></span>
     <p class="small muted" style="margin-top:10px">knocking on room ${esc(code)}…</p></div>`;
 
-  const guest = new net.Guest({ name: p.name, code, onEvent: onGuestEvent });
+  if (!app.transport) app.transport = (await net.relayAvailable()) ? 'relay' : (net.available() ? 'peer' : null);
+  const Joiner = app.transport === 'relay' ? net.RelayGuest : net.Guest;
+  const guest = new Joiner({ name: p.name, code, onEvent: onGuestEvent });
   try {
     await guest.open();
   } catch (err) {
     const why = err.message === 'no-room' ? 'No room with that code. Check it and try again.'
+      : err.message === 'full' ? 'That room is already full.'
+      : err.message === 'started' ? 'That game has already started.'
       : err.message === 'timeout' ? 'No answer. The host may have closed the tab.'
       : `Could not connect (${esc(err.message || err)}).`;
     body.innerHTML = `<div class="notice">${why}</div>

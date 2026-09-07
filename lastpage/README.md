@@ -86,9 +86,13 @@ Both are the same canvas and the same game. Nothing about play changes.
   world, one attempt, its own leaderboard.
 - **Quick Match** — pick a bench, a board size, and who draws first.
 - **Pass & Play** — 2 to 4 people, one screen, one notebook.
-- **Invite a Friend** — a room code and a link. Peer to peer over WebRTC, so it
-  works from any static host with no server of ours in the middle. 2 to 4
-  players; the host's tab holds the room.
+- **Invite a Friend** — a room code and a link, 2 to 4 players. Two transports,
+  picked automatically: the app's own relay when a server is reachable
+  (server-sent events down, POST up — no WebSocket upgrade, so it survives
+  proxies), otherwise peer to peer over WebRTC for a purely static deploy. The
+  host's tab owns the game; the relay only passes notes. The invite link is
+  always shown as selectable text, because clipboard access is blocked in a lot
+  of embedded contexts.
 
 ## Reasons to start one more
 
@@ -129,7 +133,10 @@ PORT=8080 node lastpage/server/server.mjs
 ```
 
 No dependencies. Scores land in `lastpage/server/scores.json` (gitignored).
-Endpoints: `GET /api/health`, `GET|POST /api/scores`, `GET|POST /api/daily`.
+Endpoints: `GET /api/health`, `GET|POST /api/scores`, `GET|POST /api/daily`,
+and the room relay at `POST /api/room/create|join|send|leave` with
+`GET /api/room/stream`. Rooms live in memory, die with the host and are swept
+after 45 minutes idle.
 Totals only ever move forward, submissions are rate limited and field-clamped,
 and the daily board takes one entry per device per day.
 
@@ -149,25 +156,37 @@ integrity would mean replaying submitted games server-side.
 ## Tests
 
 ```bash
-node lastpage/strength.mjs    # the bots really are three different bots
-node lastpage/audit.mjs       # boots the real app and plays it (needs: npm i -D jsdom)
+node lastpage/strength.mjs    # the bots really are three different bots      (13)
+node lastpage/audit.mjs       # boots the real app in jsdom and plays it      (99)
+node lastpage/relay-test.mjs  # two players, one room, a game over the wire   (21)
 ```
 
 `audit.mjs` runs the actual `index.html` and the actual modules in jsdom and
-plays real games through the real click path — 88 checks covering the name gate,
-both skins, the ladder, a game to the last box, scoring and prizes, pause and
-resume, pass-and-play with four, daily determinism, all four ranking tabs, and
-the how-to. Chromium could not be downloaded in this sandbox, so canvas is
-stubbed; everything else is the real thing.
+plays real games through the real click path: the name gate, both skins, the
+ladder, a game to the last box, scoring and prizes, pause and resume,
+pass-and-play with four, daily determinism, all four ranking tabs, and the
+how-to. Chromium could not be downloaded in this sandbox, so canvas is stubbed.
+
+jsdom has no layout engine, which once let a real bug through — stacked labels
+were inline `<span>`s, so every title collided with its description. The audit
+now reads those rules straight off the stylesheet, and the spacing scale with
+them, so that class of fault cannot come back unseen.
+
+`relay-test.mjs` needs the server up. It speaks raw server-sent events, opens a
+room, joins it, plays moves both ways, and checks the room dies with the host.
 
 ## Notes
 
 - Served, not opened from disk — ES modules need `http://`, like any modern
   static site.
+- Spacing runs off one scale (`--s1`…`--s5`) declared in `css/base.css`. Use it
+  rather than fresh pixel values.
 - Data lives in `localStorage` under `lastpage.v1`, plus `lastpage.resume.v1`
   for the game you walked out of.
-- PeerJS is loaded from a CDN and is the only third-party runtime dependency. If
-  it fails to load, the online screen says so and everything else still works.
+- PeerJS is loaded from a CDN and is the only third-party runtime dependency,
+  and only for the peer-to-peer fallback. With the server running, online play
+  reaches nothing but this app's own origin. If neither transport is available
+  the online screen says so plainly and offers a retry; everything else works.
 - LingoBox's service worker at the repo root was scoped to ignore `/lastpage/`,
   so the two can share an origin without it serving the wrong shell or caching
   the rankings.

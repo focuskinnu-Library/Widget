@@ -279,9 +279,10 @@ ok('the notebook can be thrown away', !!$('#wipeBtn'));
 
 console.log('\n── INVITE A FRIEND ──');
 await click('[data-back]', 200);
-await click('[data-go="online"]', 250);
+await click('[data-go="online"]', 400);
 ok('online screen opens', onScreen('online'));
-ok('degrades honestly with no peer library', /did not load/.test($('#onlineBody').textContent));
+ok('says plainly when no transport is reachable', /No way to reach other players/.test($('#onlineBody').textContent));
+ok('and offers a retry rather than a dead end', !!$('#retryNet'));
 
 console.log('\n── HOW TO PLAY ──');
 await click('[data-back]', 200);
@@ -291,6 +292,36 @@ ok('teaches the third-side trap', /third\s+side/i.test(howText));
 ok('teaches chains', /chain/i.test(howText));
 ok('teaches the double cross', /double cross/i.test(howText));
 await click('#gotIt', 120);
+
+console.log('\n── LAYOUT RULES jsdom CANNOT SEE ──');
+/* jsdom has no layout engine, so a title and its description colliding on one
+   line is invisible to it. These are read straight off the stylesheet. */
+{
+  const css = fs.readFileSync(path.join(ROOT, 'css/base.css'), 'utf8');
+  const rule = (sel) => {
+    const m = css.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}'));
+    return m ? m[1] : '';
+  };
+  const stacks = (sel) => /display:\s*(block|flex)/.test(rule(sel));
+  ok('mode title is a block, not inline', stacks('.mode .t'));
+  ok('mode description is a block, not inline', stacks('.mode .d'));
+  ok('mode label column stacks them', /flex-direction:\s*column/.test(rule('.mode > span:nth-child(2)')));
+  ok('rival name is a block, not inline', stacks('.rival .nm'));
+  ok('rival description is a block, not inline', stacks('.rival .ds'));
+  ok('rival label column stacks them', /flex-direction:\s*column/.test(rule('.rival > span:nth-child(2)')));
+
+  // every stacked label pattern in the markup must have a stacking rule
+  const pairs = [['.mode', '.t', '.d'], ['.rival', '.nm', '.ds']];
+  for (const [parent, a, b] of pairs) {
+    const inline = [a, b].filter((c) => !stacks(`${parent} ${c}`));
+    ok(`${parent} labels never run together`, inline.length === 0, inline.join(' '));
+  }
+
+  // spacing comes from one scale, not scattered magic numbers
+  ok('a single spacing scale is declared', /--s1:.*--s2:|--s1:/s.test(css) && /--s5:/.test(css));
+  const scaleUses = (css.match(/var\(--s[1-5]\)/g) || []).length;
+  ok('the scale is actually used throughout', scaleUses >= 30, `${scaleUses} uses`);
+}
 
 console.log('\n── NO STRAY ERRORS ──');
 ok('nothing threw across the whole session', errors.length === 0);

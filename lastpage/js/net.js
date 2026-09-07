@@ -195,3 +195,187 @@ export class Guest {
 }
 
 export const available = peerReady;
+
+/* ====================================================== the relay ======= */
+/* Same two roles, same messages, but carried by our own server instead of a
+ * public broker: server-sent events downstream, POST upstream. This is the
+ * preferred transport whenever an API is reachable, because it depends on
+ * nothing we do not ship ourselves. */
+
+const apiBase = () =>
+  (typeof window !== 'undefined' && window.LASTPAGE_API) ||
+  (location.protocol.startsWith('http') ? '/api' : null);
+
+async function apiCall(path, body, ms = 8000) {
+  const root = apiBase();
+  if (!root) throw new Error('offline');
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const res = await fetch(root + path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: ctl.signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'http ' + res.status);
+    return data;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Is our own relay reachable? Decides which transport the app offers. */
+export async function relayAvailable() {
+  const root = apiBase();
+  if (!root || typeof EventSource !== 'function') return false;
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 3500);
+    const res = await fetch(root + '/health', { signal: ctl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return false;
+    const j = await res.json();
+    return !!j.relay;
+  } catch {
+    return false;
+  }
+}
+
+/** Shared plumbing: hold the event stream open and hand messages up. */
+class RelayLink {
+  constructor(onEvent) {
+    this.onEvent = onEvent || (() => {});
+    this.code = null;
+    this.playerId = null;
+    this.seat = -1;
+    this.players = [];
+    this.seats = 2;
+    this.es = null;
+    this.dead = false;
+  }
+
+  listen() {
+    const root = apiBase();
+    const es = new EventSource(`${root}/room/stream?code=${encodeURIComponent(this.code)}&playerId=${encodeURIComponent(this.playerId)}`);
+    this.es = es;
+    es.addEventListener('roster', (ev) => {
+      const d = JSON.parse(ev.data);
+      this.players = d.players;
+      this.seats = d.seats;
+      const me = d.players.find((p) => p.id === this.playerId);
+      if (me) this.seat = me.seat;
+      this.onRoster(d);
+    });
+    es.addEventListener('msg', (ev) => {
+      const d = JSON.parse(ev.data);
+      this.onMessage(d);
+    });
+    es.addEventListener('closed', () => { this.dead = true; this.onEvent({ t: 'closed' }); this.stop(); });
+    es.onerror = () => {
+      // EventSource retries by itself; only shout if the room is really gone.
+      if (this.es && this.es.readyState === 2 && !this.dead) {
+        this.dead = true;
+        this.onEvent({ t: 'closed' });
+      }
+    };
+    return new Promise((resolve) => {
+      const ready = () => resolve(true);
+      es.addEventListener('roster', ready, { once: true });
+      setTimeout(ready, 4000);
+    });
+  }
+
+  post(msg, to = 'all') {
+    if (this.dead) return;
+    apiCall('/room/send', { code: this.code, playerId: this.playerId, to, msg }).catch(() => {});
+  }
+
+  stop() {
+    try { this.es && this.es.close(); } catch { /* ignore */ }
+    this.es = null;
+  }
+
+  bye() {
+    this.dead = true;
+    const root = apiBase();
+    const body = JSON.stringify({ code: this.code, playerId: this.playerId });
+    // sendBeacon survives the tab closing; fetch is the fallback.
+    if (navigator.sendBeacon) navigator.sendBeacon(root + '/room/leave', new Blob([body], { type: 'application/json' }));
+    else apiCall('/room/leave', { code: this.code, playerId: this.playerId }).catch(() => {});
+    this.stop();
+  }
+
+  onRoster() {}
+  onMessage() {}
+}
+
+export class RelayHost extends RelayLink {
+  constructor({ name, seats = 2, onEvent }) {
+    super(onEvent);
+    this.name = name;
+    this.wantSeats = seats;
+    this.started = false;
+  }
+
+  async open() {
+    const r = await apiCall('/room/create', { name: this.name, seats: this.wantSeats });
+    this.code = r.code;
+    this.playerId = r.playerId;
+    this.seat = 0;
+    this.seats = r.seats;
+    this.players = [{ id: r.playerId, name: this.name, seat: 0 }];
+    await this.listen();
+    return this.code;
+  }
+
+  onRoster(d) {
+    const before = this.knownCount ?? 1;
+    this.knownCount = d.players.length;
+    if (d.players.length > before) this.onEvent({ t: 'join', players: d.players });
+    else if (d.players.length < before) this.onEvent({ t: 'leave', who: { name: 'someone', seat: -1 }, players: d.players });
+    else this.onEvent({ t: 'roster', players: d.players });
+  }
+
+  onMessage({ seat, msg }) {
+    if (!msg) return;
+    if (msg.t === 'move') this.onEvent({ t: 'move', seat, edge: msg.edge });
+    else if (msg.t === 'emoji') { this.post({ t: 'emoji', seat, key: msg.key }); this.onEvent({ t: 'emoji', seat, key: msg.key }); }
+    else if (msg.t === 'rematch') this.onEvent({ t: 'rematch', seat });
+  }
+
+  broadcastLobby() { /* the server owns the roster */ }
+  relay(msg) { this.post(msg); }
+
+  sendState(state, names, meta = {}) {
+    this.started = true;
+    this.post({ t: 'state', state, names, ...meta });
+  }
+
+  close() { this.bye(); }
+}
+
+export class RelayGuest extends RelayLink {
+  constructor({ name, code, onEvent }) {
+    super(onEvent);
+    this.name = name;
+    this.code = code.toUpperCase();
+  }
+
+  async open() {
+    const r = await apiCall('/room/join', { code: this.code, name: this.name });
+    this.playerId = r.playerId;
+    this.seat = r.seat;
+    this.seats = r.seats;
+    await this.listen();
+    return true;
+  }
+
+  onRoster(d) { this.onEvent({ t: 'lobby', players: d.players, seats: d.seats }); }
+  onMessage({ msg }) { if (msg) this.onEvent(msg); }
+
+  send(msg) { this.post(msg, 'host'); }
+  close() { this.bye(); }
+}
+

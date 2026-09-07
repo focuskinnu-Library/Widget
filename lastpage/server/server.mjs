@@ -58,14 +58,89 @@ const num = (v, max = 1e9) => {
 
 /* Enough to stop idle nonsense, not enough to be annoying. */
 const hits = new Map();
-function rateLimited(ip) {
+function rateLimited(ip, budget = 90) {
   const now = Date.now();
   const bucket = hits.get(ip) || { n: 0, t: now };
   if (now - bucket.t > 60000) { bucket.n = 0; bucket.t = now; }
   bucket.n++;
   hits.set(ip, bucket);
-  return bucket.n > 90;
+  return bucket.n > budget;
 }
+
+/* ---------------------------------------------------------- the rooms -- */
+/* A dumb relay. The host's browser owns the game; this just passes notes
+ * between desks, over server-sent events one way and POST the other. No
+ * WebSocket upgrade, so it survives every proxy we are likely to sit behind. */
+
+const rooms = new Map();
+const ROOM_IDLE_MS = 45 * 60 * 1000;
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no I, O, 0, 1
+
+function newCode() {
+  for (let tries = 0; tries < 50; tries++) {
+    let c = '';
+    for (let i = 0; i < 5; i++) c += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+    if (!rooms.has(c)) return c;
+  }
+  return 'R' + Date.now().toString(36).slice(-4).toUpperCase();
+}
+
+const newId = () => 'p' + Math.random().toString(36).slice(2, 10);
+
+function roster(room) {
+  return {
+    seats: room.seats,
+    started: room.started,
+    players: [...room.players.values()]
+      .sort((a, b) => a.seat - b.seat)
+      .map((p) => ({ id: p.id, name: p.name, seat: p.seat })),
+  };
+}
+
+function sse(res, event, data) {
+  if (!res || res.writableEnded) return;
+  try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch { /* gone */ }
+}
+
+function pushRoster(room) {
+  for (const p of room.players.values()) sse(p.res, 'roster', roster(room));
+}
+
+function touch(room) { room.at = Date.now(); }
+
+function dropPlayer(room, playerId) {
+  const p = room.players.get(playerId);
+  if (!p) return;
+  room.players.delete(playerId);
+  try { p.res && p.res.end(); } catch { /* ignore */ }
+
+  if (p.seat === 0) {
+    // The host's tab held the room. Without it there is no game.
+    for (const other of room.players.values()) {
+      sse(other.res, 'closed', { reason: 'host left' });
+      try { other.res && other.res.end(); } catch { /* ignore */ }
+    }
+    rooms.delete(room.code);
+    return;
+  }
+  // Before kick-off, close the gap so seats stay 0..n-1.
+  if (!room.started) {
+    [...room.players.values()].sort((a, b) => a.seat - b.seat).forEach((q, i) => { q.seat = i; });
+  }
+  pushRoster(room);
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const room of [...rooms.values()]) {
+    if (now - room.at > ROOM_IDLE_MS) {
+      for (const p of room.players.values()) { sse(p.res, 'closed', { reason: 'idle' }); try { p.res.end(); } catch { /* ignore */ } }
+      rooms.delete(room.code);
+    } else {
+      for (const p of room.players.values()) sse(p.res, 'ping', { t: now });
+    }
+  }
+}, 20000).unref?.();
 
 /* --------------------------------------------------------------- api --- */
 
@@ -98,7 +173,88 @@ async function api(req, res, url) {
   if (req.method === 'OPTIONS') return send(res, 204, '');
 
   if (route === '/health') {
-    return send(res, 200, { ok: true, players: Object.keys(db.scores).length, at: Date.now() });
+    return send(res, 200, { ok: true, players: Object.keys(db.scores).length, rooms: rooms.size, relay: true, at: Date.now() });
+  }
+
+  /* ------------------------------------------------------------ rooms -- */
+
+  if (route === '/room/create' && req.method === 'POST') {
+    const b = await readBody(req).catch(() => null);
+    if (!b) return send(res, 400, { error: 'bad body' });
+    const name = clean(b.name) || 'Host';
+    const seats = Math.max(2, Math.min(4, num(b.seats) || 2));
+    const code = newCode();
+    const id = newId();
+    const room = { code, seats, started: false, at: Date.now(), players: new Map() };
+    room.players.set(id, { id, name, seat: 0, res: null });
+    rooms.set(code, room);
+    return send(res, 200, { code, playerId: id, seat: 0, seats });
+  }
+
+  if (route === '/room/join' && req.method === 'POST') {
+    const b = await readBody(req).catch(() => null);
+    if (!b) return send(res, 400, { error: 'bad body' });
+    const code = clean(b.code, 6).toUpperCase();
+    const room = rooms.get(code);
+    if (!room) return send(res, 404, { error: 'no-room' });
+    if (room.started) return send(res, 409, { error: 'started' });
+    if (room.players.size >= room.seats) return send(res, 409, { error: 'full' });
+    const id = newId();
+    const seat = room.players.size;
+    room.players.set(id, { id, name: clean(b.name) || `Player ${seat + 1}`, seat, res: null });
+    touch(room);
+    pushRoster(room);
+    return send(res, 200, { code, playerId: id, seat, seats: room.seats });
+  }
+
+  if (route === '/room/stream' && req.method === 'GET') {
+    const code = clean(url.searchParams.get('code'), 6).toUpperCase();
+    const playerId = clean(url.searchParams.get('playerId'), 20);
+    const room = rooms.get(code);
+    const me = room && room.players.get(playerId);
+    if (!me) return send(res, 404, { error: 'no-room' });
+
+    res.writeHead(200, {
+      'content-type': 'text/event-stream; charset=utf-8',
+      'cache-control': 'no-cache, no-transform',
+      'connection': 'keep-alive',
+      'x-accel-buffering': 'no',          // tell any proxy not to buffer us
+      'access-control-allow-origin': '*',
+    });
+    res.write(': welcome\n\n');
+    me.res = res;
+    touch(room);
+    sse(res, 'roster', roster(room));
+
+    req.on('close', () => {
+      if (room.players.get(playerId) === me && me.res === res) dropPlayer(room, playerId);
+    });
+    return undefined;
+  }
+
+  if (route === '/room/send' && req.method === 'POST') {
+    const b = await readBody(req).catch(() => null);
+    if (!b) return send(res, 400, { error: 'bad body' });
+    const room = rooms.get(clean(b.code, 6).toUpperCase());
+    const me = room && room.players.get(clean(b.playerId, 20));
+    if (!me) return send(res, 404, { error: 'no-room' });
+    touch(room);
+    // The host declaring a board means seats are now fixed for the game.
+    if (me.seat === 0 && b.msg && b.msg.t === 'state') room.started = true;
+    const envelope = { from: me.id, seat: me.seat, msg: b.msg };
+    for (const p of room.players.values()) {
+      if (p.id === me.id) continue;
+      if (b.to === 'host' && p.seat !== 0) continue;
+      sse(p.res, 'msg', envelope);
+    }
+    return send(res, 200, { ok: true });
+  }
+
+  if (route === '/room/leave' && req.method === 'POST') {
+    const b = await readBody(req).catch(() => null);
+    const room = b && rooms.get(clean(b.code, 6).toUpperCase());
+    if (room) dropPlayer(room, clean(b.playerId, 20));
+    return send(res, 200, { ok: true });
   }
 
   if (route === '/scores' && req.method === 'GET') {
@@ -208,7 +364,9 @@ const server = http.createServer(async (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || 'x';
   try {
     if (url.pathname.startsWith('/api')) {
-      if (rateLimited(ip)) return send(res, 429, { error: 'slow down' });
+      // Room traffic is chatty by nature; scoring is not.
+      const budget = url.pathname.startsWith('/api/room') ? 900 : 90;
+      if (rateLimited(ip, budget)) return send(res, 429, { error: 'slow down' });
       return await api(req, res, url);
     }
     await serveStatic(req, res, url);
