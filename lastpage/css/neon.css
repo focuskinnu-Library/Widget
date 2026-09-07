@@ -1,0 +1,100 @@
+/* TRENDY — the same game with the lights off.
+   Glass, glow, and a grid that hums. */
+
+body[data-skin="neon"] {
+  --font-ui: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 800;
+  --display-track: -0.03em;
+
+  --bg: #06070d;
+  --fg: #e9edf8;
+  --muted: #7d87a3;
+  --rule: rgba(140,170,255,.18);
+  --accent: #22e0ff;
+  --accent-fg: #04121a;
+  --accent-shadow: 0 0 22px rgba(34,224,255,.42);
+  --good: #47e39b;
+  --bad: #ff3ba7;
+  --star: #ffc93b;
+
+  --card-bg: rgba(255,255,255,.045);
+  --card-border: 1px solid rgba(255,255,255,.09);
+  --card-shadow: 0 1px 0 rgba(255,255,255,.04) inset;
+  --card-shadow-hover: 0 8px 28px rgba(34,224,255,.14);
+  --panel-bg: #0c0f1a;
+  --field-bg: rgba(255,255,255,.05);
+  --field-border: 1px solid rgba(255,255,255,.08);
+
+  --btn-bg: rgba(255,255,255,.06);
+  --btn-fg: #e9edf8;
+  --btn-border: 1px solid rgba(255,255,255,.1);
+  --btn-radius: 12px;
+  --btn-shadow: none;
+  --btn-shadow-hover: 0 6px 22px rgba(34,224,255,.16);
+
+  --scrim: rgba(3,5,12,.72);
+  --toast-bg: rgba(12,15,26,.95);
+  --toast-fg: #e9edf8;
+  --you-bg: rgba(34,224,255,.09);
+  --combo-shadow: 0 0 26px rgba(34,224,255,.75);
+}
+
+body[data-skin="neon"] #app {
+  background:
+    radial-gradient(90% 60% at 12% -8%, rgba(34,224,255,.16), transparent 60%),
+    radial-gradient(80% 55% at 92% 8%, rgba(255,59,167,.14), transparent 62%),
+    radial-gradient(70% 50% at 50% 108%, rgba(120,80,255,.14), transparent 60%),
+    #06070d;
+}
+/* the grid that hums */
+body[data-skin="neon"] #app::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(140,170,255,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(140,170,255,.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(120% 90% at 50% 30%, #000 30%, transparent 78%);
+}
+body[data-skin="neon"] #app::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: .3;
+  background: repeating-linear-gradient(180deg, transparent 0 2px, rgba(255,255,255,.014) 2px 3px);
+}
+body[data-skin="neon"] .screen { z-index: 2; }
+
+body[data-skin="neon"] h1 {
+  background: linear-gradient(96deg, #22e0ff 0%, #a78bfa 45%, #ff3ba7 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 26px rgba(34,224,255,.32));
+}
+body[data-skin="neon"] .brand .rule {
+  background: linear-gradient(90deg, transparent, #22e0ff, #ff3ba7, transparent);
+  box-shadow: 0 0 16px rgba(34,224,255,.5);
+  height: 1.5px;
+}
+
+body[data-skin="neon"] .card,
+body[data-skin="neon"] .mode,
+body[data-skin="neon"] .rival,
+body[data-skin="neon"] .lbrow { backdrop-filter: blur(12px); }
+
+body[data-skin="neon"] .sheet {
+  background: radial-gradient(120% 100% at 50% 0%, rgba(34,224,255,.05), rgba(255,255,255,.015));
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: inset 0 0 60px rgba(34,224,255,.05), 0 0 40px rgba(0,0,0,.4);
+}
+
+body[data-skin="neon"] .btn.primary {
+  background: linear-gradient(96deg, #22e0ff, #4bb8ff);
+  color: #04121a; font-weight: 800;
+}
+body[data-skin="neon"] .btn.primary:hover { box-shadow: 0 0 30px rgba(34,224,255,.5); }
+
+body[data-skin="neon"] .pscore.active { box-shadow: 0 0 22px -4px var(--pc); }
+body[data-skin="neon"] .verdict .big { filter: drop-shadow(0 0 22px rgba(34,224,255,.4)); }
+body[data-skin="neon"] .codebox { color: #22e0ff; text-shadow: 0 0 22px rgba(34,224,255,.55); border-color: rgba(34,224,255,.3); }
+body[data-skin="neon"] .starrow { text-shadow: 0 0 16px rgba(255,201,59,.6); }
+body[data-skin="neon"] .doodle { display: none; }

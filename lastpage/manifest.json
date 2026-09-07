@@ -1,0 +1,14 @@
+{
+  "name": "Last Page — squares on the back of the notebook",
+  "short_name": "Last Page",
+  "description": "Dots and boxes, the game every notebook ended in. Twelve benches of bots, pass the phone, or send a friend a link.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#cfc7b4",
+  "theme_color": "#cfc7b4",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

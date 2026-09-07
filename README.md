@@ -40,6 +40,12 @@ The market splits cleanly in two. Book trackers (Goodreads, StoryGraph, Bookmory
 
 Two things nobody does: words anchored to the page you met them on, and a place for the pictures a book puts in your head.
 
+## Also in this repo
+
+[**Last Page**](lastpage/) — the squares game from the back of the notebook.
+A separate product living in `lastpage/`, static like this one, with its own
+readme. Nothing shared but the origin.
+
 ## Notes
 
 - **No account, by design.** You pick a name on first run and that's it — no password, no email, nothing sent anywhere. Real sign-in would need a server, which would mean your journal leaving your device.

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Last Page — the squares game from the back of the notebook</title>
+<meta name="description" content="Dots and boxes, the game every notebook ended in. Three benches of bots, pass the phone, or send a friend a link. Class rankings on the back wall.">
+<meta name="theme-color" content="#cfc7b4">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+
+<meta property="og:title" content="Last Page">
+<meta property="og:description" content="The squares game from the back of the notebook. Beat twelve benches, win the Golden Nib.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&family=Space+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/paper.css">
+<link rel="stylesheet" href="css/neon.css">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
+</head>
+<body data-skin="paper">
+<div id="app">
+
+  <!-- ------------------------------------------------------- name ---- -->
+  <section class="screen on" id="screen-name">
+    <div class="wrap center">
+      <div class="brand">
+        <h1>Last Page</h1>
+        <div class="rule"></div>
+        <div class="sub">Nutan Vidya Mandir · IX-B</div>
+      </div>
+      <p class="muted small" style="text-align:center;margin:18px 0 22px">
+        Every notebook ended the same way. Dots, lines, boxes, and your initial
+        in every square you took. Put your name on the page.
+      </p>
+      <div class="stack">
+        <input type="text" id="nameInput" placeholder="what should we call you?" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false">
+        <button class="btn primary" id="nameGo">Open the notebook</button>
+      </div>
+      <p class="tiny muted" style="text-align:center;margin-top:14px">
+        No password, no email. The name is yours and it stays on this device.
+      </p>
+    </div>
+    <div class="doodle d1">✎</div>
+  </section>
+
+  <!-- ------------------------------------------------------- home ---- -->
+  <section class="screen" id="screen-home">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="whoami">
+          <div class="iconbtn" id="avatarBtn" title="your report card"><span id="avatarGlyph">✎</span></div>
+          <div>
+            <div id="homeName" style="font-weight:700"></div>
+            <div class="rk" id="homeRank"></div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="iconbtn" id="skinBtn" title="old school / trendy">◐</button>
+          <button class="iconbtn" id="lbBtn" title="class ranking">☰</button>
+        </div>
+      </div>
+
+      <div class="brand" style="margin:6px 0 18px">
+        <h1>Last Page</h1>
+        <div class="rule"></div>
+      </div>
+
+      <div class="modelist">
+        <button class="mode" id="mResume" style="display:none">
+          <span class="ico">↺</span>
+          <span><span class="t">Back to the game</span><span class="d" id="resumeDesc"></span></span>
+          <span class="go">→</span>
+        </button>
+
+        <button class="mode" data-go="ladder">
+          <span class="ico">☗</span>
+          <span><span class="t">Class Championship</span><span class="d" id="ladderDesc">Beat 12 benches. Win the Golden Nib.</span></span>
+          <span class="go">→</span>
+        </button>
+
+        <button class="mode" data-go="daily">
+          <span class="ico">🔔</span>
+          <span><span class="t">Daily Page <span class="tag" id="dailyTag">new</span></span><span class="d" id="dailyDesc">The same board for the whole world today.</span></span>
+          <span class="go">→</span>
+        </button>
+
+        <button class="mode" data-go="quick">
+          <span class="ico">✎</span>
+          <span><span class="t">Quick Match</span><span class="d">Pick a bench and a board size. Play a bot.</span></span>
+          <span class="go">→</span>
+        </button>
+
+        <button class="mode" data-go="pass">
+          <span class="ico">👥</span>
+          <span><span class="t">Pass &amp; Play</span><span class="d">2 to 4 players, one screen, one notebook.</span></span>
+          <span class="go">→</span>
+        </button>
+
+        <button class="mode" data-go="online">
+          <span class="ico">🔗</span>
+          <span><span class="t">Invite a Friend</span><span class="d">Send a link. Play from anywhere.</span></span>
+          <span class="go">→</span>
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="spread" style="margin-bottom:10px">
+          <div class="up muted">Your desk</div>
+          <button class="btn tiny-btn ghost" id="howBtn">how to play</button>
+        </div>
+        <div class="statgrid" id="homeStats"></div>
+      </div>
+
+      <p class="tiny muted" style="text-align:center;margin:16px 0 8px">
+        Nutan Vidya Mandir · monsoon term · the last page of the notebook was never blank
+      </p>
+    </div>
+    <div class="doodle d2">☂</div>
+  </section>
+
+  <!-- ----------------------------------------------------- ladder ---- -->
+  <section class="screen" id="screen-ladder">
+    <div class="wrap">
+      <div class="topbar">
+        <button class="iconbtn" data-back>←</button>
+        <div style="text-align:center"><div style="font-weight:700">Class Championship</div><div class="rk muted tiny" id="ladderProg"></div></div>
+        <div class="iconbtn" style="opacity:0;pointer-events:none">.</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="up muted" style="margin-bottom:9px">The shelf</div>
+        <div class="prizeshelf" id="prizeShelf"></div>
+      </div>
+      <div id="ladderList"></div>
+      <div style="height:20px"></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------ setup ---- -->
+  <section class="screen" id="screen-setup">
+    <div class="wrap">
+      <div class="topbar">
+        <button class="iconbtn" data-back>←</button>
+        <div style="font-weight:700" id="setupTitle">Quick Match</div>
+        <div class="iconbtn" style="opacity:0;pointer-events:none">.</div>
+      </div>
+      <div class="stack">
+        <div id="setupBench">
+          <div class="up muted" style="margin-bottom:7px">Which bench</div>
+          <div class="seg" id="levelSeg">
+            <button data-level="easy" class="on">Recess</button>
+            <button data-level="mild">Unit Test</button>
+            <button data-level="tough">Board Exam</button>
+          </div>
+          <p class="tiny muted" id="levelNote" style="margin-top:7px"></p>
+        </div>
+
+        <div id="setupPlayers" style="display:none">
+          <div class="up muted" style="margin-bottom:7px">How many of you</div>
+          <div class="seg" id="countSeg">
+            <button data-count="2" class="on">2</button>
+            <button data-count="3">3</button>
+            <button data-count="4">4</button>
+          </div>
+          <div class="stack" id="nameFields" style="margin-top:10px"></div>
+        </div>
+
+        <div>
+          <div class="up muted" style="margin-bottom:7px">How big is the page</div>
+          <div class="seg" id="sizeSeg">
+            <button data-size="small">4×4</button>
+            <button data-size="medium" class="on">5×5</button>
+            <button data-size="wide">5×6</button>
+            <button data-size="big">6×6</button>
+          </div>
+        </div>
+
+        <div id="setupFirst">
+          <div class="up muted" style="margin-bottom:7px">Who draws first</div>
+          <div class="seg" id="firstSeg">
+            <button data-first="you" class="on">You</button>
+            <button data-first="them">Them</button>
+            <button data-first="toss">Toss</button>
+          </div>
+        </div>
+
+        <button class="btn primary" id="setupGo" style="margin-top:6px">Start</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ----------------------------------------------------- online ---- -->
+  <section class="screen" id="screen-online">
+    <div class="wrap">
+      <div class="topbar">
+        <button class="iconbtn" data-back>←</button>
+        <div style="font-weight:700">Invite a Friend</div>
+        <div class="iconbtn" style="opacity:0;pointer-events:none">.</div>
+      </div>
+      <div id="onlineBody" class="stack"></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- game ---- -->
+  <section class="screen" id="screen-game">
+    <div class="gamewrap">
+      <div class="gtop">
+        <button class="iconbtn" id="pauseBtn" title="pause">❙❙</button>
+        <div class="scores" id="scoreStrip"></div>
+      </div>
+      <div class="boardhost">
+        <div class="sheet" id="sheet">
+          <canvas id="board"></canvas>
+        </div>
+        <div class="toast" id="toast"></div>
+        <div class="combo" id="comboFx"></div>
+        <div class="taunt" id="taunt"></div>
+      </div>
+      <div class="gbot">
+        <div class="turnline"><span class="dotc" id="turnDot"></span><span id="turnText">your turn</span></div>
+        <div class="emojibar" id="emojiBar" style="display:none">
+          <button data-emoji="😂">😂</button>
+          <button data-emoji="😭">😭</button>
+          <button data-emoji="🔥">🔥</button>
+          <button data-emoji="👏">👏</button>
+        </div>
+        <div class="chip mono" id="boxesLeft"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ leaderboard ---- -->
+  <section class="screen" id="screen-board">
+    <div class="wrap">
+      <div class="topbar">
+        <button class="iconbtn" data-back>←</button>
+        <div style="text-align:center"><div style="font-weight:700">The Class Ranking</div><div class="rk muted tiny" id="lbStatus"></div></div>
+        <button class="iconbtn" id="lbRefresh">↻</button>
+      </div>
+      <div class="tabs" id="lbTabs">
+        <button data-tab="world" class="on">World</button>
+        <button data-tab="daily">Today</button>
+        <button data-tab="wall">Back Wall</button>
+        <button data-tab="me">Me</button>
+      </div>
+      <div id="lbBody"></div>
+      <div style="height:20px"></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------ modals --- -->
+  <div class="sheetmodal" id="modal">
+    <div class="panel" id="modalPanel"></div>
+  </div>
+
+</div>
+<script type="module" src="js/ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "widget",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lastpage": "node lastpage/server/server.mjs",
+    "test:lastpage": "node lastpage/strength.mjs && node lastpage/audit.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
+}

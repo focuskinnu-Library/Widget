@@ -3,7 +3,7 @@
    Bump VER to ship an update; every visitor gets it within a visit.
 ══════════════════════════════════════════════════════════════════ */
 'use strict';
-const VER = '3.0';
+const VER = '3.1';
 const CACHE = `lingobox-${VER}`;
 
 /* The shell: everything the app needs to open with no network at all. */
@@ -70,6 +70,12 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+
+  /* Last Page lives at /lastpage/ on this origin and looks after itself.
+     Its pages must never fall back to the LingoBox shell, and its rankings
+     must never be served from a cache. Hands off. */
+  if (url.origin === self.location.origin &&
+      (url.pathname.startsWith('/lastpage/') || url.pathname === '/lastpage')) return;
 
   /* Another origin: only the quiet, well-known ones. */
   if (url.origin !== self.location.origin) {

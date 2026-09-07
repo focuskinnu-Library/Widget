@@ -1,0 +1,108 @@
+/* OLD SCHOOL — a ruled sheet, a blue ballpoint, a red margin.
+   The page you actually played this on. */
+
+body[data-skin="paper"] {
+  --font-ui: "Patrick Hand", "Segoe Print", "Bradley Hand", system-ui, sans-serif;
+  --font-display: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --display-weight: 700;
+  --display-track: 0;
+
+  --bg: #cfc7b4;
+  --fg: #22304d;
+  --muted: #7a7f8d;
+  --rule: #b9cbe4;
+  --accent: #1d3c8f;
+  --accent-fg: #fdfaf0;
+  --accent-shadow: 0 3px 0 #142a68;
+  --good: #1a7a46;
+  --bad: #c0392b;
+  --star: #d29a1e;
+
+  --card-bg: rgba(255,253,244,.86);
+  --card-border: 1px solid rgba(58,74,107,.2);
+  --card-shadow: 0 1px 0 rgba(58,74,107,.1);
+  --card-shadow-hover: 0 4px 12px rgba(58,74,107,.16);
+  --panel-bg: #fffdf4;
+  --field-bg: rgba(58,74,107,.055);
+  --field-border: 1px solid rgba(58,74,107,.16);
+
+  --btn-bg: #fffdf4;
+  --btn-fg: #22304d;
+  --btn-border: 1.5px solid rgba(58,74,107,.35);
+  --btn-radius: 10px;
+  --btn-shadow: 0 2px 0 rgba(58,74,107,.22);
+  --btn-shadow-hover: 0 3px 0 rgba(58,74,107,.3);
+
+  --scrim: rgba(60,52,38,.42);
+  --toast-bg: #fffdf4;
+  --toast-fg: #22304d;
+  --you-bg: rgba(29,60,143,.08);
+  --combo-shadow: 2px 2px 0 rgba(255,253,244,.9);
+}
+
+/* the sheet itself, behind everything */
+body[data-skin="paper"] #app {
+  background:
+    /* punch holes shadow at the spine */
+    linear-gradient(90deg, rgba(0,0,0,.05) 0 10px, transparent 10px),
+    /* ruled lines */
+    repeating-linear-gradient(180deg, transparent 0 27px, rgba(120,160,205,.42) 27px 28px),
+    /* the paper */
+    linear-gradient(178deg, #fffdf3, #fdf7e6 60%, #f9f0da);
+  background-attachment: local, local, fixed;
+}
+
+/* the red margin down the left */
+body[data-skin="paper"] #app::before {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: clamp(16px, 6vw, 44px);
+  width: 1.5px; background: rgba(200,80,80,.5); pointer-events: none; z-index: 0;
+}
+/* a little grain and the shadow of the page above */
+body[data-skin="paper"] #app::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(90,70,40,.14), transparent 55%),
+    radial-gradient(100% 40% at 50% 110%, rgba(90,70,40,.1), transparent 60%);
+  mix-blend-mode: multiply;
+}
+body[data-skin="paper"] .screen { z-index: 2; }
+
+body[data-skin="paper"] h1 { color: #1d3c8f; transform: rotate(-1.2deg); }
+body[data-skin="paper"] .brand .rule {
+  background: none;
+  border-bottom: 2.5px solid #c0392b;
+  height: 0; transform: rotate(-.5deg); opacity: .55;
+}
+
+/* the game board sits on a slightly whiter, taped-down sheet */
+body[data-skin="paper"] .sheet {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 27px, rgba(120,160,205,.3) 27px 28px),
+    #fffdf3;
+  box-shadow: 0 2px 10px rgba(70,55,30,.18), inset 0 0 40px rgba(180,160,120,.14);
+  border: 1px solid rgba(120,100,60,.16);
+}
+/* sellotape */
+body[data-skin="paper"] .sheet::before,
+body[data-skin="paper"] .sheet::after {
+  content: ""; position: absolute; width: 54px; height: 20px; z-index: 3;
+  background: rgba(232,226,196,.66);
+  border-left: 1px solid rgba(255,255,255,.5); border-right: 1px solid rgba(160,150,110,.25);
+}
+body[data-skin="paper"] .sheet::before { top: -8px; left: 8%; transform: rotate(-6deg); }
+body[data-skin="paper"] .sheet::after { top: -8px; right: 8%; transform: rotate(5deg); }
+
+body[data-skin="paper"] .mode { transform: rotate(-.25deg); }
+body[data-skin="paper"] .mode:nth-child(even) { transform: rotate(.3deg); }
+body[data-skin="paper"] .mode:hover { transform: translateY(-2px) rotate(0deg); }
+
+body[data-skin="paper"] .btn.primary { text-shadow: 0 1px 0 rgba(0,0,0,.15); }
+body[data-skin="paper"] .codebox { font-size: clamp(2.4rem, 13vw, 3.6rem); color: #c0392b; }
+body[data-skin="paper"] .verdict .big { transform: rotate(-1.5deg); }
+
+/* doodles in the corners, because somebody always drew one */
+body[data-skin="paper"] .doodle { position: absolute; opacity: .16; pointer-events: none; z-index: 1; color: #1d3c8f; font-family: var(--font-display); }
+body[data-skin="paper"] .doodle.d1 { bottom: 6%; right: 5%; font-size: 2.4rem; transform: rotate(-12deg); }
+body[data-skin="paper"] .doodle.d2 { top: 22%; right: 7%; font-size: 1.4rem; transform: rotate(8deg); }
