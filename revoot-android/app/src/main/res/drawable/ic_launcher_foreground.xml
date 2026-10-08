@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PLACEHOLDER mark (two arrows = exchange). Replace with Revoot's logo:
+     Android Studio → New → Image Asset, or drop in PNGs. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="@color/icon_foreground"
+        android:pathData="M38,46 A18,18 0 0,1 68,38 L64,42 L76,44 L74,32 L71,35 A23,23 0 0,0 33,46 Z" />
+    <path android:fillColor="@color/icon_foreground"
+        android:pathData="M70,62 A18,18 0 0,1 40,70 L44,66 L32,64 L34,76 L37,73 A23,23 0 0,0 75,62 Z" />
+</vector>

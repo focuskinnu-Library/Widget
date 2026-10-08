@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "in.revoot.app",
+      "sha256_cert_fingerprints": [
+        "4C:00:02:0C:9F:26:A3:9A:FE:97:21:2E:EF:D1:77:1A:08:CE:B5:3E:F9:71:59:C7:C7:6C:E0:B4:87:BE:03:C2"
+      ]
+    }
+  }
+]
