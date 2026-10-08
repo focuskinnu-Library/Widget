@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Swap for Revoot's brand colours (match theme_color in the site's manifest). -->
+    <color name="theme">#111111</color>
+    <color name="splash_background">#FFFFFF</color>
+    <color name="icon_background">#111111</color>
+    <color name="icon_foreground">#FFFFFF</color>
+</resources>

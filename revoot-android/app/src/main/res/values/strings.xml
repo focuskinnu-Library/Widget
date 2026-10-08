@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Revoot</string>
+    <!-- ?source=twa lets analytics tell app sessions from web sessions. -->
+    <string name="launch_url" translatable="false">https://revoot.in/?source=twa</string>
+    <string name="asset_statements" translatable="false">
+        [{
+            \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+            \"target\": {\"namespace\": \"web\", \"site\": \"https://revoot.in\"}
+        }]
+    </string>
+</resources>
