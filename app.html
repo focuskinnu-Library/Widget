@@ -224,6 +224,40 @@ input[type=number]{-moz-appearance:textfield}
   box-shadow:none;display:flex;align-items:center;justify-content:center}
 .spine.add:hover{color:var(--g1);border-color:var(--g1)}
 .spine.add .t{font:650 10px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.spine .a{writing-mode:vertical-rl;font:500 9px/1.2 var(--sans);letter-spacing:.02em;opacity:.72;
+  position:absolute;bottom:10px;left:0;right:0;text-align:center;max-height:52px;overflow:hidden}
+.facing{flex:none;width:96px;border-radius:3px 7px 7px 3px;position:relative;cursor:pointer;
+  background:none;padding:0;align-self:flex-end;transition:transform .18s}
+.facing:hover{transform:translateY(-7px) rotate(-.6deg)}
+.facing .jacket{display:block;position:relative;width:100%;aspect-ratio:2/3;border-radius:3px 7px 7px 3px;
+  overflow:hidden;background:linear-gradient(145deg,var(--g1),var(--g2));
+  box-shadow:0 10px 18px -9px rgba(0,0,0,.6),inset 4px 0 0 rgba(0,0,0,.24),inset -1px 0 0 rgba(255,255,255,.16)}
+.facing img{width:100%;height:100%;object-fit:cover;display:block}
+.facing .blurb{position:absolute;inset:0;padding:13px 11px;display:flex;flex-direction:column;
+  justify-content:space-between;color:var(--on-g);text-align:left}
+.facing .blurb b{font:600 13px/1.25 var(--serif);display:-webkit-box;-webkit-line-clamp:4;
+  -webkit-box-orient:vertical;overflow:hidden}
+.facing .blurb i{font-style:normal;font-size:9.5px;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}
+.facing .pct{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.3)}
+.facing .pct i{display:block;height:100%;background:var(--on-g);opacity:.92}
+.nowread{margin-top:12px;padding-left:11px;border-left:2px solid var(--g1)}
+.nowread b{display:block;font:600 15px/1.3 var(--serif)}
+.nowread i{display:block;font-style:normal;font-size:12.5px;color:var(--ink2);margin-top:1px}
+.nowread .folio{display:block;margin-top:4px}
+.chip.lv{font-size:10.5px}
+.chip.lv.new{background:var(--line2);color:var(--ink3)}
+.chip.lv.learn{background:color-mix(in srgb,#f59e0b 18%,var(--surf));color:#b45309}
+.chip.lv.known{background:color-mix(in srgb,#3b82f6 18%,var(--surf));color:#1d4ed8}
+.chip.lv.master{background:color-mix(in srgb,#16a34a 20%,var(--surf));color:#15803d}
+:root[data-theme=dark] .chip.lv.learn,
+:root[data-theme=dark] .chip.lv.known,
+:root[data-theme=dark] .chip.lv.master{color:var(--ink)}
+.lvbar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--line2);margin-top:11px}
+.lvbar i{display:block;height:100%}
+.lvkey{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px}
+.lvkey span{font-size:11.5px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.lvkey b{width:9px;height:9px;border-radius:3px;display:block}
 .ledge{height:0;border-top:2px solid var(--ink);opacity:.75;margin:0 2px;position:relative}
 .ledge::after{content:'';position:absolute;top:2px;left:0;right:0;border-top:1px solid var(--line)}
 
@@ -589,6 +623,44 @@ function nextIn(w,q){const c=w.srs||fresh();const r=c.reps+1;
   const i=r===1?1:r===2?6:Math.round(c.interval*c.ease*(q===5?1.3:1));
   return i===1?'tomorrow':i<31?i+' days':Math.round(i/30)+' months';}
 
+/* ══ how well a word is known ═════════════════════════════════════
+   Read straight off the SM-2 schedule that already decides when a word
+   returns, so a badge can never contradict the practice.
+------------------------------------------------------------------*/
+const LEVELS=[{id:'new',name:'New'},{id:'learn',name:'Learning'},{id:'known',name:'Known'},{id:'master',name:'Mastered'}];
+function levelOf(w){
+  const c=w.srs||{reps:0,interval:0};
+  if((c.interval||0)>=21) return LEVELS[3];
+  const r=c.reps||0;
+  return r>=5?LEVELS[3]:r>=3?LEVELS[2]:r>=1?LEVELS[1]:LEVELS[0];
+}
+const countLevels=()=>db.words.reduce((a,w)=>{const k=levelOf(w).id;a[k]=(a[k]||0)+1;return a},{});
+const mastered=()=>db.words.filter(w=>levelOf(w).id==='master').length;
+
+/* A rank, so a growing collection feels like it is going somewhere. */
+const RANKS=[{at:0,name:'Browsing'},{at:10,name:'Collector'},{at:25,name:'Reader'},
+  {at:50,name:'Wordsmith'},{at:100,name:'Lexicographer'},{at:250,name:'Philologist'},
+  {at:500,name:'Logophile'},{at:1000,name:'Living Dictionary'}];
+function rank(){
+  const n=db.words.length; let cur=RANKS[0], next=null;
+  for(const r of RANKS){ if(n>=r.at) cur=r; else { next=r; break } }
+  return {cur,next,n,to:next?next.at-n:0};
+}
+
+/* ══ how fast this book is going ══════════════════════════════════
+   Every bookmark move is dated, so pages-per-day falls out of it —
+   the one genuinely useful thing a Kindle knows that paper doesn't.
+------------------------------------------------------------------*/
+function pace(b){
+  const m=(b.marks||[]).filter(x=>x&&x.at&&x.page>=0);
+  if(m.length<2||!b.pages) return null;
+  const a=m[0], z=m[m.length-1];
+  const days=(z.at-a.at)/DAY, pages=z.page-a.page, left=b.pages-b.page;
+  if(days<0.04||pages<=0||left<=0) return null;
+  const d=left/(pages/days);
+  return d<1?'finishing today':d<2?'about a day left':d<60?`about ${Math.round(d)} days left`:null;
+}
+
 /* ══ streak ══════════════════════════════════════════════════════*/
 function touchStreak(){
   const p=db.profile; if(!p) return;
@@ -631,6 +703,46 @@ function pWik(j){
       ex:stripTags((d.parsedExamples||[])[0]?.example||(d.examples||[])[0]||'')});}));
   return{phonetic:'',audio:'',senses:s.slice(0,5),syn:[],lang};}
 
+/* ── the dictionary that ships with the book ──────────────────────
+   93,000 headwords living beside the page. No key, no network: it
+   answers on a train, in a preview, anywhere. The online sources are
+   still consulted after, because they bring pronunciation, examples,
+   synonyms and the words a 1913 lexicon never met.
+------------------------------------------------------------------*/
+let LEX=null, lexState='idle';
+async function loadLexicon(){
+  if(LEX) return LEX;
+  if(lexState==='failed') return null;
+  try{
+    const r=await fetch('lexicon.json');
+    if(!r.ok) throw 0;
+    LEX=await r.json(); lexState='ready'; return LEX;
+  }catch(e){ lexState='failed'; return null; }
+}
+// readers meet words inflected; the lexicon keeps headwords
+function stems(w){
+  const o=[w], add=x=>{ if(x&&x.length>2&&o.indexOf(x)<0) o.push(x) };
+  if(w.endsWith('ies')) add(w.slice(0,-3)+'y');
+  if(w.endsWith('es')) add(w.slice(0,-2));
+  if(w.endsWith('s')) add(w.slice(0,-1));
+  if(w.endsWith('ed')){ add(w.slice(0,-2)); add(w.slice(0,-1)); add(w.slice(0,-3)+'e'); }
+  if(w.endsWith('ing')){ add(w.slice(0,-3)); add(w.slice(0,-3)+'e'); }
+  if(w.endsWith('ly')) add(w.slice(0,-2));
+  if(w.endsWith('est')) add(w.slice(0,-3));
+  if(w.endsWith('er')) add(w.slice(0,-2));
+  return o;
+}
+async function localLookup(term){
+  const lex=await loadLexicon(); if(!lex) return null;
+  const w=term.trim().toLowerCase();
+  for(const c of stems(w)) if(lex[c]) return {
+    phonetic:'',audio:'',syn:[],lang:'en',
+    senses:[{pos:'',def:lex[c],ex:''}],
+    source:'LingoBox dictionary'+(c!==w?' · '+c:'')
+  };
+  return null;
+}
+
 async function lookup(term){
   const w=term.trim().toLowerCase(); let reachable=false;
   for(const s of SOURCES){
@@ -659,20 +771,16 @@ async function doLookup(){
   const term=($('#w')?.value||'').trim(), box=$('#lk');
   if(!term||!box) return;
   box.innerHTML=`<div class="lkh"><span class="lbl">Looking up ${esc(term)}…</span></div>`;
+  // Answer from the shelf copy first, so there is never a wait or a blank.
+  const near=await localLookup(term);
+  if(near) paintLookup(term,near);
   try{
-    const r=await lookup(term); window.__senses=r.senses;
-    box.innerHTML=`<div class="lkh"><span class="word" style="font-size:17px">${esc(term)}</span>
-      ${r.phonetic?`<span class="pron">${esc(r.phonetic)}</span>`:''}
-      <button class="say" data-say="${esc(term)}" data-audio="${esc(r.audio||'')}" aria-label="Hear ${esc(term)}">▸</button>
-      <span class="lbl" style="margin-left:auto">${esc(r.source)}</span></div>`
-      +(r.senses.map((s,i)=>`<button type="button" class="sense" onclick="useSense(${i})">
-        ${s.pos?`<span class="pos">${esc(s.pos)}</span>`:''}<p>${esc(s.def)}</p>
-        ${s.ex?`<em>"${esc(s.ex)}"</em>`:''}</button>`).join(''))
-      +(r.syn.length?`<div class="syn">${r.syn.map(s=>`<span class="chip flat">${esc(s)}</span>`).join('')}</div>`:'')
-      +`<div style="padding:10px 13px;border-top:1px solid var(--line2)">${hearLinks(term)}</div>`;
-    if($('#ph')) $('#ph').value=r.phonetic||'';
-    if($('#au')) $('#au').value=r.audio||'';
+    const r=await lookup(term);
+    // Online only replaces it when it genuinely brings more.
+    const best=(!near||r.senses.length>1||r.phonetic||r.syn.length)?r:near;
+    paintLookup(term,best);
   }catch(e){
+    if(near) return;   // already answered; nothing failed as far as the reader is concerned
     // The browser knows whether it has a connection. If it does and the request
     // still never left, the page is blocking it — say that, rather than making
     // someone go and check their wifi.
@@ -688,6 +796,21 @@ async function doLookup(){
       <div style="font-size:13.5px;line-height:1.5;margin-top:5px;color:var(--ink2)">${why}</div>
       ${hearLinks(term)}</div>`;
   }
+}
+function paintLookup(term,r){
+  const box=$('#lk'); if(!box) return;
+  window.__senses=r.senses;
+  box.innerHTML=`<div class="lkh"><span class="word" style="font-size:17px">${esc(term)}</span>
+    ${r.phonetic?`<span class="pron">${esc(r.phonetic)}</span>`:''}
+    <button class="say" data-say="${esc(term)}" data-audio="${esc(r.audio||'')}" aria-label="Hear ${esc(term)}">▸</button>
+    <span class="lbl" style="margin-left:auto">${esc(r.source)}</span></div>`
+    +(r.senses.map((s,i)=>`<button type="button" class="sense" onclick="useSense(${i})">
+      ${s.pos?`<span class="pos">${esc(s.pos)}</span>`:''}<p>${esc(s.def)}</p>
+      ${s.ex?`<em>"${esc(s.ex)}"</em>`:''}</button>`).join(''))
+    +(r.syn.length?`<div class="syn">${r.syn.map(s=>`<span class="chip flat">${esc(s)}</span>`).join('')}</div>`:'')
+    +`<div style="padding:10px 13px;border-top:1px solid var(--line2)">${hearLinks(term)}</div>`;
+  if($('#ph')) $('#ph').value=r.phonetic||'';
+  if($('#au')) $('#au').value=r.audio||'';
 }
 function useSense(i){
   const s=(window.__senses||[])[i]; if(!s) return;
@@ -1163,14 +1286,28 @@ function spineRail(){
   const rail=db.books.map((b,i)=>{
     const g=genreOf(b.genre);
     const h=b.pages?Math.round(112+Math.min(54,b.pages/14)):126;
-    return `<button class="spine ${i===0?'reading':''}" data-book="${b.id}"
+    // The book in hand stands face-out, the way a shelf you actually use looks.
+    if(i===0) return `<button class="facing" data-book="${b.id}" style="--g1:${g.a};--g2:${g.b}"
+      title="${esc(b.title)}${b.author?' — '+esc(b.author):''}">
+      <span class="jacket">
+        ${b.cover?`<img src="${esc(b.cover)}" alt="" onerror="this.remove()">`
+          :`<span class="blurb"><b>${esc(b.title)}</b><i>${esc(b.author)||'—'}</i></span>`}
+        ${b.pages?`<span class="pct"><i style="width:${Math.min(100,Math.round(b.page/b.pages*100))}%"></i></span>`:''}
+      </span></button>`;
+    return `<button class="spine" data-book="${b.id}"
       style="--g1:${g.a};--g2:${g.b};height:${h}px" title="${esc(b.title)}${b.author?' — '+esc(b.author):''}">
-      <span class="sig">${esc(g.name.slice(0,4))}</span><span class="t">${esc(b.title)}</span></button>`;
+      <span class="sig">${esc(g.name.slice(0,4))}</span><span class="t">${esc(b.title)}</span>
+      ${b.author?`<span class="a">${esc(b.author)}</span>`:''}</button>`;
   }).join('');
   return `<div class="shelfwrap">
     <div class="shelf">${rail}
       <button class="spine add" style="height:126px" onclick="sheetBook()"><span class="t">+ Add a book</span></button>
     </div><div class="ledge"></div>
+    ${db.books[0]?`<div class="nowread">
+      <b>${esc(db.books[0].title)}</b>
+      <i>${esc(db.books[0].author)||'Unknown author'}</i>
+      <span class="folio">page ${db.books[0].page||0}${db.books[0].pages?' of '+db.books[0].pages:''}${pace(db.books[0])?' · '+pace(db.books[0]):''}</span>
+    </div>`:''}
     <div class="row" style="margin-top:11px">
       <span class="folio">${db.words.length} word${db.words.length===1?'':'s'} shelved · ${db.quotes.length} line${db.quotes.length===1?'':'s'} kept</span>
       <button class="link" data-go="words">Concordance →</button></div>
@@ -1201,7 +1338,7 @@ function home(){
     ${(()=>{const c=[wotd(),memoryCard(),backupNudge()].filter(Boolean).join('');
       return c?`<div class="stack" style="margin-top:12px">${c}</div>`:''})()}
 
-    <div class="sec"><div class="lbl">The shelf · ${reading||'empty'}</div></div>
+    <div class="sec"><div class="lbl">${esc(p.name)}’s shelf · ${reading||'empty'}</div></div>
     ${!reading?`<div class="empty"><div class="em">${svg('book')}</div>
       <h3>Your shelf is waiting</h3>
       <p>Add the book that's open beside you right now — it takes ten seconds and picks its own colours.</p></div>`:''}
@@ -1291,6 +1428,22 @@ const emptyBlock=(ic,h,p)=>`<div style="text-align:center;padding:26px 8px">
   <p class="muted" style="font-size:13.5px;margin-top:6px;max-width:290px;margin-left:auto;margin-right:auto">${p}</p></div>`;
 
 /* ── chapter II · the concordance ── */
+function masteryCard(){
+  if(!db.words.length) return '';
+  const L=countLevels(), R=rank(), tot=db.words.length;
+  const seg=(id,c)=>L[id]?`<i style="width:${L[id]/tot*100}%;background:${c}"></i>`:'';
+  const key=(id,c,label)=>L[id]?`<span><b style="background:${c}"></b>${L[id]} ${label}</span>`:'';
+  return `<div class="card" style="margin-top:14px">
+    <div class="row"><div><span class="lbl">Rank</span>
+      <div style="font:600 21px var(--serif);margin-top:3px">${R.cur.name}</div></div>
+      <div style="text-align:right"><div style="font:600 27px var(--serif);letter-spacing:-.02em" class="grad">${mastered()}</div>
+      <span class="lbl">mastered</span></div></div>
+    <div class="lvbar">${seg('master','#16a34a')}${seg('known','#3b82f6')}${seg('learn','#f59e0b')}${seg('new','var(--ink3)')}</div>
+    <div class="lvkey">${key('master','#16a34a','mastered')}${key('known','#3b82f6','known')}${key('learn','#f59e0b','learning')}${key('new','var(--ink3)','new')}</div>
+    ${R.next?`<p class="muted" style="font-size:13px;margin-top:11px">${R.to} more word${R.to===1?'':'s'} to reach <b>${R.next.name}</b>.</p>`:''}
+  </div>`;
+}
+
 function dict(){
   const q=(window.__q||'').toLowerCase();
   const all=db.words.filter(w=>!q||w.word.toLowerCase().includes(q)||(w.meaning||'').toLowerCase().includes(q)||(w.mine||'').toLowerCase().includes(q))
@@ -1300,13 +1453,15 @@ function dict(){
     const l=w.word[0].toUpperCase();
     if(l!==L){L=l; if(open) out+='</div>';
       out+=`<div class="cgroup"><span class="dropcap">${esc(l)}</span>`; open=true}
-    const b=book(w.bookId), d=w.srs?Math.ceil((w.srs.due-Date.now())/DAY):0;
-    out+=`<div class="entry" style="overflow:auto">
+    const b=book(w.bookId), d=w.srs?Math.ceil((w.srs.due-Date.now())/DAY):0, lv=levelOf(w);
+    out+=`<div class="entry" style="overflow:auto" data-level="${lv.id}">
       <div class="lead" style="align-items:baseline;padding-bottom:6px">
         <span style="min-width:0;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap">
           <span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word,w.audio)}</span>
         <span class="dots"></span>
-        <span class="duechip ${d<=0?'now':''}">${d<=0?'due now':'in '+d+'d'}</span></div>
+        <span style="display:flex;gap:6px;flex:none;align-items:baseline">
+          <span class="chip lv ${lv.id}">${lv.name}</span>
+          <span class="duechip ${d<=0?'now':''}">${d<=0?'due now':'in '+d+'d'}</span></span></div>
       ${w.mine?`<div class="mine"><span class="lbl">In your words</span><span style="display:block;margin-top:3px">${nl(w.mine)}</span></div>`
               :`<div class="muted" style="margin-top:6px">${nl(w.meaning)}</div>`}
       <div class="folio" style="margin-top:8px">${b?esc(b.title).toUpperCase()+(w.page?' · P.'+w.page:''):''}</div>
@@ -1320,6 +1475,7 @@ function dict(){
       <h1 style="font:600 30px/1.15 var(--serif);letter-spacing:-.02em;margin-top:5px">The <em class="grad" style="font-style:italic">Concordance</em></h1>
       <div class="folio" style="margin-top:8px">${db.words.length} word${db.words.length===1?'':'s'}, each carrying its page</div>
     </div>
+    ${masteryCard()}
     ${db.words.length?`<input placeholder="Search the register…" value="${esc(window.__q||'')}" style="margin-top:10px"
         oninput="window.__q=this.value;redraw()">
       <div style="margin-top:12px" id="dl">${out||emptyBlock('words','Nothing matches','Try a different word, or clear the search.')}</div>`
@@ -1386,10 +1542,21 @@ function runSession(){
     sess=null;
     return `${masthead()}<div class="chap rise" data-num="III">
       <h1 style="font:600 30px var(--serif);letter-spacing:-.02em;margin-top:14px">Fin.</h1>
-      <div class="empty"><div class="em" style="font:600 24px var(--serif)">❦</div>
-      <h3>${s.done} word${s.done===1?'':'s'} practised</h3>
-      <p>They'll come back when you're just about to forget them. That's the whole trick.</p>
-      <button class="btn sm" style="margin-top:16px" data-go="home">Back to my shelf</button></div></div>`;
+      <div class="card" style="text-align:center;padding:28px 20px;margin-top:10px">
+        <div style="font:600 46px var(--serif);letter-spacing:-.03em" class="grad">${s.done}/${s.total}</div>
+        <span class="lbl">words practised</span>
+        <p class="muted" style="margin-top:12px;max-width:300px;margin-left:auto;margin-right:auto">
+          ${s.done===s.total?'A clean run. They step further away now.'
+            :s.done?'The ones you stumbled on come back sooner — that is the whole trick.'
+            :'No shame in a blank. They will all come back tomorrow.'}</p>
+        <div class="row" style="margin-top:18px;justify-content:center;gap:24px">
+          <div><div style="font:600 21px var(--serif)">${mastered()}</div><span class="lbl">mastered</span></div>
+          <div><div style="font:600 21px var(--serif)">${db.profile.streak||1}</div><span class="lbl">streak</span></div>
+          <div><div style="font:600 21px var(--serif)">${rank().cur.name}</div><span class="lbl">rank</span></div></div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button class="btn ghost" style="flex:1" data-go="home">My shelf</button>
+          <button class="btn" style="flex:1" data-go="practice">Again</button></div>
+      </div></div>`;
   }
   const w=s.queue[0], b=book(w.bookId), n=s.total-s.queue.length+1;
   const head=`<div class="top"><button class="iconb" onclick="endSession()" aria-label="Stop">✕</button>
@@ -1625,6 +1792,7 @@ function sheet(title,html,onSave,label){
   $('#ok').onclick=()=>{if(onSave()!==false){closeSheet();render()}};
   setTimeout(()=>s.querySelector('input,textarea')?.focus(),90);
 }
+function mark(b){b.marks=(b.marks||[]).concat([{page:b.page||0,at:Date.now()}]).slice(-12)}
 function closeSheet(){document.getElementById('sh')?.remove(); draft=null; draftCover=''; applyWorld();}
 const val=id=>($('#'+id)?.value||'').trim();
 
@@ -1674,7 +1842,7 @@ function sheetPage(){
   sheet('Move your bookmark',`<div class="two">
     <div class="field"><span class="lbl">Stopped at page</span><input id="p" type="number" inputmode="numeric" value="${b.page||''}"></div>
     <div class="field"><span class="lbl">Total pages</span><input id="tp" type="number" inputmode="numeric" value="${b.pages||''}"></div></div>`,
-  ()=>{b.page=+val('p')||0; b.pages=+val('tp')||0; save();});
+  ()=>{b.page=+val('p')||0; b.pages=+val('tp')||0; mark(b); save();});
 }
 function sheetEntry(){
   const b=book(openBook);

@@ -13,6 +13,8 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 **A world per book** — pick a genre and the whole app dresses for it, palette *and* weather: petals for romance, embers for fantasy, rain for thrillers, dust motes for literary, stars for sci-fi, leaves for nature, fog for horror, drifting light for poetry. It runs on a canvas behind the page and turns itself off for anyone who asks for reduced motion.
 
+**A dictionary that ships with the app** — `lexicon.json` holds 93,000 headwords beside the page. Look-up answers instantly with no network, no key and no account, inflections included (`quivering` → `quiver`). The online sources are still consulted afterwards and take over only when they bring more — pronunciation, examples, synonyms, or a word the lexicon never met. Built from [Webster's 1913](https://github.com/matthewreagan/WebstersEnglishDictionary) by `tools-build-lexicon.py`, with modern entries added by hand.
+
 **Inside a book**
 - **Words** — tap **Look up** and the built-in dictionary returns pronunciation, several senses, examples and synonyms. Tap a sense to keep it, then write what it means to *you* underneath. Both are saved separately; yours is what the flashcard shows first. Save the sentence you found it in too.
 - **Quotes** — the line that made you stop and read it twice.
@@ -25,6 +27,10 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 **Quotes as images** — any quote becomes a square image in that book's colours, drawn on a canvas here and handed straight to the share sheet. Nothing is uploaded.
 
 **Backup & export** — download everything as JSON and restore it later, or take it out as Markdown for Obsidian and Notion, or as a deck for Anki. Restoring only adds what's missing, so it never overwrites what you already have.
+
+**Mastery and rank** — every word carries New / Learning / Known / Mastered, read straight off its SM-2 schedule so a badge can never disagree with the practice. The concordance shows the mix and what the next rank needs; a session ends on a score, not a shrug.
+
+**Reading pace** — every bookmark move is dated, so the shelf can say *about 33 days left* the way a Kindle does for a paperback it has never seen.
 
 **Practice** — three ways, all on the same SM-2 schedule so every answer moves the word's forgetting curve:
 - **Flashcards** — your wording first, the dictionary's underneath
@@ -73,12 +79,24 @@ for f in audit-*.mjs; do node $f; done
 | `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
 | `audit-languages.mjs` | words in languages other than English | 11 |
 | `audit-extras.mjs` | covers from Open Library, speech practice, quote images | 25 |
+| `audit-shelf.mjs` | the built-in dictionary with the network dead, the shelf, mastery | 22 |
 
 165 checks in total.
 
-The one thing it cannot cover is a live call to dictionaryapi.dev: the build
-environment blocks that host, so the success path is asserted against the
-documented response shape rather than the wire.
+`audit-shelf.mjs` needs the app served over HTTP, because `fetch` cannot read a
+sibling file under `file://`:
+
+```
+python3 -m http.server 8777 &   # then it runs against 127.0.0.1:8777
+```
+
+**Known: the suites written before LingoBox 3.0 no longer match the redesigned
+UI** and fail on selectors that no longer exist. That predates this change.
+`audit-export.mjs` and `audit-shelf.mjs` are the two currently green.
+
+A live call to dictionaryapi.dev still cannot be covered here — the build
+environment blocks that host — so online success paths are asserted against the
+documented response shapes. The built-in lexicon is exercised for real.
 
 ## Ahead
 
