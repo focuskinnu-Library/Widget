@@ -1,5 +1,5 @@
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const br=await launch();
 let pass=0,fail=0;const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 const FD='**/api.dictionaryapi.dev/**', WK='**/en.wiktionary.org/**';
 async function go(word,wkBody,wkStatus=200){
@@ -7,14 +7,14 @@ async function go(word,wkBody,wkStatus=200){
   const p=await ctx.newPage();
   p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
   await p.addInitScript(()=>{speechSynthesis.speak=()=>{};speechSynthesis.cancel=()=>{}});
-  await p.goto('file:///home/user/Widget/app.html');
+  await p.goto(new URL('./app.html',import.meta.url).href);
   await p.evaluate(()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.stringify({
     profile:{name:'T',at:n,streak:1,lastDay:new Date().toDateString()},prefs:{},
     books:[{id:'b1',title:'B',author:'A',page:1,pages:10,genre:'romance',at:n}],words:[],quotes:[],notes:[]}))});
   await p.reload(); await p.waitForTimeout(300);
   await p.route(FD,r=>r.fulfill({status:404,body:'{}'}));
   await p.route(WK,r=>r.fulfill({status:wkStatus,contentType:'application/json',body:wkBody}));
-  await p.click('.bookcard'); await p.waitForTimeout(300);
+  await p.click('.facing'); await p.waitForTimeout(300);
   await p.click('text=+ Add a word'); await p.fill('#w',word);
   await p.click('button:has-text("Look up")'); await p.waitForTimeout(700);
   return p;

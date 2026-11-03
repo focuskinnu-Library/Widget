@@ -1,10 +1,10 @@
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const br=await launch();
 const p=await br.newPage({viewport:{width:400,height:880}});
 let pass=0,fail=0;const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
 await p.addInitScript(()=>{speechSynthesis.speak=()=>{};speechSynthesis.cancel=()=>{}});
-await p.goto('file:///home/user/Widget/index.html');
+await p.goto(new URL('./index.html',import.meta.url).href);
 ok('empty state shown first', await p.isVisible('text=Your dictionary starts empty'));
 await p.click('mark >> nth=0'); await p.waitForTimeout(400);
 ok('tapping a word collects it', await p.isVisible('text=a soft whispering'));

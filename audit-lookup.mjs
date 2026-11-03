@@ -1,6 +1,6 @@
 // Two dictionaries, tried in order, and every way that can go wrong.
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const br=await launch();
 let pass=0,fail=0;const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 const FD='**/api.dictionaryapi.dev/**', WK='**/en.wiktionary.org/**';
 const fdBody=JSON.stringify([{word:'love',phonetic:'/lʌv/',meanings:[
@@ -17,14 +17,14 @@ async function go(routes){
   const p=await ctx.newPage();
   p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
   await p.addInitScript(()=>{speechSynthesis.speak=()=>{};speechSynthesis.cancel=()=>{}});
-  await p.goto('file:///home/user/Widget/app.html');
+  await p.goto(new URL('./app.html',import.meta.url).href);
   await p.evaluate(()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.stringify({
     profile:{name:'T',at:n,streak:1,lastDay:new Date().toDateString()},prefs:{},
     books:[{id:'b1',title:'Test Book',author:'A',page:10,pages:100,genre:'literary',at:n}],
     words:[],quotes:[],notes:[]}))});
   await p.reload(); await p.waitForTimeout(300);
   for(const [pat,fn] of routes) await p.route(pat,fn);
-  await p.click('.bookcard'); await p.waitForTimeout(300);
+  await p.click('.facing'); await p.waitForTimeout(300);
   await p.click('text=+ Add a word'); await p.fill('#w','love');
   await p.click('button:has-text("Look up")'); await p.waitForTimeout(800);
   return p;

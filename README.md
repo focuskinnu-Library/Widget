@@ -75,35 +75,39 @@ Every suite drives the real app in a real browser.
 
 ```
 npm i playwright
-for f in audit-*.mjs; do node $f; done
+node audit.mjs            # all of it, with a total and a real exit code
+node audit.mjs shelf      # just the suites whose names match
 ```
+
+`audit.mjs` starts the static server the two HTTP-bound suites need and stops it
+again, so there is nothing to remember. It exits non-zero the moment a check
+fails, and the same command runs on every push and pull request
+(`.github/workflows/test.yml`).
 
 | Suite | Covers | Checks |
 |---|---|---|
 | `audit-app.mjs` | a whole session, first launch to practice | 46 |
-| `audit-lookup.mjs` | the two-dictionary chain and every failure mode | 18 |
-| `audit-export.mjs` | backup, export, restore, junk files | 18 |
-| `audit-landing.mjs` | the landing page, genre worlds included | 20 |
-| `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
-| `audit-migration.mjs` | old Margin data surviving the rename | 9 |
-| `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
-| `audit-languages.mjs` | words in languages other than English | 11 |
 | `audit-extras.mjs` | covers from Open Library, speech practice, quote images | 25 |
 | `audit-shelf.mjs` | the built-in dictionary with the network dead, the shelf, mastery | 22 |
 | `audit-library.mjs` | call numbers, spine labels, date-due slip, catalogue cards, bookplate | 22 |
+| `audit-landing.mjs` | the landing page, genre worlds included | 20 |
+| `audit-lookup.mjs` | the two-dictionary chain and every failure mode | 18 |
+| `audit-export.mjs` | backup, export, restore, junk files | 18 |
+| `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
+| `audit-languages.mjs` | words in languages other than English | 11 |
+| `audit-migration.mjs` | old Margin data surviving the rename | 9 |
+| `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
 
-165 checks in total.
+209 checks in total, all green.
 
-`audit-shelf.mjs` needs the app served over HTTP, because `fetch` cannot read a
-sibling file under `file://`:
+Two of them — `audit-shelf.mjs` and `audit-library.mjs` — need the app served
+over HTTP, because `fetch` cannot read a sibling file under `file://`. Run them
+on their own and they look for `127.0.0.1:8777`; `LINGOBOX_URL` points them
+somewhere else.
 
-```
-python3 -m http.server 8777 &   # then it runs against 127.0.0.1:8777
-```
-
-**Known: the suites written before LingoBox 3.0 no longer match the redesigned
-UI** and fail on selectors that no longer exist. That predates this change.
-`audit-export.mjs` and `audit-shelf.mjs` are the two currently green.
+`audit-browser.mjs` is the one place that knows where Chromium lives. It prefers
+the browser at `/opt/pw-browsers/chromium` when that exists and otherwise lets
+Playwright use the one it downloaded; `CHROMIUM_PATH` overrides both.
 
 A live call to dictionaryapi.dev still cannot be covered here — the build
 environment blocks that host — so online success paths are asserted against the

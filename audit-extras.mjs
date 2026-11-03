@@ -1,5 +1,5 @@
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const br=await launch();
 const ctx=await br.newContext({viewport:{width:400,height:880},acceptDownloads:true,permissions:['microphone']});
 const p=await ctx.newPage(); let pass=0,fail=0;
 const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
@@ -26,14 +26,14 @@ await p.route('**/openlibrary.org/search.json**',r=>r.fulfill({status:200,conten
     {title:'The Goldfinch',author_name:['Donna Tartt'],number_of_pages_median:771,first_publish_year:2013,cover_i:7222246}]})}));
 await p.route('**/covers.openlibrary.org/**',r=>r.fulfill({status:200,contentType:'image/png',
   body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
-await p.goto('file:///home/user/Widget/app.html');
+await p.goto(new URL('./app.html',import.meta.url).href);
 await p.evaluate(()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.stringify({
   profile:{name:'Kinnari',at:n,streak:2,lastDay:new Date().toDateString()},prefs:{},
   books:[],words:[],quotes:[],notes:[]}))});
 await p.reload(); await p.waitForTimeout(400);
 
 console.log('\n── 1. BOOK COVERS ──');
-await p.click('text=Add your first book');
+await p.click('.spine.add');
 await p.fill('#t','secret history'); await p.click('button:has-text("Find")'); await p.waitForTimeout(600);
 ok('search returns results', (await p.locator('#fb .sense').count())===2);
 ok('results show covers', await p.isVisible('#fb img.cov'));
@@ -45,8 +45,8 @@ ok('page count filled', (await p.inputValue('#tp'))==='559');
 ok('confirms it found it', (await p.textContent('#fb')).includes('Filled in'));
 await p.fill('#p','142'); await p.click('.gen:has-text("Thriller")'); await p.click('#ok'); await p.waitForTimeout(500);
 ok('cover stored on the book', await p.evaluate(()=>/covers\.openlibrary\.org/.test(JSON.parse(localStorage.getItem('lingobox.v1')).books[0].cover)));
-ok('cover shows on the shelf card', await p.isVisible('.bookcard img.cov'));
-await p.click('.bookcard'); await p.waitForTimeout(400);
+ok('cover shows on the shelf card', await p.isVisible('.facing img'));
+await p.click('.facing'); await p.waitForTimeout(400);
 ok('cover shows in the book hero', await p.isVisible('.hero img.cov'));
 
 console.log('\n── storage ──');
@@ -54,19 +54,19 @@ ok('asked the browser to keep the data', await p.evaluate(()=>'persisted' in (JS
 
 console.log('\n── 2. SAY IT ──');
 for(const [w,m] of [['susurrus','wind through paper'],['liminal','between two states'],['ersatz','a poor substitute']]){
-  await p.click('button:has-text("Words")'); await p.click('text=+ Add a word');
+  await p.click('.seg button:has-text("Words")'); await p.click('text=+ Add a word');
   await p.fill('#w',w); await p.fill('#mine',m); await p.click('#ok'); await p.waitForTimeout(250);
 }
 await p.click('.tab[data-go=practice]'); await p.waitForTimeout(300);
-ok('four practice modes now', (await p.locator('.mode').count())===4);
-ok('“Say it” mode offered', await p.isVisible('.mode:has-text("Say it")'));
-await p.click('.mode:has-text("Say it")'); await p.waitForTimeout(400);
+ok('four practice modes now', (await p.locator('.toc').count())===4);
+ok('“Say it” mode offered', await p.isVisible('.toc:has-text("Say it")'));
+await p.click('.toc:has-text("Say it")'); await p.waitForTimeout(400);
 ok('shows the meaning, not the word', (await p.textContent('.card')).includes('Which word is this'));
 ok('promises the voice stays put', await p.isVisible('text=never leaves the device'));
 await p.evaluate(()=>{window.__mode='right';window.__target=sess.queue[0].word});
 await p.click('button:has-text("Tap and say it")'); await p.waitForTimeout(500);
 ok('correct answer accepted', await p.isVisible('text=That’s it'));
-ok('shows what it heard', (await p.textContent('#app')).includes('heard:'));
+ok('shows what it heard', (await p.textContent('#app')).includes('HEARD:'));
 await p.click('button:has-text("Next")'); await p.waitForTimeout(300);
 await p.evaluate(()=>{window.__mode='wrong'});
 await p.click('button:has-text("Tap and say it")'); await p.waitForTimeout(500);
@@ -79,8 +79,8 @@ ok('mic trouble explained, not silent', await p.isVisible('text=Didn’t catch a
 await p.click('.iconb[aria-label=Stop]'); await p.waitForTimeout(300);
 
 console.log('\n── 3. QUOTE AS IMAGE ──');
-await p.click('.tab[data-go=home]'); await p.click('.bookcard'); await p.waitForTimeout(300);
-await p.click('button:has-text("Quotes")'); await p.click('text=+ Add a quote');
+await p.click('.tab[data-go=home]'); await p.click('.facing'); await p.waitForTimeout(300);
+await p.click('.seg button:has-text("Lines")'); await p.click('text=+ Keep a line');
 await p.fill('#q','Beauty is terror. Whatever we call beautiful, we quiver before it.');
 await p.click('#ok'); await p.waitForTimeout(400);
 ok('share button on the quote', await p.isVisible('button:has-text("Share as image")'));

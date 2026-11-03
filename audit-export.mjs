@@ -1,6 +1,6 @@
 // Backup, export and restore — now reached from the You tab.
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const br=await launch();
 const ctx=await br.newContext({viewport:{width:400,height:880},acceptDownloads:true});
 const p=await ctx.newPage(); let pass=0,fail=0;
 const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
@@ -12,7 +12,7 @@ const SEED=()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.strin
     mine:'Like wind through "paper"',context:'A susurrus of leaves.',page:74,at:n,srs:{ease:2.5,reps:0,interval:0,due:n}}],
   quotes:[{id:'q1',bookId:'b1',text:'Beauty is terror.',page:52,at:n}],
   notes:[{id:'n1',bookId:'b1',text:'Hallway in green.',page:140,at:n}]}))};
-await p.goto('file:///home/user/Widget/app.html');
+await p.goto(new URL('./app.html',import.meta.url).href);
 await p.evaluate(SEED); await p.reload(); await p.waitForTimeout(400);
 await p.click('.tab[data-go=you]'); await p.waitForTimeout(300);
 ok('backup lives in You', await p.isVisible('text=Download a backup'));

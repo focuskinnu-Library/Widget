@@ -1,12 +1,13 @@
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const SERVED=process.env.LINGOBOX_URL||'http://127.0.0.1:8777';
+const br=await launch();
 const ctx=await br.newContext({viewport:{width:430,height:930},deviceScaleFactor:2});
 const p=await ctx.newPage(); let pass=0,fail=0;
 const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
 p.on('pageerror',e=>{fail++;console.log('FAIL JS ERROR '+e.message)});
 await p.route('**/sw.js',r=>r.abort());
 await p.addInitScript(()=>{speechSynthesis.speak=()=>{};speechSynthesis.cancel=()=>{}});
-await p.goto('http://127.0.0.1:8777/app.html');
+await p.goto(SERVED+'/app.html');
 await p.evaluate(()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.stringify({
   profile:{name:'Kinnari',at:n-12*864e5,streak:12,lastDay:new Date().toDateString()},prefs:{},
   books:[{id:'b1',title:'The Secret History',author:'Donna Tartt',page:142,pages:559,genre:'literary',
