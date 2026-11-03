@@ -18,8 +18,8 @@
 <meta property="og:site_name" content="LingoBox">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f4f1" media="(prefers-color-scheme: light)">
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -84,7 +84,9 @@
 [data-genre=poetry]  {--g1l:#4c1c52;--g1d:#cfa2d4;--g2l:#15544f;--g2d:#93c8c2}
 
 :root{
-  --bg:#FBFAF8; --surf:#FFFFFF; --surf2:#F4F2EE;
+  /* paper, then card: two tones, four points apart. Enough that a card sits
+     ON the page instead of dissolving into it, nowhere near cream. */
+  --bg:#F5F4F1; --surf:#FFFFFF; --surf2:#EDEBE7;
   --ink:#0A0A0A; --ink2:#3A3A38; --ink3:#8A8A86;
   --line:rgba(10,10,10,.26); --line2:rgba(10,10,10,.11);
   --on-g:#FFFFFF;
@@ -104,7 +106,7 @@
   --r:0px; --r2:0px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-  --bg:#0B0B0C; --surf:#121214; --surf2:#191A1C;
+  --bg:#0A0A0B; --surf:#141416; --surf2:#1C1C1F;
   --ink:#F7F6F3; --ink2:#B6B4AE; --ink3:#7E7C77;
   --line:rgba(247,246,243,.26); --line2:rgba(247,246,243,.11);
   --on-g:#FFFFFF; --shadow:1px 1px 0 rgba(0,0,0,.5);
@@ -114,7 +116,7 @@
   --bg-tint:var(--bg);
 }}
 :root[data-theme=dark]{
-  --bg:#0B0B0C; --surf:#121214; --surf2:#191A1C;
+  --bg:#0A0A0B; --surf:#141416; --surf2:#1C1C1F;
   --ink:#F7F6F3; --ink2:#B6B4AE; --ink3:#7E7C77;
   --line:rgba(247,246,243,.26); --line2:rgba(247,246,243,.11);
   --on-g:#FFFFFF; --shadow:1px 1px 0 rgba(0,0,0,.5);
@@ -131,7 +133,7 @@ body{
   font:400 15.5px/1.6 var(--serif);
   min-height:100dvh; overflow-x:hidden;
 }
-#sky{position:fixed;inset:0;z-index:0;opacity:.8}
+#sky{position:fixed;inset:0;z-index:0;opacity:.45}
 #app{position:relative;z-index:2;max-width:536px;margin:0 auto;
   padding:22px 24px calc(92px + env(safe-area-inset-bottom))}
 ::selection{background:var(--rosso);color:#fff}
@@ -544,11 +546,14 @@ input[type=number]{-moz-appearance:textfield}
    Manuale was printed on paper so white it was remarked upon.
 ------------------------------------------------------------------*/
 #app{
-  background:color-mix(in srgb,var(--surf) 92%,transparent);
+  /* no background of its own: the paper is the body, the weather falls on
+     it, and the white cards sit on top. Painting a near-opaque sheet here
+     flattened both the page tone and the weather out of existence. */
+  background:transparent;
   border-left:1px solid var(--line2); border-right:1px solid var(--line2);
   box-shadow:none;
   position:relative;
-  min-height:100dvh;          /* the sheet runs the length of the page */
+  min-height:100dvh;
 }
 
 /* ── the card catalogue ──────────────────────────────────────────
@@ -690,7 +695,7 @@ function sizeSky(){const d=Math.min(devicePixelRatio||1,2);
   W=innerWidth;H=innerHeight;sky.width=W*d;sky.height=H*d;sky.style.width=W+'px';sky.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0);}
 addEventListener('resize',()=>{sizeSky();seed(fxKind)});
 
-const COUNT={petal:16,ember:22,rain:34,dust:26,star:40,leaf:12,fog:7,mote:20};
+const COUNT={petal:14,ember:18,rain:30,dust:14,star:30,leaf:11,fog:6,mote:13};
 function seed(kind){
   fxKind=kind; parts=[];
   const n=calm?0:COUNT[kind]||18;
@@ -713,6 +718,18 @@ function css(v){return getComputedStyle(document.documentElement).getPropertyVal
 let c1='#888',c2='#888';
 function refreshColors(){c1=css('--g1');c2=css('--g2')}
 
+/* A 1px hard-edged circle on white paper does not read as a mote of dust.
+   It reads as dirt on the screen. Anything small and round gets a soft
+   falloff and a wider radius instead, so it reads as something in the air
+   rather than something on the glass. */
+function blob(x,y,r,col,alpha){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,col); g.addColorStop(.45,col); g.addColorStop(1,'transparent');
+  const a=ctx.globalAlpha; ctx.globalAlpha=a*alpha;
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.3); ctx.fill();
+  ctx.globalAlpha=a;
+}
+
 function tick(t){
   ctx.clearRect(0,0,W,H);
   for(const p of parts){
@@ -725,16 +742,16 @@ function tick(t){
         ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=c2;
         ctx.beginPath();ctx.ellipse(0,0,p.r,p.r*.55,0,0,6.3);ctx.fill();break;
       case 'ember':
-        ctx.globalAlpha=p.o*(.6+.4*Math.sin(t/380+p.tw));ctx.fillStyle=c2;
-        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();break;
+        ctx.globalAlpha=p.o*(.6+.4*Math.sin(t/380+p.tw));
+        blob(p.x,p.y,p.r*2.6,c2,.8);break;
       case 'rain':
         ctx.strokeStyle=c2;ctx.lineWidth=1.1;ctx.beginPath();
         ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+p.vx*2.2,p.y+p.len);ctx.stroke();break;
       case 'dust':
-        ctx.fillStyle=c1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();break;
+        blob(p.x,p.y,p.r*3,c1,.5);break;
       case 'star':
-        ctx.globalAlpha=p.o*(.5+.5*Math.sin(t/700+p.tw));ctx.fillStyle=c1;
-        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();break;
+        ctx.globalAlpha=p.o*(.5+.5*Math.sin(t/700+p.tw));
+        blob(p.x,p.y,p.r*3,c1,.65);break;
       case 'leaf':
         ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=c1;
         ctx.beginPath();ctx.ellipse(0,0,p.r,p.r*.42,0,0,6.3);ctx.fill();break;
@@ -742,9 +759,9 @@ function tick(t){
         const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
         g.addColorStop(0,c1);g.addColorStop(1,'transparent');ctx.fillStyle=g;
         ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();break;
-      default:
-        ctx.globalAlpha=p.o*(.55+.45*Math.sin(t/500+p.tw));ctx.fillStyle=c2;
-        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();
+      default: /* motes */
+        ctx.globalAlpha=p.o*(.55+.45*Math.sin(t/500+p.tw));
+        blob(p.x,p.y,p.r*3,c2,.55);
     }
     ctx.restore();
   }
