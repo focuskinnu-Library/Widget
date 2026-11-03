@@ -40,6 +40,16 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 **Reminders** — the browser nudges you when words go stale. Only ever about your own words. They need the app to have been opened, because there is no server behind this.
 
+## The library it pretends to be
+
+Everything a circulating library stamps on a book, LingoBox derives — never stored, so an old shelf gets it for free.
+
+- **Call numbers** — a Dewey-ish class from the genre plus the author's surname, printed on a paste-on spine label the way a circulating copy carries one
+- **Accession numbers** — running in the order volumes joined the shelf
+- **A date-due slip** pasted into each volume, stamped in red with every bookmark move you have ever made
+- **Catalogue cards** — the concordance is a drawer of buff 3×5s: ruled heading, call number typed top-left, rod hole punched through the foot
+- **A bookplate** on your own page: double gilt rule, *Ex Libris*, your name
+
 ## Why it exists
 
 The market splits cleanly in two. Book trackers (Goodreads, StoryGraph, Bookmory, Basmo) track *what* you read. Vocabulary apps (Anki, WordBook, My Words) drill words with no idea where they came from. Kindle is the only thing that joins them — and only if you read on a Kindle.
@@ -80,6 +90,7 @@ for f in audit-*.mjs; do node $f; done
 | `audit-languages.mjs` | words in languages other than English | 11 |
 | `audit-extras.mjs` | covers from Open Library, speech practice, quote images | 25 |
 | `audit-shelf.mjs` | the built-in dictionary with the network dead, the shelf, mastery | 22 |
+| `audit-library.mjs` | call numbers, spine labels, date-due slip, catalogue cards, bookplate | 22 |
 
 165 checks in total.
 
