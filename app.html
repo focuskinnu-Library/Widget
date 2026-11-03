@@ -214,7 +214,7 @@ input[type=number]{-moz-appearance:textfield}
   transition:transform .18s cubic-bezier(.2,.9,.3,1.2)}
 .spine:hover{transform:translateY(-7px) rotate(-.5deg)}
 .spine:active{transform:translateY(-2px)}
-.spine .t{writing-mode:vertical-rl;font:650 12px/1.2 var(--serif);letter-spacing:.03em;
+.spine .t{padding-right:11px;writing-mode:vertical-rl;font:650 12px/1.2 var(--serif);letter-spacing:.03em;
   max-height:148px;overflow:hidden}
 .spine .sig{position:absolute;top:9px;left:0;right:0;text-align:center;
   font:700 7.5px var(--mono);letter-spacing:.1em;opacity:.75}
@@ -224,8 +224,9 @@ input[type=number]{-moz-appearance:textfield}
   box-shadow:none;display:flex;align-items:center;justify-content:center}
 .spine.add:hover{color:var(--g1);border-color:var(--g1)}
 .spine.add .t{font:650 10px var(--mono);letter-spacing:.14em;text-transform:uppercase}
-.spine .a{writing-mode:vertical-rl;font:500 9px/1.2 var(--sans);letter-spacing:.02em;opacity:.72;
-  position:absolute;bottom:10px;left:0;right:0;text-align:center;max-height:52px;overflow:hidden}
+.spine .a{writing-mode:vertical-rl;font:500 8.5px/1 var(--sans);letter-spacing:.02em;opacity:.7;
+  position:absolute;top:30px;bottom:10px;right:5px;width:10px;text-align:right;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .facing{flex:none;width:96px;border-radius:3px 7px 7px 3px;position:relative;cursor:pointer;
   background:none;padding:0;align-self:flex-end;transition:transform .18s}
 .facing:hover{transform:translateY(-7px) rotate(-.6deg)}
@@ -464,11 +465,91 @@ input[type=number]{-moz-appearance:textfield}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+
+/* ══ the object in your hands ══════════════════════════════════════
+   A reader of paper books is holding one already. The app should feel
+   like the companion volume on the same table: a sheet with edges, a
+   sewn gutter, foxing from age, a ribbon to keep the place.
+------------------------------------------------------------------*/
+
+/* the sheet — translucent enough that the weather still falls through */
+#app{
+  background:color-mix(in srgb,var(--surf) 86%,transparent);
+  border-left:1px solid var(--line2); border-right:1px solid var(--line2);
+  box-shadow:0 0 0 1px rgba(33,27,18,.02), 14px 0 30px -28px rgba(33,27,18,.8),
+             -14px 0 30px -28px rgba(33,27,18,.8);
+  position:relative;
+}
+/* the gutter: a sewn fold down the inner margin */
+#app::before{
+  content:''; position:absolute; top:0; bottom:0; left:7px; width:12px; pointer-events:none;
+  background:
+    repeating-linear-gradient(to bottom,
+      var(--line) 0 7px, transparent 7px 15px) 50% 0/1px 100% no-repeat,
+    linear-gradient(to right, rgba(33,27,18,.055), transparent 72%);
+  opacity:.85;
+}
+/* foxing — the faint freckling old paper earns */
+body::before{
+  content:''; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.5;
+  background:
+    radial-gradient(10px 7px at 14% 22%, rgba(140,105,55,.10), transparent 70%),
+    radial-gradient(7px 6px at 82% 15%, rgba(140,105,55,.09), transparent 70%),
+    radial-gradient(13px 9px at 71% 61%, rgba(140,105,55,.07), transparent 70%),
+    radial-gradient(8px 7px at 24% 78%, rgba(140,105,55,.08), transparent 70%),
+    radial-gradient(6px 5px at 48% 41%, rgba(140,105,55,.06), transparent 70%),
+    radial-gradient(9px 6px at 92% 88%, rgba(140,105,55,.07), transparent 70%);
+}
+:root[data-theme=dark] body::before{opacity:.26}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) body::before{opacity:.26}}
+
+/* letterpress: ink pressed into the sheet rather than sitting on glass */
+h1, h2, .dropcap, .word, .facing .blurb b, .spine .t{
+  text-shadow:0 1px 0 rgba(255,255,255,.38);
+}
+:root[data-theme=dark] h1, :root[data-theme=dark] h2,
+:root[data-theme=dark] .dropcap, :root[data-theme=dark] .word{text-shadow:0 1px 0 rgba(0,0,0,.4)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) h1,
+  :root:not([data-theme=light]) h2, :root:not([data-theme=light]) .dropcap,
+  :root:not([data-theme=light]) .word{text-shadow:0 1px 0 rgba(0,0,0,.4)}}
+
+/* laid lines — the ghost of the mould the paper was made on */
+.card{
+  background-image:repeating-linear-gradient(to bottom,
+    color-mix(in srgb,var(--ink) 3%,transparent) 0 1px, transparent 1px 8px);
+  background-blend-mode:multiply;
+}
+:root[data-theme=dark] .card{background-blend-mode:screen}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .card{background-blend-mode:screen}}
+
+/* a printer's ornament between movements */
+.orn{display:flex;align-items:center;gap:12px;margin:26px 0 6px;color:var(--ink3)}
+.orn::before,.orn::after{content:'';flex:1;border-top:1px solid var(--line2)}
+.orn span{font:400 15px var(--serif);letter-spacing:.3em;opacity:.8}
+
+/* the ribbon that keeps your place */
+/* hangs at the very edge, clear of the masthead controls */
+#ribbon{position:fixed;top:0;right:3px;width:14px;z-index:3;display:none;
+  cursor:pointer;border:0;padding:0;background:none}
+#ribbon i{display:block;width:14px;height:66px;
+  background:linear-gradient(180deg,var(--g1),var(--g2));
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);
+  box-shadow:0 5px 10px -5px rgba(33,27,18,.65);transition:height .2s}
+#ribbon:hover i{height:78px}
+#ribbon{overflow:hidden}
+
+
+/* the shelf stands on a board with a real edge */
+.ledge{box-shadow:0 3px 0 -1px color-mix(in srgb,var(--ink) 22%,transparent),
+                 0 7px 12px -8px rgba(33,27,18,.7)}
+
+@media (prefers-reduced-motion:reduce){#ribbon i{transition:none}}
 </style>
 </head>
 <body>
 <div id="netpill" role="status">Offline — everything but lookups still works</div>
 <canvas id="sky"></canvas>
+<button id="ribbon" aria-label="Back to the book you're reading"><i></i></button>
 <div id="app"></div>
 <nav id="nav"></nav>
 
@@ -1217,9 +1298,22 @@ function render(){
     : view==='home'? home() : view==='book'? bookView()
     : view==='words'? dict() : view==='practice'? practice() : you();
   app.classList.remove('fade'); void app.offsetWidth; app.classList.add('fade');
-  drawNav();
+  drawNav(); drawRibbon();
   if(view==='you'&&db.profile) quotaNote();
   scrollTo(0,0);
+}
+/* The ribbon marks the book in hand. It shows on every page but the
+   book itself, because that is the one place it would lead nowhere. */
+function drawRibbon(){
+  const r=$('#ribbon'), b=db.books&&db.books[0];
+  if(!r) return;
+  if(!db.profile||!b||view==='book'){ r.style.display='none'; return }
+  const g=genreOf(b.genre);
+  r.style.display='block';
+  r.style.setProperty('--g1',g.a); r.style.setProperty('--g2',g.b);
+  r.title='Back to '+(b.title||'your book');
+  r.onclick=()=>{ openBook=b.id; bookTab='words'; view='book';
+    db.prefs.lastGenre=b.genre||'literary'; save(); render(); };
 }
 function drawNav(){
   const nav=$('#nav');
