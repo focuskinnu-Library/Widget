@@ -214,8 +214,8 @@ input[type=number]{-moz-appearance:textfield}
   transition:transform .18s cubic-bezier(.2,.9,.3,1.2)}
 .spine:hover{transform:translateY(-7px) rotate(-.5deg)}
 .spine:active{transform:translateY(-2px)}
-.spine .t{padding-right:11px;writing-mode:vertical-rl;font:650 12px/1.2 var(--serif);letter-spacing:.03em;
-  max-height:148px;overflow:hidden}
+.spine .t{padding-right:11px;padding-bottom:31px;writing-mode:vertical-rl;font:650 12px/1.2 var(--serif);
+  letter-spacing:.03em;max-height:132px;overflow:hidden}
 .spine .sig{position:absolute;top:9px;left:0;right:0;text-align:center;
   font:700 7.5px var(--mono);letter-spacing:.1em;opacity:.75}
 .spine.reading::before{content:'';position:absolute;top:0;left:10px;right:10px;height:3px;
@@ -224,8 +224,19 @@ input[type=number]{-moz-appearance:textfield}
   box-shadow:none;display:flex;align-items:center;justify-content:center}
 .spine.add:hover{color:var(--g1);border-color:var(--g1)}
 .spine.add .t{font:650 10px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+/* the paste-on label every circulating copy carries */
+.spine .label{position:absolute;left:7px;right:7px;bottom:7px;padding:3px 0 4px;border-radius:1px;
+  background:#f7f2e4;color:#2b2318;font:600 6.5px/1.35 var(--mono);letter-spacing:.04em;
+  text-align:center;box-shadow:0 1px 0 rgba(0,0,0,.18);text-shadow:none}
+.spine .label b{display:block;font-weight:800;font-size:7px}
+/* book cloth: a woven tooth, and gilt where the title is stamped */
+.spine{background-image:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.055) 0 1px,transparent 1px 3px),
+  repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 3px),
+  linear-gradient(165deg,var(--g1),var(--g2))}
+.spine .t{text-shadow:0 1px 0 rgba(0,0,0,.28)}
 .spine .a{writing-mode:vertical-rl;font:500 8.5px/1 var(--sans);letter-spacing:.02em;opacity:.7;
-  position:absolute;top:30px;bottom:10px;right:5px;width:10px;text-align:right;
+  position:absolute;top:30px;bottom:42px;right:5px;width:10px;text-align:right;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .facing{flex:none;width:96px;border-radius:3px 7px 7px 3px;position:relative;cursor:pointer;
   background:none;padding:0;align-self:flex-end;transition:transform .18s}
@@ -240,6 +251,11 @@ input[type=number]{-moz-appearance:textfield}
   -webkit-box-orient:vertical;overflow:hidden}
 .facing .blurb i{font-style:normal;font-size:9.5px;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;
   -webkit-box-orient:vertical;overflow:hidden}
+.facing .label{position:absolute;left:9px;bottom:13px;padding:3px 7px 4px;border-radius:1px;
+  background:#f7f2e4;color:#2b2318;font:600 6.5px/1.35 var(--mono);letter-spacing:.04em;
+  text-align:center;box-shadow:0 1px 0 rgba(0,0,0,.18);text-shadow:none}
+.facing .label b{display:block;font-weight:800;font-size:7px}
+.facing .blurb{padding-bottom:42px}
 .facing .pct{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.3)}
 .facing .pct i{display:block;height:100%;background:var(--on-g);opacity:.92}
 .nowread{margin-top:12px;padding-left:11px;border-left:2px solid var(--g1)}
@@ -522,6 +538,51 @@ h1, h2, .dropcap, .word, .facing .blurb b, .spine .t{
 :root[data-theme=dark] .card{background-blend-mode:screen}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .card{background-blend-mode:screen}}
 
+/* ── the card catalogue ──────────────────────────────────────────
+   Buff stock, a ruled heading, the call number typed top-left, and the
+   rod hole punched through the foot. Drawers of these are what a
+   library felt like before it felt like a search box.
+----------------------------------------------------------------- */
+.catcard{position:relative;background:color-mix(in srgb,#efe3c8 42%,var(--surf));
+  border:1px solid var(--line);border-radius:2px;padding:26px 16px 30px 16px;margin-bottom:12px;
+  box-shadow:0 1px 0 rgba(33,27,18,.05),0 8px 16px -14px rgba(33,27,18,.8)}
+.catcard::before{content:'';position:absolute;left:0;right:0;top:19px;border-top:1px solid
+  color-mix(in srgb,var(--due) 30%,transparent)}
+.catcard::after{content:'';position:absolute;left:50%;bottom:9px;width:11px;height:11px;
+  margin-left:-5.5px;border-radius:50%;background:var(--bg);
+  box-shadow:inset 0 1px 2px rgba(33,27,18,.45)}
+.catcard .callno{position:absolute;top:4px;left:16px;font:700 8.5px var(--mono);
+  letter-spacing:.1em;color:var(--ink3)}
+.catcard .folio{position:relative;z-index:1}
+:root[data-theme=dark] .catcard{background:color-mix(in srgb,#5a4a2c 22%,var(--surf))}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .catcard{
+  background:color-mix(in srgb,#5a4a2c 22%,var(--surf))}}
+
+/* ── the date-due slip, pasted inside the front board ────────────── */
+.dueslip{margin-top:12px;background:color-mix(in srgb,#efe3c8 50%,var(--surf));
+  border:1px solid var(--line);border-radius:2px;padding:12px 14px 14px;
+  box-shadow:0 8px 16px -14px rgba(33,27,18,.8)}
+.dueslip h4{font:700 8.5px var(--mono);letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink3);text-align:center;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.dueslip .dates{display:flex;flex-wrap:wrap;gap:7px 10px;padding-top:11px}
+.dueslip .dates i{font-style:normal;font:700 10px var(--mono);letter-spacing:.09em;
+  color:var(--due);border:1.5px solid var(--due);border-radius:2px;padding:3px 7px;
+  opacity:.82;transform:rotate(var(--r,0deg))}
+.dueslip .none{font:400 13px var(--serif);font-style:italic;color:var(--ink3);padding-top:10px}
+
+/* ── ex libris ───────────────────────────────────────────────────── */
+.exlibris{position:relative;text-align:center;padding:26px 18px;margin-top:14px;
+  background:var(--surf);border:1px solid var(--line);border-radius:2px;
+  box-shadow:0 8px 18px -16px rgba(33,27,18,.8)}
+.exlibris::before{content:'';position:absolute;inset:7px;border:1px solid var(--line2);
+  border-radius:1px;pointer-events:none}
+.exlibris::after{content:'';position:absolute;inset:11px;border:3px double
+  color-mix(in srgb,var(--g1) 45%,transparent);border-radius:1px;pointer-events:none}
+.exlibris .ex{font:700 9px var(--mono);letter-spacing:.34em;text-transform:uppercase;color:var(--ink3)}
+.exlibris .nm{font:italic 600 27px/1.2 var(--serif);letter-spacing:-.01em;margin-top:9px}
+.exlibris .orn2{font:400 16px var(--serif);color:var(--g1);margin:9px 0 7px;letter-spacing:.4em}
+.exlibris .acc{font:500 9px var(--mono);letter-spacing:.14em;color:var(--ink3)}
+
 /* a printer's ornament between movements */
 .orn{display:flex;align-items:center;gap:12px;margin:26px 0 6px;color:var(--ink3)}
 .orn::before,.orn::after{content:'';flex:1;border-top:1px solid var(--line2)}
@@ -703,6 +764,24 @@ const due=()=>db.words.filter(w=>(w.srs?.due??0)<=Date.now());
 function nextIn(w,q){const c=w.srs||fresh();const r=c.reps+1;
   const i=r===1?1:r===2?6:Math.round(c.interval*c.ease*(q===5?1.3:1));
   return i===1?'tomorrow':i<31?i+' days':Math.round(i/30)+' months';}
+
+/* ══ the cataloguer's hand ════════════════════════════════════════
+   A library gives every volume a call number and every card a heading.
+   These are derived, never stored, so an old shelf gets them for free.
+------------------------------------------------------------------*/
+const CLASS={literary:'823.91',romance:'823.92',fantasy:'823.87',thriller:'823.08',
+  scifi:'823.0876',nature:'508.2',horror:'823.0873',poetry:'821.91'};
+function surname(a){
+  const parts=String(a||'').trim().split(/\s+/).filter(Boolean);
+  const last=parts.length?parts[parts.length-1]:'';
+  return (last.replace(/[^A-Za-z]/g,'').slice(0,3)||'ANO').toUpperCase();
+}
+const callNo=b=>`${CLASS[b.genre]||'823'} ${surname(b.author)}`;
+/* Accession numbers run in the order volumes joined the shelf. */
+function accession(b){
+  const i=db.books.slice().sort((x,y)=>(x.at||0)-(y.at||0)).findIndex(x=>x.id===b.id);
+  return 'A' + String(10237 + (i<0?0:i)*7).padStart(6,'0');
+}
 
 /* ══ how well a word is known ═════════════════════════════════════
    Read straight off the SM-2 schedule that already decides when a word
@@ -1387,11 +1466,13 @@ function spineRail(){
         ${b.cover?`<img src="${esc(b.cover)}" alt="" onerror="this.remove()">`
           :`<span class="blurb"><b>${esc(b.title)}</b><i>${esc(b.author)||'—'}</i></span>`}
         ${b.pages?`<span class="pct"><i style="width:${Math.min(100,Math.round(b.page/b.pages*100))}%"></i></span>`:''}
+        <span class="label"><b>${esc(CLASS[b.genre]||'823')}</b>${esc(surname(b.author))}</span>
       </span></button>`;
     return `<button class="spine" data-book="${b.id}"
       style="--g1:${g.a};--g2:${g.b};height:${h}px" title="${esc(b.title)}${b.author?' — '+esc(b.author):''}">
       <span class="sig">${esc(g.name.slice(0,4))}</span><span class="t">${esc(b.title)}</span>
-      ${b.author?`<span class="a">${esc(b.author)}</span>`:''}</button>`;
+      ${b.author?`<span class="a">${esc(b.author)}</span>`:''}
+      <span class="label"><b>${esc(CLASS[b.genre]||'823')}</b>${esc(surname(b.author))}</span></button>`;
   }).join('');
   return `<div class="shelfwrap">
     <div class="shelf">${rail}
@@ -1475,6 +1556,16 @@ function bookView(){
       : emptyBlock('pen','Nothing pictured yet','What did the room look like? Who did you cast? No other app has anywhere for this.'));
 
   const add={words:'+ Add a word',quotes:'+ Keep a line',notes:'+ Write an entry'}[bookTab];
+  const slip=(()=>{
+    const m=(b.marks||[]).filter(x=>x&&x.at).slice(-10);
+    const fmt=t=>new Date(t).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).toUpperCase();
+    return `<div class="dueslip">
+      <h4>Date due · ${esc(callNo(b))}</h4>
+      ${m.length?`<div class="dates">${m.map((x,i)=>
+          `<i style="--r:${(i%3-1)*1.4}deg">${fmt(x.at)}</i>`).join('')}</div>`
+        :`<div class="none">No stamps yet — move the bookmark and the slip fills in.</div>`}
+    </div>`;
+  })();
 
   return `<div class="top">
       <button class="iconb" data-go="home" aria-label="Back">←</button>
@@ -1494,7 +1585,8 @@ function bookView(){
         <button class="btn ghost sm" onclick="sheetPage()" style="background:transparent;border-color:rgba(255,255,255,.45);color:inherit">Move bookmark</button>
       </div>
       ${b.pages?`<div class="bar"><i style="width:${pct}%"></i></div>
-      <div class="folio" style="color:inherit;opacity:.8;margin-top:8px;letter-spacing:.1em">${pct}% THROUGH · ${g.line.toUpperCase()}</div>`
+      <div class="folio" style="color:inherit;opacity:.8;margin-top:8px;letter-spacing:.1em">${pct}% THROUGH${pace(b)?' · '+pace(b).toUpperCase():''}</div>
+      <div class="folio" style="color:inherit;opacity:.62;margin-top:3px;letter-spacing:.14em">${esc(callNo(b))} · ${esc(accession(b))}</div>`
       :`<div class="folio" style="color:inherit;opacity:.8;margin-top:12px;letter-spacing:.1em">${g.line.toUpperCase()}</div>`}
     </div>
 
@@ -1505,6 +1597,7 @@ function bookView(){
       <button class="btn ghost sm" style="flex:none" onclick="shareDna('${b.id}')">Share</button>
     </div>
 
+    ${slip}
     <div class="seg">
       <button class="${bookTab==='words'?'on':''}" onclick="setTab('words')">Words${words.length?' · '+words.length:''}</button>
       <button class="${bookTab==='quotes'?'on':''}" onclick="setTab('quotes')">Lines${quotes.length?' · '+quotes.length:''}</button>
@@ -1548,7 +1641,8 @@ function dict(){
     if(l!==L){L=l; if(open) out+='</div>';
       out+=`<div class="cgroup"><span class="dropcap">${esc(l)}</span>`; open=true}
     const b=book(w.bookId), d=w.srs?Math.ceil((w.srs.due-Date.now())/DAY):0, lv=levelOf(w);
-    out+=`<div class="entry" style="overflow:auto" data-level="${lv.id}">
+    out+=`<div class="entry catcard" data-level="${lv.id}">
+      <span class="callno">${b?esc(callNo(b)):'823 —'}</span>
       <div class="lead" style="align-items:baseline;padding-bottom:6px">
         <span style="min-width:0;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap">
           <span class="word">${esc(w.word)}</span>${w.phonetic?`<span class="pron">${esc(w.phonetic)}</span>`:''}${sayBtn(w.word,w.audio)}</span>
@@ -1799,10 +1893,11 @@ function you(){
   const days=Math.max(1,Math.ceil((Date.now()-p.at)/DAY));
   return `${masthead()}
   <div class="chap rise" data-num="IV">
-    <div class="who" style="margin:14px 0 2px">
-      <div class="ava">${esc(p.name[0].toUpperCase())}</div>
-      <div style="min-width:0"><div style="font:italic 600 24px var(--serif);letter-spacing:-.01em">${esc(p.name)}</div>
-      <div class="folio" style="margin-top:3px">READING HERE FOR ${days} DAY${days>1?'S':''}</div></div>
+    <div class="exlibris">
+      <div class="ex">Ex Libris</div>
+      <div class="nm">${esc(p.name)}</div>
+      <div class="orn2">❧</div>
+      <div class="acc">${db.books.length} VOLUME${db.books.length===1?'':'S'} · ${db.words.length} CARD${db.words.length===1?'':'S'} · ${days} DAY${days>1?'S':''}</div>
     </div>
 
     <div class="card" style="margin-top:14px">
