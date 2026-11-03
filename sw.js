@@ -3,7 +3,7 @@
    Bump VER to ship an update; every visitor gets it within a visit.
 ══════════════════════════════════════════════════════════════════ */
 'use strict';
-const VER = '3.0';
+const VER = '3.1';
 const CACHE = `lingobox-${VER}`;
 
 /* The shell: everything the app needs to open with no network at all. */
@@ -21,6 +21,10 @@ const CORE = [
   './favicon-32.png',
   './og-image.png'
 ];
+
+/* lexicon.json is deliberately NOT precached: it is several megabytes, and
+   making every first visit pay for it would be a poor trade. It is fetched
+   on the first lookup and kept by the same-origin handler from then on. */
 
 /* Cover art is immutable per id — the safest cache-first there is.
    Everything else that leaves this origin is a lookup: try the network,
