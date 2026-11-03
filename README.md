@@ -40,6 +40,23 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 **Reminders** — the browser nudges you when words go stale. Only ever about your own words. They need the app to have been opened, because there is no server behind this.
 
+## How it looks
+
+**Bodoni · Parma, 1791.** Giambattista Bodoni cut his types for the Duke of
+Parma and printed the *Manuale Tipografico*: hairline serifs against stems four
+times their weight, acres of white, letterspaced capitals, and a rule thin
+enough to be a scratch. Nothing rounded, nothing glowing.
+
+So the app is real white and real black rather than cream and brown, every
+corner is square, every shadow is a crisp offset rather than a halo, and there
+is exactly one accent — the *rosso pompeiano* the Manuale used for its initials.
+The drama is the type scale: 9px letterspaced capitals beside 44px Didone, with
+the gap between them left empty on purpose.
+
+The genre worlds survive, re-cut as flat pigments a colourman of 1791 could
+have ground — oxblood, olive, aubergine, verdigris. The weather still falls
+behind the page; the page itself stays white and black and keeps its one red.
+
 ## The library it pretends to be
 
 Everything a circulating library stamps on a book, LingoBox derives — never stored, so an old shelf gets it for free.
@@ -66,7 +83,13 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 - **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. Wiktionary answers in many languages — English first, then whichever language actually has the word — so `pyar` resolves as Hindi. The panel names the source and the language.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
 - **No Google, no LLM, and that is a constraint rather than a choice.** Google has no free search API and browsers cannot fetch google.com at all, and every LLM API needs a secret key — which in a page with no server would be readable by anyone. Both become possible the day there is a backend. Until then, any word that neither dictionary has offers a web search instead.
-- Light and dark, following the system, with a manual toggle.
+- Light and dark, following the system, with a manual toggle. Both are Bodoni —
+  black on near-white, or reversed out of near-black.
+- **The type is served from here, not from Google.** `fonts/` holds two woff2
+  cuts of Bodoni Moda, about 100KB for the pair, precached by the service worker.
+  Nothing is requested from a third party, and the face is right with the network
+  off. Apple devices get Didot or Bodoni 72 locally before the download even
+  finishes. SIL Open Font License 1.1 — `fonts/OFL.txt`.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
 
 ## Testing
@@ -89,7 +112,7 @@ fails, and the same command runs on every push and pull request
 | `audit-app.mjs` | a whole session, first launch to practice | 46 |
 | `audit-extras.mjs` | covers from Open Library, speech practice, quote images | 25 |
 | `audit-shelf.mjs` | the built-in dictionary with the network dead, the shelf, mastery | 22 |
-| `audit-library.mjs` | call numbers, spine labels, date-due slip, catalogue cards, bookplate | 22 |
+| `audit-library.mjs` | call numbers, spine labels, date-due slip, catalogue cards, bookplate | 23 |
 | `audit-landing.mjs` | the landing page, genre worlds included | 20 |
 | `audit-lookup.mjs` | the two-dictionary chain and every failure mode | 18 |
 | `audit-export.mjs` | backup, export, restore, junk files | 18 |
@@ -98,7 +121,7 @@ fails, and the same command runs on every push and pull request
 | `audit-migration.mjs` | old Margin data surviving the rename | 9 |
 | `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
 
-209 checks in total, all green.
+210 checks in total, all green.
 
 Two of them — `audit-shelf.mjs` and `audit-library.mjs` — need the app served
 over HTTP, because `fetch` cannot read a sibling file under `file://`. Run them

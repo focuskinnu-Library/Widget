@@ -26,7 +26,16 @@ const server = createServer(async (req, res) => {
     res.writeHead(200, {'content-type': TYPES[extname(name)] || 'application/octet-stream'}).end(body);
   } catch { res.writeHead(404).end('not found'); }
 });
-await new Promise(r => server.listen(PORT, '127.0.0.1', r));
+// If something is already on 8777 (a stray `python3 -m http.server`, a second
+// run) take any free port instead of dying — the suites are told the URL.
+const port = await new Promise((resolve, reject) => {
+  server.once('error', e => {
+    if (e.code !== 'EADDRINUSE') return reject(e);
+    server.listen(0, '127.0.0.1', () => resolve(server.address().port));
+  });
+  server.listen(PORT, '127.0.0.1', () => resolve(PORT));
+});
+if (port !== PORT) console.log(`(port ${PORT} was busy — serving on ${port})\n`);
 
 const want = process.argv.slice(2);
 const suites = readdirSync(HERE)
@@ -36,7 +45,7 @@ const suites = readdirSync(HERE)
 const run = f => new Promise(done => {
   const out = [];
   const kid = spawn(process.execPath, [join(HERE, f)],
-    {env: {...process.env, LINGOBOX_URL: `http://127.0.0.1:${PORT}`}});
+    {env: {...process.env, LINGOBOX_URL: `http://127.0.0.1:${port}`}});
   kid.stdout.on('data', d => out.push(d));
   kid.stderr.on('data', d => out.push(d));
   kid.on('close', code => done({code, text: Buffer.concat(out).toString()}));

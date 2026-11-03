@@ -48,6 +48,14 @@ await p.click('[data-go=words]'); await p.waitForTimeout(600);
 ok('words are catalogue cards', await p.isVisible('.catcard'));
 ok('each card typed with its call number', (await p.textContent('.catcard .callno'))==='823.91 TAR');
 ok('alphabet dropcaps kept', await p.locator('.dropcap').first().isVisible());
+// isVisible() says nothing about occlusion: the initial used to be floated
+// and the next card's background painted straight over it, which passed.
+ok('dropcap is not painted over by the first card', await p.evaluate(()=>{
+  const d=document.querySelector('.dropcap'); if(!d) return false;
+  const r=d.getBoundingClientRect();
+  const hit=document.elementFromPoint(r.left+4, r.top+r.height/2);
+  return !!hit && (hit===d || d.contains(hit));
+}));
 await p.screenshot({path:'lib-cards.png'});
 
 console.log('\n── EX LIBRIS ──');

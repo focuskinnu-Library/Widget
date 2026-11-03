@@ -20,7 +20,7 @@ ok('weather is running', await p.evaluate(()=>parts.length>0));
 ok('literary is the default world', await p.evaluate(()=>document.documentElement.dataset.v)==='literary');
 ok('atmosphere line shown', (await p.textContent('#gline')).includes('Dust in a shaft'));
 await p.click('.sw[data-v=romance]'); await p.waitForTimeout(500);
-ok('romance switches palette', await p.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())==='#e11d6b');
+ok('romance switches palette', await p.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())==='#8d2340');
 ok('romance switches weather to petals', await p.evaluate(()=>kind)==='petal');
 ok('romance line updates', (await p.textContent('#gline')).includes('someone worth the trouble'));
 await p.click('.sw[data-v=thriller]'); await p.waitForTimeout(500);
