@@ -87,7 +87,7 @@
   /* paper, then card: two tones, four points apart. Enough that a card sits
      ON the page instead of dissolving into it, nowhere near cream. */
   --bg:#F5F4F1; --surf:#FFFFFF; --surf2:#EDEBE7;
-  --ink:#0A0A0A; --ink2:#3A3A38; --ink3:#8A8A86;
+  --ink:#0A0A0A; --ink2:#36352F; --ink3:#6B6A66;
   --line:rgba(10,10,10,.26); --line2:rgba(10,10,10,.11);
   --on-g:#FFFFFF;
   /* a printed sheet casts an edge, not a glow */
@@ -613,6 +613,68 @@ input[type=number]{-moz-appearance:textfield}
   clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);
   box-shadow:1px 0 0 rgba(10,10,10,.2);transition:height .2s}
 #ribbon:hover i{height:78px}
+
+
+/* ══ the decorated papers ═══════════════════════════════════════════
+   Bodoni set the text block; he did not bind the book. Italian volumes
+   of the period were cased in carte decorate — the block-printed papers
+   of the Remondini press near Venice, and marbled endpapers combed by
+   hand. The motif is the ogee-and-pomegranate the Venetians took from
+   Ottoman silks and never gave back.
+
+   So the ornament goes where it historically goes: on the paper, the
+   endpapers and the half-title. Never under running text — every card
+   stays plain white stock, and the print shows in the margins and the
+   gaps between them, which is exactly where a reader would see it.
+
+   Each one is an SVG mask rather than a coloured image, so a single
+   file serves light and dark and the ink stays a CSS token.
+------------------------------------------------------------------*/
+:root{ --print:rgba(10,10,10,.065); --marble:var(--rosso); }
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--print:rgba(247,246,243,.06)}}
+:root[data-theme=dark]{--print:rgba(247,246,243,.06)}
+
+/* the sheet the whole app is printed on */
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:var(--print);
+  -webkit-mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>"); mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>");
+  -webkit-mask-size:88px 88px; mask-size:88px 88px;
+  -webkit-mask-repeat:repeat; mask-repeat:repeat;
+}
+/* the weather falls on the printed paper, not under it */
+#sky{z-index:1}
+
+/* the bookplate is an endpaper, so it gets marbled stock */
+.exlibris{overflow:hidden}
+.exlibris>*{position:relative;z-index:1}
+.exlibris .marb{
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:var(--marble); opacity:.2;
+  -webkit-mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='180'><filter id='c' x='-20%25' y='-20%25' width='140%25' height='140%25'><feTurbulence type='fractalNoise' baseFrequency='.008 .055' numOctaves='3' seed='11' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='24' xChannelSelector='R' yChannelSelector='G'/></filter><g filter='url(%23c)' stroke='%23fff' fill='none'><path d='M-40 6H340' stroke-width='2.6'/><path d='M-40 21H340' stroke-width='1.1'/><path d='M-40 36H340' stroke-width='2.6'/><path d='M-40 51H340' stroke-width='1.1'/><path d='M-40 66H340' stroke-width='2.6'/><path d='M-40 81H340' stroke-width='1.1'/><path d='M-40 96H340' stroke-width='2.6'/><path d='M-40 111H340' stroke-width='1.1'/><path d='M-40 126H340' stroke-width='2.6'/><path d='M-40 141H340' stroke-width='1.1'/><path d='M-40 156H340' stroke-width='2.6'/><path d='M-40 171H340' stroke-width='1.1'/></g></svg>"); mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='180'><filter id='c' x='-20%25' y='-20%25' width='140%25' height='140%25'><feTurbulence type='fractalNoise' baseFrequency='.008 .055' numOctaves='3' seed='11' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='24' xChannelSelector='R' yChannelSelector='G'/></filter><g filter='url(%23c)' stroke='%23fff' fill='none'><path d='M-40 6H340' stroke-width='2.6'/><path d='M-40 21H340' stroke-width='1.1'/><path d='M-40 36H340' stroke-width='2.6'/><path d='M-40 51H340' stroke-width='1.1'/><path d='M-40 66H340' stroke-width='2.6'/><path d='M-40 81H340' stroke-width='1.1'/><path d='M-40 96H340' stroke-width='2.6'/><path d='M-40 111H340' stroke-width='1.1'/><path d='M-40 126H340' stroke-width='2.6'/><path d='M-40 141H340' stroke-width='1.1'/><path d='M-40 156H340' stroke-width='2.6'/><path d='M-40 171H340' stroke-width='1.1'/></g></svg>");
+  -webkit-mask-size:cover; mask-size:cover;
+}
+/* the half-title carries the damask as a watermark, in the book's own ink */
+.hero{isolation:isolate}
+.hero::before{
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:var(--g1); opacity:.32;
+  -webkit-mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><g fill='none' stroke='%23fff' stroke-width='1.4'><path d='M0 75C0 37 37 0 75 0C113 0 150 37 150 75C150 113 113 150 75 150C37 150 0 113 0 75Z'/><path d='M75 52C86 62 91 70 91 76C91 84 84 92 75 99C66 92 59 84 59 76C59 70 64 62 75 52Z'/></g></svg>"); mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><g fill='none' stroke='%23fff' stroke-width='1.4'><path d='M0 75C0 37 37 0 75 0C113 0 150 37 150 75C150 113 113 150 75 150C37 150 0 113 0 75Z'/><path d='M75 52C86 62 91 70 91 76C91 84 84 92 75 99C66 92 59 84 59 76C59 70 64 62 75 52Z'/></g></svg>");
+  -webkit-mask-size:112px 112px; mask-size:112px 112px;
+  -webkit-mask-repeat:repeat; mask-repeat:repeat;
+}
+/* (the shelf needs no second layer — the page print already runs under it;
+   two tile sizes stacked read as moire rather than as paper) */
+.shelfwrap{position:relative}
+.shelfwrap--off{
+  content:''; position:absolute; left:-24px; right:-24px; top:0; bottom:0; z-index:0;
+  pointer-events:none; background:var(--print); opacity:.9;
+  -webkit-mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>"); mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>");
+  -webkit-mask-size:64px 64px; mask-size:64px 64px;
+}
+.shelfwrap>*{position:relative;z-index:1}
+
+@media (prefers-reduced-motion:no-preference){}
 
 @media (prefers-reduced-motion:reduce){#ribbon i{transition:none}}
 </style>
@@ -1919,6 +1981,7 @@ function you(){
   return `${masthead()}
   <div class="chap rise" data-num="IV">
     <div class="exlibris">
+      <i class="marb" aria-hidden="true"></i>
       <div class="ex">Ex Libris</div>
       <div class="nm">${esc(p.name)}</div>
       <div class="orn2">⁂</div>

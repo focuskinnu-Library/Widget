@@ -3,7 +3,7 @@
    Bump VER to ship an update; every visitor gets it within a visit.
 ══════════════════════════════════════════════════════════════════ */
 'use strict';
-const VER = '4.1';
+const VER = '4.2';
 const CACHE = `lingobox-${VER}`;
 
 /* The shell: everything the app needs to open with no network at all. */

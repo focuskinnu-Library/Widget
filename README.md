@@ -57,6 +57,21 @@ The genre worlds survive, re-cut as flat pigments a colourman of 1791 could
 have ground — oxblood, olive, aubergine, verdigris. The weather still falls
 behind the page; the page itself stays white and black and keeps its one red.
 
+**The decorated papers.** Bodoni set the text block; he did not bind the book.
+Italian volumes of the period were cased in *carte decorate* — the block-printed
+papers of the Remondini press near Venice, and marbled endpapers combed by hand.
+So the ornament goes where it historically goes, and nowhere else:
+
+- **The paper itself** is printed with the ogee-and-pomegranate the Venetians
+  took from Ottoman silks and never gave back
+- **The bookplate is an endpaper**, so it gets combed marble in the one red
+- **The half-title carries the damask** as a watermark, in that book's own ink
+- **Every card stays plain white stock** — the print shows in the margins and
+  the gaps between them, which is where a reader would actually see it
+
+Each is an SVG mask rather than a coloured image, so one file serves light and
+dark, the ink stays a CSS token, and the whole lot adds about 2KB.
+
 ## The library it pretends to be
 
 Everything a circulating library stamps on a book, LingoBox derives — never stored, so an old shelf gets it for free.

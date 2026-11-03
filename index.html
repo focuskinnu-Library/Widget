@@ -33,7 +33,8 @@
 <body>
 <style>
 :root{
-  --paper:#F5F4F1; --card:#FFFFFF; --ink:#0A0A0A; --ink-2:#3A3A38; --ink-3:#8A8A86;
+  --print:rgba(10,10,10,.065);
+  --paper:#F5F4F1; --card:#FFFFFF; --ink:#0A0A0A; --ink-2:#36352F; --ink-3:#6B6A66;
   --line:rgba(10,10,10,.18); --rosso:#9E1B1B;
   --accent:#9E1B1B; --accent-2:#6f1b16; --glow:rgba(158,27,27,.11);
   --display:'Bodoni Moda','Bodoni 72',Didot,'Didot LT STD','Bodoni MT',
@@ -52,7 +53,9 @@
 [data-v=poetry]  {--accent:#4c1c52;--accent-2:#15544f;--glow:rgba(76,28,82,.13)}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme=light]){
-    --paper:#0A0A0B; --card:#141416; --ink:#F7F6F3; --ink-2:#B6B4AE; --ink-3:#7E7C77;
+    --print:rgba(247,246,243,.06);
+    --print:rgba(247,246,243,.06);
+  --paper:#0A0A0B; --card:#141416; --ink:#F7F6F3; --ink-2:#B6B4AE; --ink-3:#7E7C77;
     --line:rgba(247,246,243,.18); --rosso:#D9483F; --accent:#D9483F;
     --glow:rgba(217,72,63,.17);
   }
@@ -184,6 +187,17 @@ footer{padding:30px 0 60px;text-align:center;color:var(--ink-3);font-size:12.5px
 footer a{color:var(--accent);text-decoration:none}
 .toggle{position:fixed;top:16px;right:16px;width:38px;height:38px;border-radius:50%;background:var(--card);
   border:1px solid var(--line);display:grid;place-items:center;z-index:9}
+
+/* the same Venetian printed paper the app is set on — carta Remondini,
+   the ogee-and-pomegranate the Venetians took from Ottoman silks. Lifted
+   from app.html verbatim so the front door and the app cannot drift. */
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:var(--print);
+  -webkit-mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>"); mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>");
+  -webkit-mask-size:88px 88px; mask-size:88px 88px;
+  -webkit-mask-repeat:repeat; mask-repeat:repeat;
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}}
 </style>
