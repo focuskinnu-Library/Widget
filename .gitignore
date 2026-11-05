@@ -1,0 +1,18 @@
+# a symlink here in the sandbox, a real directory anywhere else
+node_modules
+
+# screenshots the suites take as they go — useful locally, noise in the repo
+u1.png
+u2.png
+u3.png
+three.png
+land-gen.png
+lib-book.png
+lib-cards.png
+lib-plate.png
+shelf-done.png
+shelf-home.png
+
+# the design screenshots I take while working
+shot-*.png
+bg-*.png

@@ -1,5 +1,6 @@
-import {chromium} from 'playwright';
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+import {launch} from './audit-browser.mjs';
+const SERVED=process.env.LINGOBOX_URL||'http://127.0.0.1:8777';
+const br=await launch();
 const ctx=await br.newContext({viewport:{width:400,height:900}});
 const p=await ctx.newPage(); let pass=0,fail=0;
 const ok=(n,c)=>{c?pass++:fail++;console.log(`${c?'PASS':'FAIL'}  ${n}`)};
@@ -11,7 +12,7 @@ await p.route('**/sw.js',r=>r.abort());
 await p.route('**/api.dictionaryapi.dev/**',r=>r.abort());
 await p.route('**/en.wiktionary.org/**',r=>r.abort());
 await p.route('**/openlibrary.org/**',r=>r.abort());
-await p.goto('http://127.0.0.1:8777/app.html');
+await p.goto(SERVED+'/app.html');
 
 console.log('── BUILT-IN DICTIONARY (network dead) ──');
 await p.evaluate(()=>{const n=Date.now();localStorage.setItem('lingobox.v1',JSON.stringify({

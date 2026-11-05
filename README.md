@@ -40,6 +40,40 @@ A quiet reading companion. Keep the words, the page, the lines and the pictures 
 
 **Reminders** — the browser nudges you when words go stale. Only ever about your own words. They need the app to have been opened, because there is no server behind this.
 
+## How it looks
+
+**Bodoni · Parma, 1791.** Giambattista Bodoni cut his types for the Duke of
+Parma and printed the *Manuale Tipografico*: hairline serifs against stems four
+times their weight, acres of white, letterspaced capitals, and a rule thin
+enough to be a scratch. Nothing rounded, nothing glowing.
+
+So the app is real white and real black rather than cream and brown, every
+corner is square, every shadow is a crisp offset rather than a halo, and there
+is exactly one accent — the *rosso pompeiano* the Manuale used for its initials.
+The drama is the type scale: 9px letterspaced capitals beside 44px Didone, with
+the gap between them left empty on purpose.
+
+The genre worlds survive, re-cut as flat pigments a colourman of 1791 could
+have ground — oxblood, olive, aubergine, verdigris. The weather still falls
+behind the page; the page itself stays white and black and keeps its one red.
+
+**The decorated papers.** Bodoni set the text block; he did not bind the book.
+Italian volumes of the period were cased in *carte decorate* — the block-printed
+papers of the Remondini press near Venice, and marbled endpapers combed by hand.
+So the ornament goes where it historically goes, and nowhere else:
+
+- **The shelf board** is printed with the ogee-and-pomegranate the Venetians
+  took from Ottoman silks and never gave back — and so is the landing page,
+  which is the cover. The pages you read on are plain: decorated paper over
+  running text is wallpaper, not binding.
+- **The bookplate is an endpaper**, so it gets combed marble in the one red
+- **The half-title carries the damask** as a watermark, in that book's own ink
+- **Every card stays plain white stock** — the print shows in the margins and
+  the gaps between them, which is where a reader would actually see it
+
+Each is an SVG mask rather than a coloured image, so one file serves light and
+dark, the ink stays a CSS token, and the whole lot adds about 2KB.
+
 ## The library it pretends to be
 
 Everything a circulating library stamps on a book, LingoBox derives — never stored, so an old shelf gets it for free.
@@ -66,7 +100,13 @@ Two things nobody does: words anchored to the page you met them on, and a place 
 - **One exception:** looking a word up sends just that single word to a dictionary. Two are tried in order — [dictionaryapi.dev](https://dictionaryapi.dev) first, since it also carries pronunciation and synonyms, then [Wiktionary](https://en.wiktionary.org/api/rest_v1/), which runs on Wikimedia infrastructure and stays up when the first one doesn't. Wiktionary answers in many languages — English first, then whichever language actually has the word — so `pyar` resolves as Hindi. The panel names the source and the language.
 - **Lookup needs a real origin.** Sandboxed previews (claude.ai artifacts, most embedded viewers) apply a strict CSP that blocks all outbound requests, so lookup cannot work there however healthy your connection. Open `index.html` from disk, or from the GitHub Pages URL, and it works. When a request can't leave, the panel says so and offers a web search rather than pretending the word doesn't exist.
 - **No Google, no LLM, and that is a constraint rather than a choice.** Google has no free search API and browsers cannot fetch google.com at all, and every LLM API needs a secret key — which in a page with no server would be readable by anyone. Both become possible the day there is a backend. Until then, any word that neither dictionary has offers a web search instead.
-- Light and dark, following the system, with a manual toggle.
+- Light and dark, following the system, with a manual toggle. Both are Bodoni —
+  black on near-white, or reversed out of near-black.
+- **The type is served from here, not from Google.** `fonts/` holds two woff2
+  cuts of Bodoni Moda, about 100KB for the pair, precached by the service worker.
+  Nothing is requested from a third party, and the face is right with the network
+  off. Apple devices get Didot or Bodoni 72 locally before the download even
+  finishes. SIL Open Font License 1.1 — `fonts/OFL.txt`.
 - Keyboard, during review: `space` to flip, `1` / `2` / `3` to rate.
 
 ## Testing
@@ -75,35 +115,39 @@ Every suite drives the real app in a real browser.
 
 ```
 npm i playwright
-for f in audit-*.mjs; do node $f; done
+node audit.mjs            # all of it, with a total and a real exit code
+node audit.mjs shelf      # just the suites whose names match
 ```
+
+`audit.mjs` starts the static server the two HTTP-bound suites need and stops it
+again, so there is nothing to remember. It exits non-zero the moment a check
+fails, and the same command runs on every push and pull request
+(`.github/workflows/test.yml`).
 
 | Suite | Covers | Checks |
 |---|---|---|
 | `audit-app.mjs` | a whole session, first launch to practice | 46 |
-| `audit-lookup.mjs` | the two-dictionary chain and every failure mode | 18 |
-| `audit-export.mjs` | backup, export, restore, junk files | 18 |
-| `audit-landing.mjs` | the landing page, genre worlds included | 20 |
-| `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
-| `audit-migration.mjs` | old Margin data surviving the rename | 9 |
-| `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
-| `audit-languages.mjs` | words in languages other than English | 11 |
 | `audit-extras.mjs` | covers from Open Library, speech practice, quote images | 25 |
 | `audit-shelf.mjs` | the built-in dictionary with the network dead, the shelf, mastery | 22 |
-| `audit-library.mjs` | call numbers, spine labels, date-due slip, catalogue cards, bookplate | 22 |
+| `audit-library.mjs` | call numbers, spine labels, date-due slip, catalogue cards, bookplate | 23 |
+| `audit-landing.mjs` | the landing page, genre worlds included | 20 |
+| `audit-lookup.mjs` | the two-dictionary chain and every failure mode | 18 |
+| `audit-export.mjs` | backup, export, restore, junk files | 18 |
+| `audit-say.mjs` | recording vs voice, and that play never flips a card | 11 |
+| `audit-languages.mjs` | words in languages other than English | 11 |
+| `audit-migration.mjs` | old Margin data surviving the rename | 9 |
+| `audit-offline.mjs` | telling a blocked page apart from a lost connection | 7 |
 
-165 checks in total.
+210 checks in total, all green.
 
-`audit-shelf.mjs` needs the app served over HTTP, because `fetch` cannot read a
-sibling file under `file://`:
+Two of them — `audit-shelf.mjs` and `audit-library.mjs` — need the app served
+over HTTP, because `fetch` cannot read a sibling file under `file://`. Run them
+on their own and they look for `127.0.0.1:8777`; `LINGOBOX_URL` points them
+somewhere else.
 
-```
-python3 -m http.server 8777 &   # then it runs against 127.0.0.1:8777
-```
-
-**Known: the suites written before LingoBox 3.0 no longer match the redesigned
-UI** and fail on selectors that no longer exist. That predates this change.
-`audit-export.mjs` and `audit-shelf.mjs` are the two currently green.
+`audit-browser.mjs` is the one place that knows where Chromium lives. It prefers
+the browser at `/opt/pw-browsers/chromium` when that exists and otherwise lets
+Playwright use the one it downloaded; `CHROMIUM_PATH` overrides both.
 
 A live call to dictionaryapi.dev still cannot be covered here — the build
 environment blocks that host — so online success paths are asserted against the

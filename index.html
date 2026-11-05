@@ -16,8 +16,16 @@
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="LingoBox">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0e0f14" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#fbf9f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f4f1" media="(prefers-color-scheme: light)">
+<style>
+/* Bodoni Moda, from beside the page — same two files the app precaches.
+   SIL Open Font License 1.1, see fonts/OFL.txt */
+@font-face{font-family:'Bodoni Moda';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url(fonts/bodoni-moda-latin.woff2) format('woff2')}
+@font-face{font-family:'Bodoni Moda';font-style:italic;font-weight:400 700;font-display:swap;
+  src:url(fonts/bodoni-moda-latin-italic.woff2) format('woff2')}
+</style>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -25,29 +33,37 @@
 <body>
 <style>
 :root{
-  --paper:#fbf9f6; --card:#fff; --ink:#16151a; --ink-2:#5c5866; --ink-3:#928d9c;
-  --line:rgba(22,21,26,.09); --accent:#6b5cff; --accent-2:#c46bff; --glow:rgba(107,92,255,.16);
+  --print:rgba(10,10,10,.065);
+  --paper:#F5F4F1; --card:#FFFFFF; --ink:#0A0A0A; --ink-2:#36352F; --ink-3:#6B6A66;
+  --line:rgba(10,10,10,.18); --rosso:#9E1B1B;
+  --accent:#9E1B1B; --accent-2:#6f1b16; --glow:rgba(158,27,27,.11);
+  --display:'Bodoni Moda','Bodoni 72',Didot,'Didot LT STD','Bodoni MT',
+            'Playfair Display','Times New Roman',Georgia,serif;
   --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
 }
-[data-v=romance] {--accent:#e11d6b;--accent-2:#fb7185;--glow:rgba(225,29,107,.16)}
-[data-v=fantasy] {--accent:#7c3aed;--accent-2:#d97706;--glow:rgba(124,58,237,.16)}
-[data-v=thriller]{--accent:#b91c1c;--accent-2:#475569;--glow:rgba(185,28,28,.16)}
-[data-v=literary]{--accent:#a16207;--accent-2:#b45309;--glow:rgba(161,98,7,.16)}
-[data-v=scifi]   {--accent:#0891b2;--accent-2:#4f46e5;--glow:rgba(8,145,178,.16)}
-[data-v=nature]  {--accent:#15803d;--accent-2:#65a30d;--glow:rgba(21,128,61,.16)}
-[data-v=horror]  {--accent:#3f3f46;--accent-2:#991b1b;--glow:rgba(63,63,70,.16)}
-[data-v=poetry]  {--accent:#7e22ce;--accent-2:#0d9488;--glow:rgba(126,34,206,.16)}
+[data-v=romance] {--accent:#8d2340;--accent-2:#a93c57;--glow:rgba(141,35,64,.13)}
+[data-v=fantasy] {--accent:#4a2d6b;--accent-2:#7a5518;--glow:rgba(74,45,107,.13)}
+[data-v=thriller]{--accent:#6f1b16;--accent-2:#3c4450;--glow:rgba(111,27,22,.13)}
+[data-v=literary]{--accent:#6b541c;--accent-2:#7d4a16;--glow:rgba(107,84,28,.13)}
+[data-v=scifi]   {--accent:#17525f;--accent-2:#2f3570;--glow:rgba(23,82,95,.13)}
+[data-v=nature]  {--accent:#1f4d2e;--accent-2:#45631c;--glow:rgba(31,77,46,.13)}
+[data-v=horror]  {--accent:#34343a;--accent-2:#6f1b16;--glow:rgba(52,52,58,.13)}
+[data-v=poetry]  {--accent:#4c1c52;--accent-2:#15544f;--glow:rgba(76,28,82,.13)}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme=light]){
-    --paper:#0c0b10; --card:#16151c; --ink:#f2f0f7; --ink-2:#a7a2b4; --ink-3:#736e80;
-    --line:rgba(255,255,255,.10); --glow:rgba(107,92,255,.22);
+    --print:rgba(247,246,243,.06);
+    --print:rgba(247,246,243,.06);
+  --paper:#0A0A0B; --card:#141416; --ink:#F7F6F3; --ink-2:#B6B4AE; --ink-3:#7E7C77;
+    --line:rgba(247,246,243,.18); --rosso:#D9483F; --accent:#D9483F;
+    --glow:rgba(217,72,63,.17);
   }
 }
 :root[data-theme=dark]{
-  --paper:#0c0b10; --card:#16151c; --ink:#f2f0f7; --ink-2:#a7a2b4; --ink-3:#736e80;
-  --line:rgba(255,255,255,.10); --glow:rgba(107,92,255,.22);
+  --paper:#0A0A0B; --card:#141416; --ink:#F7F6F3; --ink-2:#B6B4AE; --ink-3:#7E7C77;
+  --line:rgba(247,246,243,.18); --rosso:#D9483F; --accent:#D9483F;
+  --glow:rgba(217,72,63,.17);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 /* the blur orbs deliberately sit past the viewport edge; clip at the root so
@@ -55,69 +71,76 @@
 html,body{overflow-x:hidden;overflow-x:clip}
 /* behind the words, and quiet enough not to fight them */
 #sky{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.65}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;
+/* the same book serif the app reads in — the landing page should not be a
+   different publication from the thing it is advertising */
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);line-height:1.62;
   -webkit-font-smoothing:antialiased;transition:background .6s}
 .wrap{max-width:760px;margin:0 auto;padding:0 22px;position:relative;z-index:1}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:0}
 
 .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
-h1{font-size:clamp(38px,8vw,68px);font-weight:800;letter-spacing:-.04em;line-height:1.02;text-wrap:balance}
-h2{font-size:clamp(24px,4.4vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.12;text-wrap:balance}
-.grad{background:linear-gradient(100deg,var(--accent),var(--accent-2));
-  -webkit-background-clip:text;background-clip:text;color:transparent}
+h1{font-family:var(--display);font-size:clamp(42px,9vw,76px);font-weight:400;
+  letter-spacing:-.015em;line-height:1.03;text-wrap:balance}
+h2{font-family:var(--display);font-size:clamp(27px,5vw,40px);font-weight:400;
+  letter-spacing:-.01em;line-height:1.12;text-wrap:balance}
+h3,.slip .w,.face .w{font-family:var(--display);font-weight:400}
+/* one red, set in italic — no gradient fill */
+.grad{color:var(--rosso);font-style:italic}
 .lede{font-size:clamp(16.5px,2.4vw,19px);color:var(--ink-2);max-width:52ch;text-wrap:pretty}
 
 /* hero */
-header{padding:74px 0 30px;position:relative}
-.orb{position:absolute;border-radius:50%;filter:blur(64px);opacity:.5;pointer-events:none;z-index:-1;
-  background:radial-gradient(circle,var(--accent),transparent 68%)}
-.o1{width:340px;height:340px;top:-90px;left:-130px}
-.o2{width:270px;height:270px;top:30px;right:-110px;background:radial-gradient(circle,var(--accent-2),transparent 68%)}
+header{padding:78px 0 30px;position:relative}
+/* the blur orbs went with the gradients: Bodoni's page is white, and the
+   only thing on it that is not type is a rule. */
+.orb{display:none}
 
 /* the passage you can actually tap */
-.passage{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 24px;
+.passage{background:var(--card);border:1px solid var(--line);border-radius:0;padding:26px 24px;
   font-family:var(--serif);font-size:19px;line-height:1.75;margin-top:30px;position:relative}
 .passage .hint{position:absolute;top:-11px;left:20px;background:var(--card);padding:0 9px;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
-mark{background:none;color:inherit;cursor:pointer;position:relative;padding:1px 2px;border-radius:3px;
+mark{background:none;color:inherit;cursor:pointer;position:relative;padding:1px 2px;border-radius:0;
   box-shadow:inset 0 -.42em 0 var(--glow);transition:box-shadow .25s,color .25s}
 mark:hover{box-shadow:inset 0 -1.1em 0 var(--glow)}
 mark.got{color:var(--accent);font-weight:600}
 
 .catch{margin-top:16px;min-height:132px}
 .slip{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
-  border-radius:14px;padding:14px 16px;margin-top:10px;animation:slip .42s cubic-bezier(.2,.9,.3,1) both}
+  border-radius:0;padding:14px 16px;margin-top:10px;animation:slip .42s cubic-bezier(.2,.9,.3,1) both}
 @keyframes slip{from{opacity:0;transform:translateY(-8px) rotate(-.6deg)}}
 .slip .w{font-family:var(--serif);font-size:19px;font-weight:600}
 .slip .ph{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-left:7px}
 .slip .d{font-size:14px;color:var(--ink-2);margin-top:3px}
-.slip .m{font-size:14.5px;background:var(--glow);border-radius:9px;padding:8px 11px;margin-top:9px}
+.slip .m{font-size:14.5px;background:var(--glow);border-radius:0;padding:8px 11px;margin-top:9px}
 .slip .m b{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
   color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
 .say{display:inline-grid;place-items:center;width:22px;height:22px;margin-left:7px;border-radius:50%;
   background:var(--glow);color:var(--accent);font-size:9px;vertical-align:middle}
 .say:hover{transform:scale(1.14)}
 .empty-slip{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-3);
-  border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;margin-top:10px}
+  border:1px dashed var(--line);border-radius:0;padding:22px;text-align:center;margin-top:10px}
 
 /* sections */
-section{padding:64px 0;border-top:1px solid var(--line)}
+/* the double rule, as in the app */
+section{padding:64px 0;border-top:1px solid var(--ink);position:relative}
+section::before{content:'';position:absolute;top:3px;left:0;right:0;
+  border-top:1px solid var(--ink);opacity:.3}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
 .reveal.in{opacity:1;transform:none}
 
 .four{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-top:26px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;
+.tile{background:var(--card);border:1px solid var(--line);border-radius:0;padding:18px;
   transition:transform .2s,border-color .2s}
 .tile:hover{transform:translateY(-3px);border-color:var(--accent)}
 .tile h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
 .tile p{font-size:13.5px;color:var(--ink-2);margin-top:5px}
-.tile i{display:block;width:26px;height:26px;border-radius:8px;margin-bottom:11px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.tile i{display:block;width:24px;height:24px;border-radius:0;margin-bottom:12px;
+  background:var(--accent)}
 
 /* vibes */
 .swatches{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
-.sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;border-radius:12px;
+.sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;border-radius:0;
   border:1px solid transparent;min-width:62px}
 .sw i{width:32px;height:32px;border-radius:50%;display:block;transition:transform .2s}
 .sw:hover i{transform:scale(1.12)}
@@ -131,14 +154,14 @@ section{padding:64px 0;border-top:1px solid var(--line)}
   transition:transform .68s cubic-bezier(.3,.9,.3,1)}
 .fc.flipped{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  background:var(--card);border:1px solid var(--line);border-radius:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px}
 .face.back{transform:rotateY(180deg)}
 .face .w{font-family:var(--serif);font-size:31px;font-weight:600;letter-spacing:-.02em}
 .face small{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
   color:var(--ink-3);margin-top:14px}
 .pills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
-.pills button{padding:11px 6px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+.pills button{padding:11px 6px;border-radius:0;border:1px solid var(--line);background:var(--card);
   font-size:13px;font-weight:700}
 .pills button:hover{border-color:var(--accent)}
 .pills b{display:block;font-family:var(--mono);font-size:9px;font-weight:400;color:var(--ink-3);margin-top:3px;
@@ -155,14 +178,26 @@ section{padding:64px 0;border-top:1px solid var(--line)}
 
 /* cta */
 .cta{text-align:center;padding:78px 0 30px}
-.big{display:inline-block;background:linear-gradient(100deg,var(--accent),var(--accent-2));color:#fff;
-  border-radius:999px;padding:16px 34px;font-size:16px;font-weight:700;text-decoration:none;
-  box-shadow:0 12px 34px -12px var(--accent);transition:transform .15s,filter .15s}
-.big:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.big{display:inline-block;background:var(--ink);color:var(--paper);
+  border-radius:0;padding:17px 36px;font-family:var(--mono);font-size:11px;font-weight:650;
+  letter-spacing:.22em;text-transform:uppercase;text-decoration:none;
+  box-shadow:3px 3px 0 var(--line);transition:background .15s,color .15s}
+.big:hover{background:var(--rosso);color:#fff}
 footer{padding:30px 0 60px;text-align:center;color:var(--ink-3);font-size:12.5px}
 footer a{color:var(--accent);text-decoration:none}
 .toggle{position:fixed;top:16px;right:16px;width:38px;height:38px;border-radius:50%;background:var(--card);
   border:1px solid var(--line);display:grid;place-items:center;z-index:9}
+
+/* the same Venetian printed paper the app is set on — carta Remondini,
+   the ogee-and-pomegranate the Venetians took from Ottoman silks. Lifted
+   from app.html verbatim so the front door and the app cannot drift. */
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:var(--print);
+  -webkit-mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>"); mask-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><g fill='none' stroke='%23fff' stroke-width='1.25'><path d='M0 48C0 24 24 0 48 0C72 0 96 24 96 48C96 72 72 96 48 96C24 96 0 72 0 48Z'/></g><g fill='%23fff'><path d='M48 33C52.5 38 55 43 55 47.5C55 52.5 52 57 48 60.5C44 57 41 52.5 41 47.5C41 43 43.5 38 48 33Z'/><path d='M47.2 33.4C46.4 31 46.6 29 48 27.2C49.4 29 49.6 31 48.8 33.4Z'/><circle cx='48' cy='0' r='2.5'/><circle cx='48' cy='96' r='2.5'/><circle cx='0' cy='48' r='2.5'/><circle cx='96' cy='48' r='2.5'/></g><g fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round'><path d='M38 42C32 38 28 32 29 25'/><path d='M58 42C64 38 68 32 67 25'/><path d='M38 54C32 58 28 64 29 71'/><path d='M58 54C64 58 68 64 67 71'/><path d='M29 25C33 26 35 29 35 32'/><path d='M67 25C63 26 61 29 61 32'/><path d='M29 71C33 70 35 67 35 64'/><path d='M67 71C63 70 61 67 61 64'/></g></svg>");
+  -webkit-mask-size:88px 88px; mask-size:88px 88px;
+  -webkit-mask-repeat:repeat; mask-repeat:repeat;
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}}
 </style>

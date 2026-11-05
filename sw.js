@@ -3,7 +3,7 @@
    Bump VER to ship an update; every visitor gets it within a visit.
 ══════════════════════════════════════════════════════════════════ */
 'use strict';
-const VER = '3.1';
+const VER = '4.3';
 const CACHE = `lingobox-${VER}`;
 
 /* The shell: everything the app needs to open with no network at all. */
@@ -19,7 +19,12 @@ const CORE = [
   './icon-maskable-512.png',
   './apple-touch-icon.png',
   './favicon-32.png',
-  './og-image.png'
+  './og-image.png',
+  /* Bodoni Moda, served from here rather than Google: ~100KB for both
+     cuts, and precaching them means the type is right on the second
+     visit with the network off. */
+  './fonts/bodoni-moda-latin.woff2',
+  './fonts/bodoni-moda-latin-italic.woff2'
 ];
 
 /* lexicon.json is deliberately NOT precached: it is several megabytes, and
