@@ -62,8 +62,10 @@ Italian volumes of the period were cased in *carte decorate* — the block-print
 papers of the Remondini press near Venice, and marbled endpapers combed by hand.
 So the ornament goes where it historically goes, and nowhere else:
 
-- **The paper itself** is printed with the ogee-and-pomegranate the Venetians
-  took from Ottoman silks and never gave back
+- **The shelf board** is printed with the ogee-and-pomegranate the Venetians
+  took from Ottoman silks and never gave back — and so is the landing page,
+  which is the cover. The pages you read on are plain: decorated paper over
+  running text is wallpaper, not binding.
 - **The bookplate is an endpaper**, so it gets combed marble in the one red
 - **The half-title carries the damask** as a watermark, in that book's own ink
 - **Every card stays plain white stock** — the print shows in the margins and
